@@ -19,6 +19,7 @@ Aplikasi akan menggunakan arsitektur frontend dan backend yang terpisah:
 Berdasarkan proposal, aplikasi akan terdiri dari 5 modul utama:
 
 ### A. Modul Profil Usaha (Public)
+
 - **Fungsi**: Menampilkan informasi usaha kepada publik.
 - **Fitur**:
   - Halaman Landing Page berisi: Alamat, Kontak, Jam Operasional.
@@ -26,29 +27,33 @@ Berdasarkan proposal, aplikasi akan terdiri dari 5 modul utama:
   - Cek Status Pesanan (via Nomor Resi/Order ID).
 
 ### B. Modul Manajemen Pesanan
+
 - **Fungsi**: Mengelola siklus hidup pesanan dari masuk hingga selesai.
 - **Fitur**:
   - **Pencatatan**: Input data pelanggan, ukuran, jenis pakaian, dan deadline.
   - **Status Pengerjaan**: Update status (Potong -> Jahit -> Finishing -> Selesai).
   - **Nota Digital**: Generate link unik untuk pelanggan berisi detail pesanan dan progres.
 
-### C. Modul Manajemen Karyawan
+### C. Modul Manajemen Pekerja
+
 - **Fungsi**: Mengelola data dan kinerja SDM.
 - **Fitur**:
-  - **Data Karyawan**: Nama, Spesialisasi (Potong/Jahit/Finishing).
-  - **Beban Kerja**: Monitoring jumlah pesanan aktif per karyawan.
+  - **Data Pekerja**: Nama, Spesialisasi (Potong/Jahit/Finishing).
+  - **Beban Kerja**: Monitoring jumlah pesanan aktif per pekerja.
   - **Kalkulasi Upah**: Hitung upah mingguan berdasarkan jumlah pesanan yang diselesaikan (Piece-rate).
-  - **View Karyawan**: Halaman khusus karyawan untuk melihat daftar prioritas pekerjaan (Rekomendasi ML).
+  - **View Pekerja**: Halaman khusus pekerja untuk melihat daftar prioritas pekerjaan (Rekomendasi ML).
 
 ### D. Modul Laporan & Analitik
+
 - **Fungsi**: Evaluasi performa usaha.
 - **Fitur**:
   - **Analitik Volume**: Grafik pesanan masuk/selesai per periode.
   - **Tren Pakaian**: Jenis pakaian paling populer.
-  - **Produktivitas**: Rata-rata waktu penyelesaian per karyawan.
+  - **Produktivitas**: Rata-rata waktu penyelesaian per pekerja.
   - **Laporan Otomatis**: Rekap mingguan yang bisa di-export (PDF/Excel).
 
 ### E. Core AI: Rekomendasi Prioritas
+
 - **Algoritma**: XGBRanker.
 - **Fungsi**: Mengurutkan antrean pesanan di setiap tahap (Potong, Jahit, Finishing) berdasarkan urgensi (deadline) dan kompleksitas.
 
@@ -83,10 +88,10 @@ project/
 │   │   │   ├── admin/              # Halaman Admin (Protected)
 │   │   │   │   ├── dashboard.vue
 │   │   │   │   ├── orders/
-│   │   │   │   ├── employees/
+│   │   │   │   ├── workers/
 │   │   │   │   ├── reports/
 │   │   │   │   └── settings/       # Edit Profil Usaha
-│   │   │   └── employee/           # View Khusus Karyawan
+│   │   │   └── worker/           # View Khusus Pekerja
 │   │   │       └── file.vue        # List Prioritas
 │   ├── nuxt.config.ts
 │   └── package.json
@@ -107,18 +112,22 @@ project/
 Silakan centang jika sudah selesai.
 
 ### Phase 1: Inisialisasi Project
+
 - [ ] Setup Virtual Environment (Backend) & Install Dependencies (`fastapi`, `uvicorn`, `sqlalchemy`, `mysql-connector-python`, `xgboost`).
 - [ ] Setup Database MySQL (Create Schema & Users).
 - [ ] Inisialisasi Project Nuxt 4 (Frontend) & Install Tailwind CSS.
 - [ ] Konfigurasi `package.json` dan `nuxt.config.ts`.
 
 ### Phase 2: Backend Development
+
 #### Core & Database
+
 - [ ] Setup `database.py` (Koneksi MySQL).
 - [ ] Buat Model `models.py` (Orders, Workers, ShopProfile, WorkerPerformance).
 - [ ] Setup Migration (Alembic) atau `init_db.py`.
 
 #### API Endpoints
+
 - [ ] **Modul Profil**: `GET /profile`, `PUT /profile`.
 - [ ] **Modul Pesanan**: CRUD Orders (`POST`, `GET`, `PUT`), Generate Nota Link.
 - [ ] **Modul Karyawan**: CRUD Workers, `GET /wages`, `GET /performance`.
@@ -126,25 +135,29 @@ Silakan centang jika sudah selesai.
 - [ ] **AI Ranking**: Porting logic `ranking_logic.py`, Endpoint `GET /orders/priority`.
 
 ### Phase 3: Frontend Development
+
 #### Layouts & Components
+
 - [ ] Layout Utama (Navbar, Footer).
 - [ ] Layout Admin (Sidebar).
 - [ ] Komponen UI Dasar (Button, Card, Input Form, Modal).
 
 #### Halaman (Pages)
+
 - [ ] **Public View**:
-    - [ ] Landing Page (`/`).
-    - [ ] Tracking Page (`/tracking`).
+  - [ ] Landing Page (`/`).
+  - [ ] Tracking Page (`/tracking`).
 - [ ] **Admin View**:
-    - [ ] Dashboard (`/admin/dashboard`).
-    - [ ] Manajemen Pesanan (`/admin/orders`).
-    - [ ] Manajemen Karyawan (`/admin/employees`).
-    - [ ] Laporan (`/admin/reports`).
-    - [ ] Settings (`/admin/settings`).
+  - [ ] Dashboard (`/admin/dashboard`).
+  - [ ] Manajemen Pesanan (`/admin/orders`).
+  - [ ] Manajemen Pekerja (`/admin/workers`).
+  - [ ] Laporan (`/admin/reports`).
+  - [ ] Settings (`/admin/settings`).
 - [ ] **Employee View**:
-    - [ ] Task List (`/employee/tasks`).
+  - [ ] Task List (`/employee/tasks`).
 
 ### Phase 4: Integration & Deploy
+
 - [ ] Integrasi Frontend dengan AI Priority Endpoint.
 - [ ] Testing Flow Lengkap (Buat Pesanan -> Alur Produksi -> Selesai).
 - [ ] Final Review & Polishing UI.
