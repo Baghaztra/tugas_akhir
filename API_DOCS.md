@@ -164,3 +164,32 @@ Base URL: `http://localhost:8000`
 ### 12. Update Profil (Admin)
 
 **Endpoint**: `PUT /profile/`
+
+## F. Modul Produk & Layanan (Public)
+
+### 13. Ambil Portfolio Produk
+
+**Endpoint**: `GET /products/public`
+**Query Parameters**: `category` (optional), `limit` (optional).
+**Response Body**:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Kemeja Batik Tulis",
+    "description": "Kemeja batik tulis dengan motif parang rusak, bahan katun primisima.",
+    "category": "Kemeja",
+    "image": "url_to_image.jpg",
+    "price_range": "Rp 350.000 - Rp 500.000"
+  },
+  {
+    "id": 2,
+    "name": "Jas Formal Pria",
+    "description": "Jas formal untuk pernikahan atau acara resmi, bahan wool italy.",
+    "category": "Jas",
+    "image": "url_to_image_2.jpg",
+    "price_range": "Rp 1.500.000 - Rp 3.000.000"
+  }
+]
+```
