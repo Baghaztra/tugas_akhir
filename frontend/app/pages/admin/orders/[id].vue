@@ -144,7 +144,7 @@ definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const orderId = route.params.id as string
-const { order, status } = useOrderDetail(orderId)
+const { order, status, refresh } = useOrderDetail(orderId)
 const { updateStatus } = useUpdateOrderStatus()
 
 useSeoMeta({ title: `Detail Pesanan ${orderId} — Penjahit Yan` })
@@ -180,8 +180,11 @@ const paymentBadge = (p: string) => ({
 const isOverdue = computed(() => order.value && new Date(order.value.deadline) < new Date() && order.value.status !== 'done')
 
 const handleStatusUpdate = async (newStatus: string) => {
-  await updateStatus(orderId, newStatus as any, statusNote.value)
-  statusNote.value = ''
+  const result = await updateStatus(orderId, newStatus as any, statusNote.value)
+  if (result.success) {
+    statusNote.value = ''
+    await refresh()
+  }
 }
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })

@@ -1,25 +1,25 @@
 /**
  * Composable untuk Dashboard & Reports
- * Ganti BASE_URL dan hapus `default:` setelah backend siap.
+ * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
+ * environment variable NUXT_PUBLIC_API_BASE.
  */
 import { dummyDashboard, dummyTrendData, dummyNotifications, dummyReports } from "~/data/dummy";
 import type { DashboardSummary, ReportData } from "~/data/dummy";
 
-const BASE_URL = "http://localhost:8000";
-
 export const useDashboard = () => {
+  const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<DashboardSummary>(
-    `${BASE_URL}/dashboard/summary`,
+    `${apiBase}/dashboard/summary`,
     {
       default: () => dummyDashboard,
     },
   );
 
-  const { data: trend } = useFetch(`${BASE_URL}/dashboard/trend`, {
+  const { data: trend } = useFetch(`${apiBase}/dashboard/trend`, {
     default: () => dummyTrendData,
   });
 
-  const { data: notifications } = useFetch(`${BASE_URL}/dashboard/notifications`, {
+  const { data: notifications } = useFetch(`${apiBase}/dashboard/notifications`, {
     default: () => dummyNotifications,
   });
 
@@ -27,7 +27,8 @@ export const useDashboard = () => {
 };
 
 export const useReports = () => {
-  const { data, status, error } = useFetch<ReportData>(`${BASE_URL}/reports`, {
+  const { apiBase } = useRuntimeConfig().public;
+  const { data, status, error } = useFetch<ReportData>(`${apiBase}/reports`, {
     default: () => dummyReports,
   });
   return { reports: data, status, error };

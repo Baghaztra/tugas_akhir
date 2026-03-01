@@ -1,36 +1,53 @@
 /**
  * Composable untuk API Pesanan/Orders
- * Ganti BASE_URL dan hapus `default:` setelah backend siap.
+ * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
+ * environment variable NUXT_PUBLIC_API_BASE.
  */
-import { dummyOrders } from "~/data/dummy";
 import type { Order } from "~/data/dummy";
 
-const BASE_URL = "http://localhost:8000";
+export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<string> }) => {
+  const { apiBase } = useRuntimeConfig().public;
 
-export const useOrders = () => {
-  const { data, status, error, refresh } = useFetch<Order[]>(`${BASE_URL}/orders`, {
-    default: () => dummyOrders,
+  // Clean up empty params to avoid sending `?search=&status=`
+  const query = computed(() => {
+    const q: Record<string, any> = {};
+    if (queryParams?.search?.value) q.search = queryParams.search.value;
+    if (queryParams?.status?.value) q.status = queryParams.status.value;
+    return q;
   });
+
+  const { data, status, error, refresh } = useFetch<Order[]>(`${apiBase}/orders/`, {
+    query,
+    default: () => [] as Order[],
+  });
+
   return { orders: data, status, error, refresh };
 };
 
-export const useOrderTracking = (orderId: string) => {
-  const found = dummyOrders.find((o) => o.id === orderId || o.receiptNumber === orderId);
-  const { data, status, error } = useFetch<Order>(`${BASE_URL}/orders/tracking/${orderId}`, {
-    default: () => found ?? null,
-  });
+// ─── Tracking publik by receipt number ────────────────────────────────────────
+export const useOrderTracking = (receipt: string) => {
+  const { apiBase } = useRuntimeConfig().public;
+  const { data, status, error } = useFetch<Order>(
+    `${apiBase}/orders/tracking/${encodeURIComponent(receipt)}`,
+    {
+      default: () => null as unknown as Order,
+    },
+  );
   return { order: data, status, error };
 };
 
+// ─── Detail pesanan by ID (admin) ─────────────────────────────────────────────
 export const useOrderDetail = (orderId: string) => {
-  const found = dummyOrders.find((o) => o.id === orderId);
-  const { data, status, error, refresh } = useFetch<Order>(`${BASE_URL}/orders/${orderId}`, {
-    default: () => found ?? null,
+  const { apiBase } = useRuntimeConfig().public;
+  const { data, status, error, refresh } = useFetch<Order>(`${apiBase}/orders/${orderId}`, {
+    default: () => null as unknown as Order,
   });
   return { order: data, status, error, refresh };
 };
 
+// ─── Buat pesanan baru ─────────────────────────────────────────────────────────
 export const useCreateOrder = () => {
+  const { apiBase } = useRuntimeConfig().public;
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -38,12 +55,13 @@ export const useCreateOrder = () => {
     loading.value = true;
     error.value = null;
     try {
-      // TODO: replace with $fetch(`${BASE_URL}/orders`, { method: 'POST', body: payload })
-      await new Promise((r) => setTimeout(r, 800)); // simulate network
-      console.log("[DUMMY] createOrder payload:", payload);
-      return { success: true, id: "ORD-NEW" };
+      const result = await $fetch<Order>(`${apiBase}/orders/`, {
+        method: "POST",
+        body: payload,
+      });
+      return { success: true, data: result };
     } catch (e: any) {
-      error.value = e.message;
+      error.value = e?.data?.detail ?? e.message ?? "Gagal membuat pesanan";
       return { success: false };
     } finally {
       loading.value = false;
@@ -53,19 +71,57 @@ export const useCreateOrder = () => {
   return { createOrder, loading, error };
 };
 
+// ─── Update status pesanan ─────────────────────────────────────────────────────
 export const useUpdateOrderStatus = () => {
+  const { apiBase } = useRuntimeConfig().public;
   const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  const updateStatus = async (orderId: string, status: Order["status"], note?: string) => {
+  const updateStatus = async (
+    orderId: string,
+    status: Order["status"],
+    note?: string,
+    employeeName?: string,
+  ) => {
     loading.value = true;
+    error.value = null;
     try {
-      await new Promise((r) => setTimeout(r, 600));
-      console.log("[DUMMY] updateStatus:", orderId, status, note);
+      await $fetch<Order>(`${apiBase}/orders/${orderId}`, {
+        method: "PUT",
+        body: {
+          status,
+          logNote: note ?? "",
+          logEmployeeName: employeeName ?? "Admin",
+        },
+      });
       return { success: true };
+    } catch (e: any) {
+      error.value = e?.data?.detail ?? e.message ?? "Gagal update status";
+      return { success: false };
     } finally {
       loading.value = false;
     }
   };
 
-  return { updateStatus, loading };
+  return { updateStatus, loading, error };
+};
+
+// ─── Hapus pesanan ─────────────────────────────────────────────────────────────
+export const useDeleteOrder = () => {
+  const { apiBase } = useRuntimeConfig().public;
+  const loading = ref(false);
+
+  const deleteOrder = async (orderId: string) => {
+    loading.value = true;
+    try {
+      await $fetch(`${apiBase}/orders/${orderId}`, { method: "DELETE" });
+      return { success: true };
+    } catch {
+      return { success: false };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  return { deleteOrder, loading };
 };
