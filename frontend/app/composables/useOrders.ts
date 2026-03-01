@@ -3,7 +3,7 @@
  * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
  * environment variable NUXT_PUBLIC_API_BASE.
  */
-import type { Order } from "~/data/dummy";
+import type { Order, OrderTracking } from "~/data/dummy";
 
 export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<string> }) => {
   const { apiBase } = useRuntimeConfig().public;
@@ -27,10 +27,10 @@ export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<str
 // ─── Tracking publik by receipt number ────────────────────────────────────────
 export const useOrderTracking = (receipt: string) => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error } = useFetch<Order>(
+  const { data, status, error } = useFetch<OrderTracking>(
     `${apiBase}/orders/tracking/${encodeURIComponent(receipt)}`,
     {
-      default: () => null as unknown as Order,
+      default: () => null as unknown as OrderTracking,
     },
   );
   return { order: data, status, error };

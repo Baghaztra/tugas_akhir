@@ -57,6 +57,21 @@ export interface OrderLog {
   createdAt: string;
 }
 
+export interface OrderTracking {
+  id: number;
+  receiptNumber: string;
+  customerName: string;
+  garmentType: string;
+  description: string | null;
+  status: "received" | "cutting" | "sewing" | "finishing" | "done";
+  paymentStatus: "paid" | "unpaid" | "partial";
+  totalPrice: number;
+  paidAmount: number;
+  deadline: string;
+  createdAt: string;
+  log: OrderLog[];
+}
+
 export interface Employee {
   id: number;
   name: string;

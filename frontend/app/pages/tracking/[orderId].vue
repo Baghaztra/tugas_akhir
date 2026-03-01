@@ -27,7 +27,8 @@
         <Icon name="heroicons:face-frown" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
         <h2 class="text-xl font-semibold text-gray-700 mb-2">Pesanan Tidak Ditemukan</h2>
         <p class="text-gray-400 mb-6">Nomor resi <strong>{{ route.params.orderId }}</strong> tidak ditemukan.</p>
-        <NuxtLink to="/tracking" class="bg-primary-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-primary-600 transition-colors text-sm">
+        <NuxtLink to="/tracking"
+          class="bg-primary-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-primary-600 transition-colors text-sm">
           Cari Lagi
         </NuxtLink>
       </div>
@@ -73,7 +74,8 @@
             </div>
             <div>
               <p class="text-gray-400 text-xs mb-0.5">Target Selesai</p>
-              <p class="font-semibold text-gray-900" :class="isOverdue ? 'text-red-600' : ''">{{ formatDate(order.deadline) }}</p>
+              <p class="font-semibold text-gray-900" :class="isOverdue ? 'text-red-600' : ''">{{
+                formatDate(order.deadline) }}</p>
             </div>
           </div>
           <hr class="border-gray-100" />
@@ -136,7 +138,7 @@
             <div class="pb-4 flex-1">
               <p class="font-medium text-sm text-gray-900">{{ stepLabels[log.status] ?? log.status }}</p>
               <p class="text-xs text-gray-500 mb-0.5">{{ log.note }}</p>
-              <p class="text-xs text-gray-400">{{ log.employeeName }} · {{ log.createdAt }}</p>
+              <p class="text-xs text-gray-400">{{ log.employeeName }} · {{ formatDateTime(log.createdAt) }}</p>
             </div>
           </div>
         </div>
@@ -189,5 +191,9 @@ const isOverdue = computed(() => {
 })
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+const formatDateTime = (d: string) => {
+  const date = new Date(d)
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+}
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
 </script>
