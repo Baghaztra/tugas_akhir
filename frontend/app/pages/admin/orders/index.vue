@@ -114,6 +114,20 @@
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
           </div>
         </div>
+
+        <!-- Ukuran Pakaian -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 mb-2">Ukuran Pakaian</h4>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div
+              v-for="key in ['Lingkar badan', 'Lingkar pinggang', 'Lingkar panggul', 'Panjang bahu', 'Panjang tgn', 'Panjang baju', 'Panjang rok']"
+              :key="key">
+              <label class="block text-xs text-gray-500 mb-1">{{ key }}</label>
+              <input v-model="form.measurements![key]" type="text"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-400" />
+            </div>
+          </div>
+        </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi / Catatan</label>
           <textarea v-model="form.description" rows="3"
@@ -147,6 +161,15 @@ const saving = ref(false)
 const form = reactive<Partial<Order>>({
   customerName: '', customerPhone: '', garmentType: '',
   deadline: '', totalPrice: 0, paidAmount: 0, description: '',
+  measurements: {
+    'Lingkar badan': '',
+    'Lingkar pinggang': '',
+    'Lingkar panggul': '',
+    'Panjang bahu': '',
+    'Panjang tgn': '',
+    'Panjang baju': '',
+    'Panjang rok': ''
+  }
 })
 
 // Let backend handle the filtering
@@ -176,7 +199,10 @@ const submitNewOrder = async () => {
   saving.value = false
   if (result.success) {
     showAddModal.value = false
-    Object.assign(form, { customerName: '', customerPhone: '', garmentType: '', deadline: '', totalPrice: 0, paidAmount: 0, description: '' })
+    Object.assign(form, {
+      customerName: '', customerPhone: '', garmentType: '', deadline: '', totalPrice: 0, paidAmount: 0, description: '',
+      measurements: { 'Lingkar badan': '', 'Lingkar pinggang': '', 'Lingkar panggul': '', 'Panjang bahu': '', 'Panjang tgn': '', 'Panjang baju': '', 'Panjang rok': '' }
+    })
     await refresh()
   }
 }

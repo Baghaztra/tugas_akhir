@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -46,7 +46,10 @@ class OrderBase(BaseModel):
     customerPhone: Optional[str] = None
     garmentType: str
     description: Optional[str] = None
-    measurements: Optional[Dict[str, Any]] = {}
+    measurements: Optional[Dict[str, Any]] = Field(
+        default={}, 
+        description="Ukuran: Lingkar badan, Lingkar pinggang, Lingkar panggul, Panjang bahu, Panjang tgn, Panjang baju, Panjang rok"
+    )
     deadline: str
     totalPrice: Optional[float] = 0
     paidAmount: Optional[float] = 0
