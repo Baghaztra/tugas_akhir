@@ -1,10 +1,13 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
-from .routers import workers, orders
+from .routers import workers, orders, profile, portfolio
 
 # Import models so Base.metadata picks them up before create_all
-from .models import worker, order  # noqa: F401
+from .models import worker, order, profile as profile_model, portfolio as portfolio_model  # noqa: F401
 
 # Create database tables (will create new tables, won't drop existing ones)
 Base.metadata.create_all(bind=engine)
@@ -20,9 +23,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Static files (uploads) ────────────────────────────────────────────────────
+UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+
 # ─── Routers ──────────────────────────────────────────────────────────────────
 app.include_router(workers.router)
 app.include_router(orders.router)
+app.include_router(profile.router)
+app.include_router(portfolio.router)
 
 
 @app.get("/")
