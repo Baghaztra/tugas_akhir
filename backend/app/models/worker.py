@@ -7,6 +7,8 @@ class WorkerRole(str, enum.Enum):
     POTONG = "Potong"
     JAHIT = "Jahit"
     FINISHING = "Finishing"
+    MAGANG = "Magang"
+    OTHER = "Other"
 
 class WorkerStatus(str, enum.Enum):
     WORKING = "Working"
@@ -19,7 +21,4 @@ class Worker(Base):
     name = Column(String(100), index=True)
     role = Column(Enum(WorkerRole))
     status = Column(Enum(WorkerStatus), default=WorkerStatus.IDLE)
-    wagePerPiece = Column(Float, default=0)          # Upah per potong (satuan)
-    currentTask = Column(String(30), nullable=True)   # Nomor resi pesanan yang sedang dikerjakan
-    weeklyCompleted = Column(Integer, default=0)      # Cache jumlah selesai minggu ini
     date_joined = Column(DateTime(timezone=True), server_default=func.now())

@@ -18,94 +18,87 @@ class PaymentStatus(str, Enum):
     PARTIAL = "partial"
 
 
-# ─── OrderLog ────────────────────────────────────────────────────────────────
-
+# OrderLog
 class OrderLogBase(BaseModel):
     status: str
     note: Optional[str] = ""
     employeeName: Optional[str] = "Admin"
 
-
 class OrderLogCreate(OrderLogBase):
     pass
 
-
 class OrderLog(OrderLogBase):
     id: int
-    order_id: int
+    order_item_id: int
     createdAt: datetime
 
     class Config:
         from_attributes = True
 
 
-# ─── Order ───────────────────────────────────────────────────────────────────
+# OrderItem
+class OrderItemBase(BaseModel):
+    garmentType: str
+    description: Optional[str] = None
+    quantity: Optional[int] = 1
+    measurements: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
+class OrderItemCreate(OrderItemBase):
+    pass
+
+class OrderItem(OrderItemBase):
+    id: int
+    status: OrderStatus
+    logs: List[OrderLog] = []
+
+    class Config:
+        from_attributes = True
+
+
+# Order
 class OrderBase(BaseModel):
     customerName: str
     customerPhone: Optional[str] = None
-    garmentType: str
-    description: Optional[str] = None
-    measurements: Optional[Dict[str, Any]] = Field(
-        default={}, 
-        description="Ukuran: Lingkar badan, Lingkar pinggang, Lingkar panggul, Panjang bahu, Panjang tgn, Panjang baju, Panjang rok"
-    )
     deadline: str
     totalPrice: Optional[float] = 0
     paidAmount: Optional[float] = 0
     paymentStatus: Optional[PaymentStatus] = PaymentStatus.UNPAID
-    assignedTo: Optional[str] = None
     notes: Optional[str] = None
 
-
 class OrderCreate(OrderBase):
-    pass
-
+    items: List[OrderItemCreate]
 
 class OrderUpdate(BaseModel):
     customerName: Optional[str] = None
     customerPhone: Optional[str] = None
-    garmentType: Optional[str] = None
-    description: Optional[str] = None
-    measurements: Optional[Dict[str, Any]] = None
     deadline: Optional[str] = None
-    status: Optional[OrderStatus] = None
     paymentStatus: Optional[PaymentStatus] = None
     totalPrice: Optional[float] = None
     paidAmount: Optional[float] = None
-    assignedTo: Optional[str] = None
     notes: Optional[str] = None
-    # Optional: add a log note when updating status
-    logNote: Optional[str] = None
-    logEmployeeName: Optional[str] = "Admin"
-
 
 class Order(OrderBase):
     id: int
     receiptNumber: str
-    status: OrderStatus
     createdAt: datetime
     updatedAt: Optional[datetime] = None
-    log: List[OrderLog] = []
+    items: List[OrderItem] = []
 
     class Config:
         from_attributes = True
 
-
+# Tracking
 class OrderTracking(BaseModel):
-    """Simplified response for public tracking endpoint."""
     id: int
     receiptNumber: str
     customerName: str
-    garmentType: str
-    description: Optional[str] = None
-    status: OrderStatus
     paymentStatus: PaymentStatus
     totalPrice: float
     paidAmount: float
     deadline: str
     createdAt: datetime
-    log: List[OrderLog] = []
+    items: List[OrderItem] = []
 
     class Config:
         from_attributes = True
