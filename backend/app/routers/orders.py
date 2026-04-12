@@ -5,6 +5,8 @@ from typing import List, Optional
 from ..crud import order as crud_order
 from ..schemas.order import Order, OrderCreate, OrderUpdate, OrderTracking
 from ..database import get_db
+from ..models.order import Order as OrderModel, OrderStatus
+from ..ranking_logic import sort_by_priority, get_urgency_label, STAGE_STATUS_MAP
 
 router = APIRouter(
     prefix="/orders",
@@ -27,6 +29,48 @@ def read_orders(
     db: Session = Depends(get_db),
 ):
     return crud_order.get_orders(db, skip=skip, limit=limit, status=status, search=search)
+
+
+# ─── Priority (Employee Tasks) — HARUS sebelum /{order_id} ───────────────────
+
+@router.get("/priority")
+def get_priority_orders(
+    stage: Optional[str] = Query(
+        default="semua",
+        description="Filter tahap: potong | jahit | finishing | semua",
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Daftar pesanan yang diprioritaskan untuk halaman Employee Tasks.
+    Urutan: berdasarkan deadline ascending (paling dekat = paling atas).
+
+    # TODO: Ganti pengurutan ini dengan output model ML (XGBoost) setelah
+    #        data training tersedia. Lihat ranking_logic.py untuk detail.
+    """
+    stage_key = (stage or "semua").lower()
+    target_status = STAGE_STATUS_MAP.get(stage_key)
+
+    query = db.query(OrderModel).filter(OrderModel.status != OrderStatus.DONE)
+    if target_status:
+        query = query.filter(OrderModel.status == target_status)
+
+    orders = query.all()
+    sorted_orders = sort_by_priority(orders)
+
+    return [
+        {
+            "id": o.id,
+            "receiptNumber": o.receiptNumber,
+            "customerName": o.customerName,
+            "garmentType": o.garmentType,
+            "deadline": o.deadline,
+            "status": o.status.value,
+            "assignedTo": o.assignedTo,
+            "urgency_label": get_urgency_label(o.deadline),
+        }
+        for o in sorted_orders
+    ]
 
 
 @router.get("/tracking/{receipt}", response_model=OrderTracking)

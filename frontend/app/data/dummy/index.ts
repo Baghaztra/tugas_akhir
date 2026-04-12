@@ -75,8 +75,8 @@ export interface OrderTracking {
 export interface Employee {
   id: number;
   name: string;
-  role: "cutting" | "sewing" | "finishing";
-  status: "idle" | "working";
+  role: string;
+  status: string;
   phone: string;
   joinDate: string;
   completedToday: number;
@@ -84,10 +84,37 @@ export interface Employee {
   wagePerPiece: number;
 }
 
+export interface Worker {
+  id: number;
+  name: string;
+  role: string;
+  status: string;
+  wagePerPiece: number;
+  currentTask: string | null;
+  weeklyCompleted: number;
+}
+
+export interface WorkerWage {
+  worker_id: number;
+  worker_name: string;
+  period: string;
+  completed_items: number;
+  rate_per_item: number;
+  total_wage: number;
+}
+
 export interface EmployeePerformance {
   employeeId: number;
   daily: { date: string; count: number }[];
   weekly: { week: string; count: number }[];
+}
+
+export interface WorkerPerformance {
+  worker_id: number;
+  worker_name: string;
+  performance_score: number;
+  total_finished: number;
+  daily: { date: string; count: number }[];
 }
 
 export interface Task {
@@ -105,8 +132,7 @@ export interface Task {
 export interface DashboardSummary {
   activeOrders: number;
   weeklyRevenue: number;
-  activeEmployees: number;
-  overdueOrders: number;
+  todayDone: number;
 }
 
 export interface ReportData {
@@ -402,8 +428,7 @@ export const dummyEmployeePerformance: Record<number, EmployeePerformance> = {
 export const dummyDashboard: DashboardSummary = {
   activeOrders: 12,
   weeklyRevenue: 4750000,
-  activeEmployees: 4,
-  overdueOrders: 2,
+  todayDone: 5,
 };
 
 export const dummyTrendData = {

@@ -1,35 +1,98 @@
 /**
  * Composable untuk Dashboard & Reports
- * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
- * environment variable NUXT_PUBLIC_API_BASE.
+ * Endpoint: /dashboard/summary, /dashboard/trend, /dashboard/notifications
  */
-import { dummyDashboard, dummyTrendData, dummyNotifications, dummyReports } from "~/data/dummy";
-import type { DashboardSummary, ReportData } from "~/data/dummy";
+
+export interface DashboardSummary {
+  activeOrders: number;
+  weeklyRevenue: number;
+  todayDone: number;
+}
+
+export interface TrendData {
+  labels: string[];
+  incoming: number[];
+  completed: number[];
+}
+
+export interface DashboardNotification {
+  id: number;
+  receiptNumber: string;
+  customerName: string;
+  garmentType: string;
+  deadline: string;
+  daysLeft: number;
+  status: string;
+  urgency: "critical" | "high" | "medium";
+}
 
 export const useDashboard = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error, refresh } = useFetch<DashboardSummary>(
+
+  const { data: summary, status, error, refresh } = useFetch<DashboardSummary>(
     `${apiBase}/dashboard/summary`,
     {
-      default: () => dummyDashboard,
+      default: () => ({ activeOrders: 0, weeklyRevenue: 0, todayDone: 0 }),
     },
   );
 
-  const { data: trend } = useFetch(`${apiBase}/dashboard/trend`, {
-    default: () => dummyTrendData,
+  const { data: trend } = useFetch<TrendData>(`${apiBase}/dashboard/trend`, {
+    default: () => ({ labels: [], incoming: [], completed: [] }),
   });
 
-  const { data: notifications } = useFetch(`${apiBase}/dashboard/notifications`, {
-    default: () => dummyNotifications,
-  });
+  const { data: notifications } = useFetch<DashboardNotification[]>(
+    `${apiBase}/dashboard/notifications`,
+    {
+      default: () => [] as DashboardNotification[],
+    },
+  );
 
-  return { summary: data, trend, notifications, status, error, refresh };
+  return { summary, trend, notifications, status, error, refresh };
 };
+
+// ─── Reports composable ────────────────────────────────────────────────────────
+
+export interface VolumeReport {
+  labels: string[];
+  data: number[];
+}
+
+export interface ProductTrend {
+  type: string;
+  count: number;
+}
+
+export interface ProductivityReport {
+  worker: string;
+  role: string;
+  total_finished: number;
+  avg_time_per_item: number | null;
+}
 
 export const useReports = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error } = useFetch<ReportData>(`${apiBase}/reports`, {
-    default: () => dummyReports,
-  });
-  return { reports: data, status, error };
+
+  const { data: volume, refresh: refreshVolume } = useFetch<VolumeReport>(
+    `${apiBase}/reports/volume`,
+    {
+      query: { period: "monthly" },
+      default: () => ({ labels: [], data: [] }),
+    },
+  );
+
+  const { data: productTrends } = useFetch<ProductTrend[]>(
+    `${apiBase}/reports/product-trends`,
+    {
+      default: () => [] as ProductTrend[],
+    },
+  );
+
+  const { data: productivity } = useFetch<ProductivityReport[]>(
+    `${apiBase}/reports/productivity`,
+    {
+      default: () => [] as ProductivityReport[],
+    },
+  );
+
+  return { volume, productTrends, productivity, refreshVolume };
 };

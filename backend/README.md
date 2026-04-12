@@ -1,82 +1,186 @@
 # Backend Production Management System
 
-Backend untuk sistem manajemen produksi, dibangun menggunakan FastAPI.
+Backend untuk sistem manajemen produksi, dibangun menggunakan FastAPI + SQLAlchemy + Alembic.
 
 ## Struktur Project
 
 ```
 backend/
 ├── app/
-│   ├── crud/           # Operasi database (Create, Read, Update, Delete)
-│   ├── models/         # SQLAlchemy models (definisi tabel database)
-│   ├── routers/        # API Endpoints (mengelompokkan route)
-│   ├── schemas/        # Pydantic models (validasi request/response)
-│   ├── database.py     # Konfigurasi koneksi database
-│   └── main.py         # Entry point aplikasi
-├── requirements.txt    # Daftar dependency packages
-└── .gitignore          # File yang diabaikan oleh git
+│   ├── crud/
+│   ├── models/
+│   ├── routers/
+│   ├── schemas/
+│   ├── database.py
+│   └── main.py
+├── migrations/        # Alembic migration files
+├── seeds/             # Database seeder
+├── uploads/           # File upload
+├── alembic.ini        # Alembic configuration
+├── manage.py          # CLI management
+└── requirements.txt
 ```
 
 ## Prasyarat
 
-- Python 3.8 atau lebih baru
-- MySQL Server (Pastikan service MySQL sudah berjalan)
+- Python 3.8+
+- MySQL Server
+- Virtualenv (disarankan)
 
-## Cara Setup
+---
 
-1.  **Buat Virtual Environment**
+## Setup Project
 
-    Disarankan untuk menggunakan virtual environment agar dependencies project terisolasi.
+### 1. Clone repository
 
-    ```bash
-    # Windows
-    python -m venv .venv
+```
+git clone <repository-url>
+cd backend
+```
 
-    # Linux/MacOS
-    python3 -m venv .venv
-    ```
+### 2. Buat Virtual Environment
 
-2.  **Aktifkan Virtual Environment**
+Windows:
 
-    ```bash
-    # Windows
-    .\.venv\Scripts\activate
+```
+python -m venv .venv
+```
 
-    # Linux/MacOS
-    source .venv/bin/activate
-    ```
+Linux / MacOS:
 
-3.  **Install Dependencies**
+```
+python3 -m venv .venv
+```
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+### 3. Aktifkan Virtual Environment
 
-4.  **Konfigurasi Database**
+Windows:
 
-    Buka file `app/database.py` dan sesuaikan `SQLALCHEMY_DATABASE_URL` dengan kredensial database MySQL Anda.
+```
+.venv\Scripts\activate
+```
 
-    ```python
-    # Format: mysql+mysqlconnector://user:password@host/db_name
-    SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://root:password@localhost/production_db"
-    ```
+Linux / MacOS:
 
-    _Catatan: Disarankan untuk membuat database kosong terlebih dahulu di MySQL (misal: `production_db`)._
+```
+source .venv/bin/activate
+```
 
-5.  **Jalankan Server**
+### 4. Install Dependencies
 
-    ```bash
-    uvicorn app.main:app --reload
-    ```
+```
+pip install -r requirements.txt
+```
 
-    Server akan berjalan di `http://127.0.0.1:8000`.
+---
+
+## Konfigurasi Database
+
+Buat file `.env` di root project:
+
+```
+SQLALCHEMY_DATABASE_URL=mysql+mysqlconnector://root:@localhost/tugas_akhir
+```
+
+Pastikan database sudah dibuat di MySQL:
+
+```
+CREATE DATABASE tugas_akhir;
+```
+
+---
+
+## Migration Database (Alembic)
+
+Apply migration:
+
+```
+alembic upgrade head
+```
+
+Buat migration baru:
+
+```
+alembic revision --autogenerate -m "message"
+```
+
+Rollback migration:
+
+```
+alembic downgrade -1
+```
+
+---
+
+## Seeder Database
+
+Menjalankan seeder:
+
+```
+python manage.py seed
+```
+
+Reset database + seed ulang:
+
+```
+python manage.py reset
+```
+
+---
+
+## Menjalankan Server
+
+```
+uvicorn app.main:app --reload
+```
+
+Server berjalan di:
+
+```
+http://127.0.0.1:8000
+```
+
+---
 
 ## Dokumentasi API
 
-FastAPI menyediakan dokumentasi interaktif secara otomatis. Setelah server berjalan, buka:
+Swagger UI:
 
-- **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+```
+http://127.0.0.1:8000/docs
+```
+
+ReDoc:
+
+```
+http://127.0.0.1:8000/redoc
+```
+
+---
+
+## Alur Development
+
+1. Ubah / tambah model
+
+2. Generate migration
+
+   ```
+   alembic revision --autogenerate -m "update"
+   ```
+
+3. Apply migration
+
+   ```
+   alembic upgrade head
+   ```
+
+4. Jalankan seeder
+
+   ```
+   python manage.py seed
+   ```
+
+---
 
 ## Pengembangan Selanjutnya (To-Do)
 

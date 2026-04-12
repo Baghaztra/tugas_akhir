@@ -1,16 +1,16 @@
 <template>
   <div>
-    <!-- Current Employee Picker (dummy — di produksi dari auth session) -->
+    <!-- Current Employee Picker (info dari backend /workers/{id}) -->
     <div class="mb-4 flex items-center gap-3 bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
       <div class="w-9 h-9 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold">
-        {{ currentEmployee?.name.charAt(0) }}
+        {{ employee?.name?.charAt(0) ?? 'E' }}
       </div>
       <div class="flex-1">
-        <p class="text-sm font-semibold text-gray-900">{{ currentEmployee?.name }}</p>
-        <p class="text-xs text-gray-400">{{ roleLabel[currentEmployee?.role ?? ''] }}</p>
+        <p class="text-sm font-semibold text-gray-900">{{ employee?.name }}</p>
+        <p class="text-xs text-gray-400">{{ roleLabel[employee?.role ?? ''] }}</p>
       </div>
-      <ui-app-badge :variant="currentEmployee?.status === 'working' ? 'success' : 'neutral'" dot>
-        {{ currentEmployee?.status === 'working' ? 'Bekerja' : 'Idle' }}
+      <ui-app-badge :variant="employee?.status === 'Working' ? 'success' : 'neutral'" dot>
+        {{ employee?.status === 'Working' ? 'Bekerja' : 'Idle' }}
       </ui-app-badge>
     </div>
 
@@ -57,28 +57,28 @@
                   <span v-if="i === 0" class="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
                     <Icon name="heroicons:arrow-up" class="w-3 h-3" />Prioritas Tinggi
                   </span>
-                  <span class="text-xs text-gray-400">#{{ task.priority }}</span>
+                  <span class="text-xs text-gray-400 font-mono">{{ task.receiptNumber }}</span>
                 </div>
                 <p class="font-semibold text-gray-900">{{ task.garmentType }}</p>
-                <p class="text-sm text-gray-500">{{ task.orderName }}</p>
+                <p class="text-sm text-gray-500">{{ task.customerName }}</p>
               </div>
               <div class="text-right">
                 <p class="text-xs text-gray-400">Deadline</p>
                 <p class="text-xs font-semibold text-gray-700">{{ formatDate(task.deadline) }}</p>
               </div>
             </div>
-            <div class="flex items-center justify-between text-xs text-gray-400 mb-3">
+            <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
               <span class="flex items-center gap-1">
-                <Icon name="heroicons:clock" class="w-3.5 h-3.5" />
-                ~{{ task.estimatedMinutes }} menit
+                <Icon name="heroicons:calendar" class="w-3.5 h-3.5" />
+                Deadline: {{ formatDate(task.deadline) }}
               </span>
-              <ui-app-badge variant="info">{{ stepLabel[task.step] ?? task.step }}</ui-app-badge>
+              <ui-app-badge :variant="urgencyVariant(task.urgency_label)">{{ urgencyText(task.urgency_label) }}</ui-app-badge>
             </div>
             <div class="flex gap-2">
-              <ui-app-button variant="outline" size="sm" class="flex-1" :loading="actionLoading && activeTaskId === task.id" @click="handleTake(task.id)">
+              <ui-app-button variant="outline" size="sm" class="flex-1" :loading="actionLoading && activeTaskId === task.id" @click="handleTake(task.id, task.status)">
                 Ambil Tugas
               </ui-app-button>
-              <ui-app-button size="sm" class="flex-1" icon="heroicons:check" :loading="actionLoading && activeTaskId === task.id" @click="handleComplete(task.id)">
+              <ui-app-button size="sm" class="flex-1" icon="heroicons:check" :loading="actionLoading && activeTaskId === task.id" @click="handleComplete(task.id, task.status)">
                 Selesai
               </ui-app-button>
             </div>
@@ -102,7 +102,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-medium text-gray-700">{{ task.garmentType }}</p>
-                <p class="text-sm text-gray-400">{{ task.orderName }}</p>
+                <p class="text-sm text-gray-400">{{ task.customerName }}</p>
               </div>
               <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
                 <Icon name="heroicons:check" class="w-5 h-5 text-emerald-600" />
@@ -124,37 +124,51 @@
 </template>
 
 <script setup lang="ts">
-import { dummyEmployees } from '~/data/dummy'
-
 definePageMeta({ layout: 'employee' })
 useSeoMeta({ title: 'Papan Tugas — Penjahit Yan' })
 
-// Simulasi auth: always employee id 1 (di produksi dari session)
-const currentEmployeeId = 1
-const currentEmployee = computed(() => dummyEmployees.find(e => e.id === currentEmployeeId))
+// Simulasi auth: always employee id 1 (di produksi ganti dengan session/auth store)
+const currentEmployeeId = ref(1)
+const { employee } = useEmployeeDetail(currentEmployeeId.value)
 
-const { tasks, completed, status } = useEmployeeTasks(currentEmployeeId)
+const stageFilter = ref('semua')
+const { tasks, status, refresh } = useEmployeeTasks(stageFilter)
 const { takeTask, completeTask, loading: actionLoading } = useTaskActions()
+
+// Completed tasks hari ini: pesanan yang statusnya 'done' dan di-assign ke worker ini
+const completed = computed(() =>
+  tasks.value?.filter(t => t.status === 'done') ?? []
+)
 
 const activeTaskId = ref<number | null>(null)
 const completionToast = ref(false)
 
-const roleLabel: Record<string, string> = { cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing' }
-const stepLabel: Record<string, string> = { cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing', received: 'Terima', done: 'Selesai' }
+const roleLabel: Record<string, string> = {
+  Potong: 'Potong', Jahit: 'Jahit', Finishing: 'Finishing',
+  cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing',
+}
+
+const urgencyVariant = (label: string) =>
+  ({ red: 'danger', yellow: 'warning', green: 'success' }[label] ?? 'neutral') as any
+
+const urgencyText = (label: string) =>
+  ({ red: 'Mendesak', yellow: 'Hati-hati', green: 'Aman' }[label] ?? label)
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
 
-const handleTake = async (id: number) => {
+const handleTake = async (id: number, status: string) => {
   activeTaskId.value = id
-  await takeTask(id)
+  await takeTask(id, employee.value?.name ?? 'Unknown')
   activeTaskId.value = null
+  await refresh()
 }
 
-const handleComplete = async (id: number) => {
+const handleComplete = async (id: number, status: string) => {
   activeTaskId.value = id
-  await completeTask(id)
+  await completeTask(id, status)
   activeTaskId.value = null
   completionToast.value = true
+  await refresh()
   setTimeout(() => (completionToast.value = false), 3000)
 }
 </script>

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
-from .routers import workers, orders, profile, portfolio
+from .routers import workers, orders, profile, portfolio, dashboard, analytics
 
 # Import models so Base.metadata picks them up before create_all
 from .models import worker, order, profile as profile_model, portfolio as portfolio_model  # noqa: F401
@@ -33,6 +33,8 @@ app.include_router(workers.router)
 app.include_router(orders.router)
 app.include_router(profile.router)
 app.include_router(portfolio.router)
+app.include_router(dashboard.router)
+app.include_router(analytics.router)
 
 
 @app.get("/")
