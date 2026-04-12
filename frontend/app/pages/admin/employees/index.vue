@@ -10,9 +10,10 @@
       <select v-model="filterRole"
         class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white">
         <option value="">Semua Role</option>
-        <option value="cutting">Potong</option>
-        <option value="sewing">Jahit</option>
-        <option value="finishing">Finishing</option>
+        <option value="Potong">Potong</option>
+        <option value="Jahit">Jahit</option>
+        <option value="Finishing">Finishing</option>
+        <option value="Magang">Magang</option>
       </select>
     </div>
 
@@ -50,25 +51,18 @@
             </div>
             <div>
               <p class="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">{{ emp.name }}</p>
-              <p class="text-xs text-gray-500">{{ roleLabel[emp.role] }}</p>
+              <p class="text-xs text-gray-500">{{ emp.role }}</p>
             </div>
           </div>
-          <ui-app-badge :variant="emp.status === 'working' ? 'success' : 'neutral'" dot>
-            {{ emp.status === 'working' ? 'Bekerja' : 'Idle' }}
+          <ui-app-badge :variant="emp.status === 'Working' ? 'success' : 'neutral'" dot>
+            {{ emp.status === 'Working' ? 'Bekerja' : 'Idle' }}
           </ui-app-badge>
         </div>
-        <div class="grid grid-cols-2 gap-3 text-sm border-t border-gray-50 pt-4">
-          <div>
-            <p class="text-xs text-gray-400 mb-0.5">Selesai Hari Ini</p>
-            <p class="font-bold text-gray-900">{{ emp.completedToday }} <span class="font-normal text-gray-400">pc</span></p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400 mb-0.5">Total Selesai</p>
-            <p class="font-bold text-gray-900">{{ emp.completedTotal }} <span class="font-normal text-gray-400">pc</span></p>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center justify-between text-xs text-gray-400">
-          <span>Upah: Rp {{ emp.wagePerPiece.toLocaleString('id-ID') }}/pc</span>
+        <div class="flex items-center justify-between text-xs text-gray-400 border-t border-gray-50 pt-4">
+          <span class="flex items-center gap-1">
+            <Icon name="heroicons:calendar-days" class="w-3.5 h-3.5" />
+            Bergabung {{ formatDate(emp.date_joined) }}
+          </span>
           <Icon name="heroicons:chevron-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </NuxtLink>
@@ -84,9 +78,8 @@ const { employees, status } = useEmployees()
 const search = ref('')
 const filterRole = ref('')
 
-const roleLabel: Record<string, string> = {
-  cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing'
-}
+const formatDate = (d: string) =>
+  new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 
 const filteredEmployees = computed(() => {
   return (employees.value ?? []).filter(e => {

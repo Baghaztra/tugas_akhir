@@ -2,7 +2,7 @@
  * Composable untuk API Karyawan/Workers
  * Endpoint: /workers (sesuai backend prefix)
  */
-import type { Worker, WorkerWage, WorkerPerformance } from "~/data/dummy";
+import type { Worker, WorkerWage, WorkerPerformance } from "~/types/worker";
 
 export const useEmployees = () => {
   const { apiBase } = useRuntimeConfig().public;
@@ -36,7 +36,7 @@ export const useEmployeeWages = (id: number) => {
   const { data, status, error } = useFetch<WorkerWage>(
     `${apiBase}/workers/${id}/wages`,
     {
-      default: () => ({ worker_id: id, worker_name: "", period: "", completed_items: 0, rate_per_item: 0, total_wage: 0 }),
+      default: () => ({ worker_id: id, worker_name: "", period: "", total_finished: 0, wage: 0 }),
     },
   );
   return { wages: data, status, error };
