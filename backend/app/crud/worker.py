@@ -45,47 +45,42 @@ def delete_worker(db: Session, worker_id: int):
     return db_worker
 
 
-# ─── Wages ───────────────────────────────────────────────────────────────────
-
+# TODO: Sesuaikan berdasarkan jenis pesanan yang sempat dikerjakan
 def get_worker_wages(db: Session, worker_id: int, start_date: date, end_date: date):
-    """
-    Hitung upah worker berdasarkan jumlah log 'done' pada OrderLog
-    yang di-assign ke worker tersebut dalam rentang tanggal.
-    """
+
     worker = get_worker(db, worker_id)
     if not worker:
         return None
 
-    # Hitung jumlah item selesai: order status DONE yg createdAt dalam range
+    if start_date and end_date:
+        start = start_date
+        end = end_date
+    else:
+        end = date.today()
+        start = end - timedelta(days=end.weekday())
+    
     completed = (
         db.query(func.count(OrderLog.id))
         .join(Order, OrderLog.order_id == Order.id)
         .filter(
             OrderLog.employeeName == worker.name,
             OrderLog.status == "done",
-            cast(OrderLog.createdAt, Date) >= start_date,
-            cast(OrderLog.createdAt, Date) <= end_date,
+            cast(OrderLog.createdAt, Date) >= start,
+            cast(OrderLog.createdAt, Date) <= end,
         )
         .scalar()
     ) or 0
 
-    period_str = f"{start_date.isoformat()} - {end_date.isoformat()}"
+    period_str = f"{start.isoformat()} - {end.isoformat()}"
     return {
         "worker_id": worker_id,
         "worker_name": worker.name,
         "period": period_str,
         "completed_items": completed,
-        "rate_per_item": worker.wagePerPiece,
-        "total_wage": completed * worker.wagePerPiece,
+        # "total_wage": completed * worker.wagePerPiece,
     }
 
-
-# ─── Performance ─────────────────────────────────────────────────────────────
-
 def get_worker_performance(db: Session, worker_id: int, days: int = 7):
-    """
-    Ambil data produktivitas harian worker berdasarkan OrderLog.
-    """
     worker = get_worker(db, worker_id)
     if not worker:
         return None

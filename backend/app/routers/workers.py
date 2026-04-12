@@ -48,8 +48,7 @@ def delete_worker(worker_id: int, db: Session = Depends(get_db)):
     return db_worker
 
 
-# ─── Wages ───────────────────────────────────────────────────────────────────
-
+# Wages
 @router.get("/{worker_id}/wages", response_model=schema_worker.WorkerWage)
 def get_wages(
     worker_id: int,
@@ -57,7 +56,6 @@ def get_wages(
     end_date: date = Query(default=None, description="Akhir periode (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
 ):
-    """Hitung total upah worker dalam rentang tanggal (default: 7 hari terakhir)."""
     if end_date is None:
         end_date = date.today()
     if start_date is None:
@@ -69,15 +67,13 @@ def get_wages(
     return result
 
 
-# ─── Performance ─────────────────────────────────────────────────────────────
-
+# Performance
 @router.get("/{worker_id}/performance", response_model=schema_worker.WorkerPerformance)
 def get_performance(
     worker_id: int,
     days: int = Query(default=7, ge=1, le=90, description="Jumlah hari histori"),
     db: Session = Depends(get_db),
 ):
-    """Ambil data produktivitas harian worker dalam N hari terakhir."""
     result = crud_worker.get_worker_performance(db, worker_id, days=days)
     if result is None:
         raise HTTPException(status_code=404, detail="Worker not found")

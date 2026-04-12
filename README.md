@@ -71,11 +71,9 @@ project/
 │   │   ├── database.py     # Koneksi DB MySQL
 │   │   ├── ranking_logic.py # Integrasi Model XGBoost
 │   │   └── routers/        # API Routes
-│   │       ├── orders.py
-│   │       ├── workers.py
-│   │       ├── analytics.py # Endpoint laporan
-│   │       └── profile.py   # Endpoint profil usaha
 │   ├── models/             # File .pkl Model ML
+│   ├── migrations/         # File migrasi database
+│   ├── seeds/
 │   ├── requirements.txt
 │   └── .env
 ├── frontend/               # Aplikasi Nuxt 4

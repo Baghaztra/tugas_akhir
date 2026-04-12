@@ -38,6 +38,14 @@ class Worker(WorkerBase):
     class Config:
         from_attributes = True
 
+# Wages
+class WorkerWage(BaseModel):
+    worker_id: int
+    worker_name: str
+    period: str
+    total_finished: int
+    wage: float
+
 
 # Performance
 class DailyPerf(BaseModel):

@@ -14,7 +14,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Production Management System API", version="1.0.0")
 
-# ─── CORS ──────────────────────────────────────────────────────────────────────
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -23,12 +23,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Static files (uploads) ────────────────────────────────────────────────────
+# Static files (uploads)
 UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
-# ─── Routers ──────────────────────────────────────────────────────────────────
+# Routers
 app.include_router(workers.router)
 app.include_router(orders.router)
 app.include_router(profile.router)
