@@ -4,12 +4,7 @@
     <template v-if="status === 'pending'">
       <div class="animate-pulse space-y-6">
         <div class="h-8 bg-gray-200 rounded w-1/4" />
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="h-48 bg-gray-100 rounded-2xl" />
-          <div class="space-y-3">
-            <div v-for="i in 5" :key="i" class="h-10 bg-gray-100 rounded-xl" />
-          </div>
-        </div>
+        <div class="h-48 bg-gray-100 rounded-2xl" />
       </div>
     </template>
 
@@ -17,83 +12,87 @@
     <div v-else-if="!order" class="text-center py-20">
       <Icon name="heroicons:face-frown" class="w-14 h-14 text-gray-300 mx-auto mb-3" />
       <p class="text-gray-500">Pesanan tidak ditemukan</p>
-      <NuxtLink to="/admin/orders" class="mt-4 inline-block text-primary-500 font-medium hover:underline">← Kembali ke daftar pesanan</NuxtLink>
+      <NuxtLink to="/admin/orders" class="mt-4 inline-block text-primary-500 font-medium hover:underline">← Kembali</NuxtLink>
     </div>
 
     <template v-else>
       <!-- Header -->
       <div class="flex items-center gap-4 mb-6">
-        <NuxtLink to="/admin/orders" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><Icon name="heroicons:arrow-left" class="w-5 h-5" /></NuxtLink>
+        <NuxtLink to="/admin/orders" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
+          <Icon name="heroicons:arrow-left" class="w-5 h-5" />
+        </NuxtLink>
         <div class="flex-1">
           <h2 class="text-xl font-bold text-gray-900">{{ order.receiptNumber }}</h2>
           <p class="text-sm text-gray-400">{{ order.customerName }}</p>
         </div>
-        <div class="flex items-center gap-2">
-          <ui-app-badge :variant="statusBadge(order.status).variant" dot>{{ statusBadge(order.status).label }}</ui-app-badge>
-          <ui-app-badge :variant="paymentBadge(order.paymentStatus).variant">{{ paymentBadge(order.paymentStatus).label }}</ui-app-badge>
-        </div>
+        <ui-app-badge :variant="paymentBadge(order.paymentStatus).variant">
+          {{ paymentBadge(order.paymentStatus).label }}
+        </ui-app-badge>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Detail Card -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-4">
+
           <!-- Info Pesanan -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Icon name="heroicons:information-circle" class="w-5 h-5 text-primary-500" />
-              Informasi Pesanan
-            </h3>
+            <h3 class="font-semibold text-gray-900 mb-4">Informasi Pesanan</h3>
             <div class="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
               <div><p class="text-gray-400 text-xs mb-0.5">Pelanggan</p><p class="font-medium">{{ order.customerName }}</p></div>
-              <div><p class="text-gray-400 text-xs mb-0.5">Telepon</p><p class="font-medium">{{ order.customerPhone }}</p></div>
-              <div><p class="text-gray-400 text-xs mb-0.5">Jenis Pakaian</p><p class="font-medium">{{ order.garmentType }}</p></div>
-              <div><p class="text-gray-400 text-xs mb-0.5">Karyawan</p><p class="font-medium">{{ order.assignedTo ?? '-' }}</p></div>
+              <div><p class="text-gray-400 text-xs mb-0.5">Telepon</p><p class="font-medium">{{ order.customerPhone || '-' }}</p></div>
               <div><p class="text-gray-400 text-xs mb-0.5">Masuk</p><p class="font-medium">{{ formatDate(order.createdAt) }}</p></div>
-              <div><p class="text-gray-400 text-xs mb-0.5">Deadline</p><p class="font-medium" :class="isOverdue ? 'text-red-600' : ''">{{ formatDate(order.deadline) }}</p></div>
-              <div class="col-span-2"><p class="text-gray-400 text-xs mb-0.5">Deskripsi</p><p class="font-medium">{{ order.description }}</p></div>
-            </div>
-          </div>
-
-          <!-- Ukuran -->
-          <div v-if="Object.keys(order.measurements).length" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Icon name="heroicons:arrows-right-left" class="w-5 h-5 text-primary-500" />
-              Ukuran
-            </h3>
-            <div class="flex flex-wrap gap-3">
-              <div v-for="(val, key) in order.measurements" :key="key" class="bg-gray-50 rounded-xl px-4 py-2 text-sm">
-                <p class="text-xs text-gray-400">{{ key }}</p>
-                <p class="font-semibold text-gray-900">{{ val }}</p>
+              <div>
+                <p class="text-gray-400 text-xs mb-0.5">Deadline</p>
+                <p class="font-medium" :class="isOverdue ? 'text-red-600' : ''">{{ formatDate(order.deadline) }}</p>
+              </div>
+              <div v-if="order.notes" class="col-span-2">
+                <p class="text-gray-400 text-xs mb-0.5">Catatan</p>
+                <p class="font-medium">{{ order.notes }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Update Status -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Icon name="heroicons:arrow-path" class="w-5 h-5 text-primary-500" />
-              Update Status
-            </h3>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <button v-for="step in orderSteps" :key="step.key"
-                :class="[
-                  'px-4 py-2 rounded-xl text-sm font-medium border transition-all',
-                  order.status === step.key
-                    ? 'bg-primary-500 text-white border-primary-500'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600'
-                ]"
-                @click="handleStatusUpdate(step.key)">
-                {{ step.label }}
-              </button>
+          <!-- Items -->
+          <div v-for="item in order.items" :key="item.id" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-gray-900">{{ item.garmentType }} <span class="text-gray-400 font-normal text-sm">x{{ item.quantity }}</span></p>
+                <p v-if="item.description" class="text-sm text-gray-500 mt-0.5">{{ item.description }}</p>
+              </div>
+              <ui-app-badge :variant="statusBadge(item.status).variant" dot>
+                {{ statusBadge(item.status).label }}
+              </ui-app-badge>
             </div>
-            <textarea v-model="statusNote" rows="2" placeholder="Catatan (opsional)..."
-              class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none" />
+
+            <!-- Ukuran -->
+            <div v-if="Object.keys(item.measurements).length">
+              <p class="text-xs text-gray-400 mb-2">Ukuran</p>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="(val, key) in item.measurements" :key="key" class="bg-gray-50 rounded-xl px-3 py-2 text-sm">
+                  <p class="text-xs text-gray-400">{{ key }}</p>
+                  <p class="font-semibold text-gray-900">{{ val }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Log -->
+            <div v-if="item.logs?.length">
+              <p class="text-xs text-gray-400 mb-2">Riwayat</p>
+              <div class="space-y-2">
+                <div v-for="log in item.logs" :key="log.id" class="flex gap-3 text-sm">
+                  <div class="w-2 h-2 rounded-full bg-primary-400 mt-1.5 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium text-gray-800">{{ stepLabels[log.status] ?? log.status }}</p>
+                    <p class="text-xs text-gray-500">{{ log.note }}</p>
+                    <p class="text-xs text-gray-400">{{ log.employeeName }} · {{ formatDate(log.createdAt) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Sidebar: Payment & Log -->
-        <div class="space-y-6">
-          <!-- Payment -->
+        <!-- Sidebar: Payment -->
+        <div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h3 class="font-semibold text-gray-900 mb-4">Pembayaran</h3>
             <div class="space-y-3">
@@ -113,24 +112,12 @@
                 </span>
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
-                <div class="bg-emerald-500 h-2 rounded-full transition-all" :style="{ width: `${Math.min(100, (order.paidAmount / order.totalPrice) * 100)}%` }" />
+                <div class="bg-emerald-500 h-2 rounded-full transition-all"
+                  :style="{ width: `${Math.min(100, (order.paidAmount / order.totalPrice) * 100)}%` }" />
               </div>
-              <p class="text-xs text-gray-400 text-right">{{ Math.round((order.paidAmount / order.totalPrice) * 100) }}% terbayar</p>
-            </div>
-          </div>
-
-          <!-- Log -->
-          <div v-if="order.log?.length" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 class="font-semibold text-gray-900 mb-4">Riwayat</h3>
-            <div class="space-y-3">
-              <div v-for="log in order.log" :key="log.id" class="flex gap-3 text-sm">
-                <div class="w-2 h-2 rounded-full bg-primary-400 mt-1.5 flex-shrink-0" />
-                <div>
-                  <p class="font-medium text-gray-800">{{ stepLabels[log.status] ?? log.status }}</p>
-                  <p class="text-xs text-gray-500">{{ log.note }}</p>
-                  <p class="text-xs text-gray-400">{{ log.employeeName }} · {{ log.createdAt }}</p>
-                </div>
-              </div>
+              <p class="text-xs text-gray-400 text-right">
+                {{ Math.round((order.paidAmount / order.totalPrice) * 100) }}% terbayar
+              </p>
             </div>
           </div>
         </div>
@@ -144,20 +131,9 @@ definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const orderId = route.params.id as string
-const { order, status, refresh } = useOrderDetail(orderId)
-const { updateStatus } = useUpdateOrderStatus()
+const { order, status } = useOrderDetail(orderId)
 
 useSeoMeta({ title: `Detail Pesanan ${orderId} — Penjahit Yan` })
-
-const statusNote = ref('')
-
-const orderSteps = [
-  { key: 'received', label: 'Diterima' },
-  { key: 'cutting', label: 'Potong' },
-  { key: 'sewing', label: 'Jahit' },
-  { key: 'finishing', label: 'Finishing' },
-  { key: 'done', label: 'Selesai' },
-]
 
 const stepLabels: Record<string, string> = {
   received: 'Diterima', cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing', done: 'Selesai',
@@ -177,15 +153,11 @@ const paymentBadge = (p: string) => ({
   partial: { variant: 'warning' as const, label: 'DP' },
 }[p] ?? { variant: 'neutral' as const, label: p })
 
-const isOverdue = computed(() => order.value && new Date(order.value.deadline) < new Date() && order.value.status !== 'done')
-
-const handleStatusUpdate = async (newStatus: string) => {
-  const result = await updateStatus(orderId, newStatus as any, statusNote.value)
-  if (result.success) {
-    statusNote.value = ''
-    await refresh()
-  }
-}
+const isOverdue = computed(() =>
+  order.value &&
+  new Date(order.value.deadline) < new Date() &&
+  order.value.items?.every((i: any) => i.status !== 'done')
+)
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)

@@ -4,10 +4,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxt/icon", "@nuxtjs/tailwindcss"],
 
-  alias: {
-    "@types": "./types",
-  },
-
   runtimeConfig: {
     public: {
       // Override with env var: NUXT_PUBLIC_API_BASE=http://your-api-domain.com

@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex">
-    <!-- Sidebar -->
+    <!-- Sidebar (desktop only) -->
     <aside :class="[
-      'fixed inset-y-0 left-0 z-50 flex flex-col bg-primary-900 transition-all duration-300 ease-in-out',
+      'fixed inset-y-0 left-0 z-50 flex-col bg-primary-900 transition-all duration-300 ease-in-out hidden md:flex',
       sidebarOpen ? 'w-64' : 'w-16'
     ]">
       <!-- Logo -->
@@ -48,7 +48,10 @@
     </aside>
 
     <!-- Main area -->
-    <div :class="['flex-1 flex flex-col transition-all duration-300', sidebarOpen ? 'ml-64' : 'ml-16']">
+    <div :class="[
+      'flex-1 flex flex-col transition-all duration-300 mb-16 md:mb-0 min-w-0',
+      sidebarOpen ? 'md:ml-64' : 'md:ml-16'
+    ]">
       <!-- Top bar -->
       <header class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shadow-sm">
         <div>
@@ -64,10 +67,46 @@
       </header>
 
       <!-- Content -->
-      <main class="flex-1 p-6 overflow-auto">
+      <main class="flex-1 p-6 overflow-x-hidden overflow-y-auto">
         <slot />
       </main>
     </div>
+
+    <!-- Bottom Navigation Bar (mobile only) -->
+    <nav class="fixed bottom-0 inset-x-0 z-50 bg-primary-900 border-t border-primary-700/50 flex md:hidden">
+      <NuxtLink
+        v-for="item in bottomNavItems"
+        :key="item.to"
+        :to="item.to"
+        :class="[
+          'flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium transition-colors',
+          $route.path === item.to || $route.path.startsWith(item.to + '/')
+            ? 'text-white'
+            : 'text-primary-400'
+        ]"
+      >
+        <div :class="[
+          'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
+          $route.path === item.to || $route.path.startsWith(item.to + '/')
+            ? 'bg-primary-600'
+            : ''
+        ]">
+          <Icon :name="item.icon" class="w-5 h-5" />
+        </div>
+        <span>{{ item.label }}</span>
+      </NuxtLink>
+
+      <!-- Halaman Publik -->
+      <NuxtLink
+        to="/"
+        class="flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium text-primary-400 transition-colors"
+      >
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+          <Icon name="heroicons:arrow-left" class="w-5 h-5" />
+        </div>
+        <span>Publik</span>
+      </NuxtLink>
+    </nav>
   </div>
 </template>
 
@@ -97,6 +136,9 @@ const navSections = [
     ],
   },
 ]
+
+// Flatten nav items for bottom bar (semua item dari semua section)
+const bottomNavItems = navSections.flatMap(s => s.items)
 
 const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/dashboard': { title: 'Dashboard', desc: 'Ringkasan aktivitas bisnis' },

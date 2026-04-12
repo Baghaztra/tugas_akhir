@@ -8,16 +8,16 @@
         <input v-model="search" type="text" placeholder="Cari nama atau nomor resi..."
           class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white" />
       </div>
-      <select v-model="filterStatus"
+      <select v-model="filterPayment"
         class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white">
-        <option value="">Semua Status</option>
-        <option value="received">Diterima</option>
-        <option value="cutting">Potong</option>
-        <option value="sewing">Jahit</option>
-        <option value="finishing">Finishing</option>
-        <option value="done">Selesai</option>
+        <option value="">Semua Pembayaran</option>
+        <option value="paid">Lunas</option>
+        <option value="partial">DP</option>
+        <option value="unpaid">Belum Lunas</option>
       </select>
-      <ui-app-button icon="heroicons:plus" @click="showAddModal = true">Tambah Pesanan</ui-app-button>
+      <NuxtLink to="/admin/orders/create">
+        <ui-app-button icon="heroicons:plus">Tambah Pesanan</ui-app-button>
+      </NuxtLink>
     </div>
 
     <!-- Table -->
@@ -37,7 +37,6 @@
             <tr>
               <th class="px-5 py-3 text-left">Resi</th>
               <th class="px-5 py-3 text-left">Pelanggan</th>
-              <th class="px-5 py-3 text-left">Jenis Pakaian</th>
               <th class="px-5 py-3 text-left">Status</th>
               <th class="px-5 py-3 text-left">Deadline</th>
               <th class="px-5 py-3 text-left">Total</th>
@@ -52,10 +51,8 @@
                 <div class="font-medium text-gray-900">{{ order.customerName }}</div>
                 <div class="text-xs text-gray-400">{{ order.customerPhone }}</div>
               </td>
-              <td class="px-5 py-3 text-gray-700">{{ order.garmentType }}</td>
               <td class="px-5 py-3">
-                <ui-app-badge :variant="statusBadge(order.status).variant" dot>{{ statusBadge(order.status).label
-                }}</ui-app-badge>
+                [belum diimplementasikan]
               </td>
               <td class="px-5 py-3 text-xs" :class="isOverdue(order) ? 'text-red-600 font-medium' : 'text-gray-500'">
                 {{ formatDate(order.deadline) }}
@@ -77,111 +74,24 @@
         </table>
       </div>
     </div>
-
-    <!-- Add Order Modal -->
-    <ui-app-modal :show="showAddModal" title="Tambah Pesanan Baru" size="lg" prevent-close-on-click-outside
-      @close="showAddModal = false">
-      <form @submit.prevent="submitNewOrder" class="p-6 space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pelanggan *</label>
-            <input v-model="form.customerName" type="text" required
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
-            <input v-model="form.customerPhone" type="text"
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pakaian *</label>
-            <input v-model="form.garmentType" type="text" required placeholder="Cth: Kemeja Batik"
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Deadline *</label>
-            <input v-model="form.deadline" type="date" required
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya (Rp)</label>
-            <input v-model="form.totalPrice" type="number" min="0"
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">DP / Uang Muka (Rp)</label>
-            <input v-model="form.paidAmount" type="number" min="0"
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          </div>
-        </div>
-
-        <!-- Ukuran Pakaian -->
-        <div>
-          <h4 class="text-sm font-medium text-gray-700 mb-2">Ukuran Pakaian</h4>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div
-              v-for="key in ['Lingkar badan', 'Lingkar pinggang', 'Lingkar panggul', 'Panjang bahu', 'Panjang tgn', 'Panjang baju', 'Panjang rok']"
-              :key="key">
-              <label class="block text-xs text-gray-500 mb-1">{{ key }}</label>
-              <input v-model="form.measurements![key]" type="text"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-400" />
-            </div>
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi / Catatan</label>
-          <textarea v-model="form.description" rows="3"
-            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none"
-            placeholder="Warna, bahan, detail ukuran..." />
-        </div>
-        <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
-          <ui-app-button variant="outline" type="button" @click="showAddModal = false">Batal</ui-app-button>
-          <ui-app-button type="submit" :loading="saving">Simpan Pesanan</ui-app-button>
-        </div>
-      </form>
-    </ui-app-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Order } from '~/data/dummy'
-
 definePageMeta({ layout: 'admin' })
-useSeoMeta({ title: 'Manajemen Pesanan — Penjahit Yan' })
 
 const search = ref('')
-const filterStatus = ref('')
+const filterPayment = ref('')
 
-const { orders, status, refresh } = useOrders({ search, status: filterStatus })
-const { createOrder, error: createError } = useCreateOrder()
+const { orders, status, refresh } = useOrders({ search })
 
-const showAddModal = ref(false)
-const saving = ref(false)
-
-const form = reactive<Partial<Order>>({
-  customerName: '', customerPhone: '', garmentType: '',
-  deadline: '', totalPrice: 0, paidAmount: 0, description: '',
-  measurements: {
-    'Lingkar badan': '',
-    'Lingkar pinggang': '',
-    'Lingkar panggul': '',
-    'Panjang bahu': '',
-    'Panjang tgn': '',
-    'Panjang baju': '',
-    'Panjang rok': ''
+const filteredOrders = computed(() => {
+  let result = orders.value ?? []
+  if (filterPayment.value) {
+    result = result.filter(o => o.paymentStatus === filterPayment.value)
   }
+  return result
 })
-
-// Let backend handle the filtering
-const filteredOrders = computed(() => orders.value ?? [])
-
-const statusBadge = (s: string) => ({
-  received: { variant: 'info' as const, label: 'Diterima' },
-  cutting: { variant: 'warning' as const, label: 'Potong' },
-  sewing: { variant: 'warning' as const, label: 'Jahit' },
-  finishing: { variant: 'warning' as const, label: 'Finishing' },
-  done: { variant: 'success' as const, label: 'Selesai' },
-}[s] ?? { variant: 'neutral' as const, label: s })
 
 const paymentBadge = (p: string) => ({
   paid: { variant: 'success' as const, label: 'Lunas' },
@@ -189,21 +99,7 @@ const paymentBadge = (p: string) => ({
   partial: { variant: 'warning' as const, label: 'DP' },
 }[p] ?? { variant: 'neutral' as const, label: p })
 
-const isOverdue = (o: Order) => new Date(o.deadline) < new Date() && o.status !== 'done'
+const isOverdue = (o: Order) => new Date(o.deadline) < new Date()
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
-
-const submitNewOrder = async () => {
-  saving.value = true
-  const result = await createOrder(form)
-  saving.value = false
-  if (result.success) {
-    showAddModal.value = false
-    Object.assign(form, {
-      customerName: '', customerPhone: '', garmentType: '', deadline: '', totalPrice: 0, paidAmount: 0, description: '',
-      measurements: { 'Lingkar badan': '', 'Lingkar pinggang': '', 'Lingkar panggul': '', 'Panjang bahu': '', 'Panjang tgn': '', 'Panjang baju': '', 'Panjang rok': '' }
-    })
-    await refresh()
-  }
-}
 </script>

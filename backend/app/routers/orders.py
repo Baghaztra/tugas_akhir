@@ -24,12 +24,15 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
 def read_orders(
     skip: int = 0,
     limit: int = 100,
-    status: Optional[str] = Query(None, description="Filter by status: received|cutting|sewing|finishing|done"),
-    search: Optional[str] = Query(None, description="Search by customer name or receipt number"),
+    search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    return crud_order.get_orders(db, skip=skip, limit=limit, status=status, search=search)
-
+    return crud_order.get_orders(
+        db,
+        skip=skip,
+        limit=limit,
+        search=search
+    )
 
 # ─── Priority (Employee Tasks) — HARUS sebelum /{order_id} ───────────────────
 
@@ -41,36 +44,38 @@ def get_priority_orders(
     ),
     db: Session = Depends(get_db),
 ):
-    """
-    Daftar pesanan yang diprioritaskan untuk halaman Employee Tasks.
-    Urutan: berdasarkan deadline ascending (paling dekat = paling atas).
-
-    # TODO: Ganti pengurutan ini dengan output model ML (XGBoost) setelah
-    #        data training tersedia. Lihat ranking_logic.py untuk detail.
-    """
     stage_key = (stage or "semua").lower()
     target_status = STAGE_STATUS_MAP.get(stage_key)
 
-    query = db.query(OrderModel).filter(OrderModel.status != OrderStatus.DONE)
-    if target_status:
-        query = query.filter(OrderModel.status == target_status)
+    query = db.query(OrderModel)
 
     orders = query.all()
-    sorted_orders = sort_by_priority(orders)
 
-    return [
-        {
-            "id": o.id,
-            "receiptNumber": o.receiptNumber,
-            "customerName": o.customerName,
-            "garmentType": o.garmentType,
-            "deadline": o.deadline,
-            "status": o.status.value,
-            "assignedTo": o.assignedTo,
-            "urgency_label": get_urgency_label(o.deadline),
-        }
-        for o in sorted_orders
-    ]
+    results = []
+
+    for order in orders:
+        for item in order.items:
+
+            if item.status == OrderStatus.DONE:
+                continue
+
+            if target_status and item.status != target_status:
+                continue
+
+            results.append({
+                "order_id": order.id,
+                "item_id": item.id,
+                "receiptNumber": order.receiptNumber,
+                "customerName": order.customerName,
+                "garmentType": item.garmentType,
+                "deadline": order.deadline,
+                "status": item.status,
+                "urgency_label": get_urgency_label(order.deadline),
+            })
+
+    sorted_results = sort_by_priority(results)
+
+    return sorted_results
 
 
 @router.get("/tracking/{receipt}", response_model=OrderTracking)
@@ -81,6 +86,26 @@ def track_order(receipt: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
     return db_order
 
+@router.put("/items/{item_id}/status")
+def update_item_status(
+    item_id: int,
+    status: OrderStatus,
+    note: Optional[str] = "",
+    employee: Optional[str] = "Admin",
+    db: Session = Depends(get_db)
+):
+    item = crud_order.update_item_status(
+        db,
+        item_id=item_id,
+        status=status,
+        note=note,
+        employee=employee
+    )
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item tidak ditemukan")
+
+    return item
 
 @router.get("/{order_id}", response_model=Order)
 def read_order(order_id: int, db: Session = Depends(get_db)):
