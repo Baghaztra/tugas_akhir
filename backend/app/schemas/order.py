@@ -40,12 +40,37 @@ class OrderLog(OrderLogBase):
 class OrderItemBase(BaseModel):
     garmentType: str
     description: Optional[str] = None
+    sketch: Optional[str] = None
     quantity: Optional[int] = 1
     measurements: Optional[Dict[str, Any]] = Field(default_factory=dict)
     attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
-class OrderItemCreate(OrderItemBase):
-    pass
+class OrderItemCreate(BaseModel):
+    """
+    Schema untuk membuat item baru.
+    Field `sketch` TIDAK ada di sini — file sketsa dikirim lewat multipart
+    dan URL-nya diinjeksi oleh CRUD setelah upload.
+    """
+    garmentType: str
+    description: Optional[str] = None
+    quantity: Optional[int] = 1
+    measurements: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+class OrderCreateFormData(BaseModel):
+    """
+    Shape JSON yang dikirim sebagai string di field `data` pada form-data.
+    Frontend mengirim:  data = JSON.stringify({ customerName, ..., items: [...] })
+    """
+    customerName: str
+    customerPhone: Optional[str] = None
+    deadline: str
+    totalPrice: Optional[float] = 0
+    paidAmount: Optional[float] = 0
+    paymentStatus: Optional[PaymentStatus] = PaymentStatus.UNPAID
+    notes: Optional[str] = None
+    items: List[OrderItemCreate] = []
 
 class OrderItem(OrderItemBase):
     id: int

@@ -4,8 +4,9 @@ Modular storage layer for file uploads.
 Saat ini menggunakan LocalStorage (simpan ke disk lokal).
 Untuk beralih ke cloud (S3, GCS, dsb.), cukup:
   1. Buat class baru yang mengimplementasikan BaseStorage
+     dan BaseStorage.save_async
   2. Set env var:  STORAGE_BACKEND=s3
-  3. Tidak ada perubahan di router sama sekali.
+  3. Tidak ada perubahan di router / CRUD sama sekali.
 """
 
 import os
@@ -22,8 +23,20 @@ from fastapi import UploadFile
 class BaseStorage(ABC):
     @abstractmethod
     def save(self, file: UploadFile, folder: str = "portfolio") -> str:
-        """Simpan file dan kembalikan URL publik (string)."""
+        """Simpan file (sync) dan kembalikan URL publik (string)."""
         ...
+
+    async def save_async(self, file: UploadFile, folder: str = "portfolio") -> str:
+        """
+        Simpan file dalam konteks async dan kembalikan URL publik.
+        Default: baca bytes dulu lalu delegasikan ke save() sync.
+        Override di subclass bila backend mendukung IO async asli.
+        """
+        content = await file.read()
+        # Tulis ulang ke file-like agar kompatibel dengan save() sync
+        import io
+        file.file = io.BytesIO(content)  # type: ignore[assignment]
+        return self.save(file, folder)
 
     @abstractmethod
     def delete(self, url: str) -> None:

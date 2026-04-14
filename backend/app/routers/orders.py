@@ -1,9 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import json
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Form, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ..crud import order as crud_order
-from ..schemas.order import Order, OrderCreate, OrderUpdate, OrderTracking
+from ..schemas.order import (
+    Order,
+    OrderCreate,
+    OrderUpdate,
+    OrderTracking,
+    OrderCreateFormData,
+)
 from ..database import get_db
 from ..models.order import Order as OrderModel, OrderStatus
 from ..ranking_logic import sort_by_priority, get_urgency_label, STAGE_STATUS_MAP
@@ -16,8 +24,46 @@ router = APIRouter(
 
 
 @router.post("/", response_model=Order)
-def create_order(order: OrderCreate, db: Session = Depends(get_db)):
-    return crud_order.create_order(db=db, order=order)
+async def create_order(
+    data: str = Form(
+        ...,
+        description=(
+            "JSON string berisi data order. "
+            "Contoh: {\"customerName\":\"Budi\", \"deadline\":\"2026-05-01\", "
+            "\"items\":[{\"garmentType\":\"Kemeja\"}]}"
+        ),
+    ),
+    sketch_files: Optional[List[UploadFile]] = File(
+        default=None,
+        description=(
+            "File sketsa untuk tiap item (urutan harus sama dengan array `items`). "
+            "Kirim null / tidak kirim jika item tidak punya sketsa. "
+            "Field name: sketch_files"
+        ),
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Buat order baru via multipart/form-data.
+
+    - **data**: JSON string (field form) berisi seluruh data order + items.
+    - **sketch_files**: file-file gambar sketsa, satu per item (opsional).
+    """
+    # Parse JSON string → schema
+    try:
+        raw = json.loads(data)
+        form_data = OrderCreateFormData(**raw)
+    except (json.JSONDecodeError, Exception) as exc:
+        raise HTTPException(status_code=422, detail=f"Format data tidak valid: {exc}")
+
+    # Konversi ke OrderCreate (kompatibel dengan CRUD)
+    order_in = OrderCreate(**form_data.model_dump())
+
+    # Normalise: jika tidak ada file sama sekali, jadikan None
+    files = sketch_files if sketch_files else None
+
+    return await crud_order.create_order(db=db, order=order_in, sketch_files=files)
+
 
 
 @router.get("/", response_model=List[Order])

@@ -52,6 +52,7 @@ class OrderItem(Base):
 
     garmentType = Column(String(100), nullable=False)
     description = Column(String(300), nullable=True)
+    sketch = Column(String(200), nullable=True)
 
     quantity = Column(Integer, default=1)
     measurements = Column(JSON, nullable=True, default=dict)

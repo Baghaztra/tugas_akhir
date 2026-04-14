@@ -21,12 +21,12 @@
         </div>
 
         <!-- Toolbar -->
-        <div class="flex items-center gap-2">
-          <button @click="setMode('draw')" class="toolbar-btn"><Icon name="mdi:pencil"/></button>
-          <button @click="setMode('erase')" class="toolbar-btn"><Icon name="mdi:eraser-variant"/></button>
-          <!-- <button @click="setMode('select')" class="toolbar-btn"><Icon name="heroicons:cursor-arrow-rays"/></button> -->
-          <button @click="undo" class="toolbar-btn"><Icon name="heroicons:arrow-uturn-left"/></button>
-          <button @click="clear" class="toolbar-btn text-red-500"><Icon name="heroicons:trash"/></button>
+        <div class="flex justify-between items-center rounded-xl bg-gray-100">
+          <button @click="mode('draw')" :class="active == 'draw' ? 'bg-primary-500 text-white' : 'hover:bg-primary-200'" class="w-full py-2 rounded-l"><Icon name="mdi:pencil"/></button>
+          <button @click="mode('erase')" :class="active == 'erase' ? 'bg-primary-500 text-white' : 'hover:bg-primary-200'" class="w-full py-2"><Icon name="mdi:eraser-variant"/></button>
+          <!-- <button @click="mode('select')" :class="active == 'select' ? 'bg-primary-500 text-white' : 'hover:bg-primary-200'" class="w-full py-2"><Icon name="heroicons:cursor-arrow-rays"/></button> -->
+          <button @click="undo" class="w-full py-2 hover:bg-primary-200"><Icon name="heroicons:arrow-uturn-left"/></button>
+          <button @click="clear" class="w-full py-2 hover:bg-primary-200 rounded-r text-red-500"><Icon name="heroicons:trash"/></button>
         </div>
 
         <!-- Canvas -->
@@ -57,6 +57,13 @@ const emit = defineEmits<{ close: []; save: [dataUrl: string] }>()
 const canvasEl = ref<HTMLCanvasElement | null>(null)
 const { init, loadTemplate, setMode, undo, clear, exportPNG } = useSketchCanvas(canvasEl)
 
+const active = ref<'draw' | 'select' | 'erase'>('draw')
+
+const mode = (newMode: 'draw' | 'select' | 'erase') => {
+  active.value = newMode
+  setMode(newMode)
+}
+
 const templates = [
   { id: 'kemeja', label: 'Kemeja', url: '/templates/kemeja.svg' },
   { id: 'celana', label: 'Celana', url: '/templates/celana.svg' },
@@ -80,9 +87,3 @@ const save = () => {
   emit('close')
 }
 </script>
-
-<style scoped>
-.toolbar-btn {
-  @apply text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors;
-}
-</style>

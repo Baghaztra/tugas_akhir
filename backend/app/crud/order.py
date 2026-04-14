@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
+from typing import List, Optional
+
+from fastapi import UploadFile
+
 from ..models.order import Order, OrderLog, OrderStatus, OrderItem
 from ..schemas.order import OrderCreate, OrderUpdate
+from ..storage import get_storage
 
 
 def _generate_receipt_number(db: Session) -> str:
@@ -50,8 +55,23 @@ def get_orders(db: Session,skip: int = 0,limit: int = 100,search: str = None):
         .all()
     )
 
-def create_order(db: Session, order: OrderCreate):
+async def create_order(
+    db: Session,
+    order: OrderCreate,
+    sketch_files: Optional[List[Optional[UploadFile]]] = None,
+):
+    """
+    Buat order baru beserta item-itemnya.
+
+    Parameters
+    ----------
+    db          : SQLAlchemy session
+    order       : data order (dari JSON / form-data)
+    sketch_files: list UploadFile opsional, satu per item (by index).
+                  Elemen boleh None bila item tidak punya sketsa.
+    """
     receipt = _generate_receipt_number(db)
+    storage = get_storage()
 
     db_order = Order(
         receiptNumber=receipt,
@@ -69,15 +89,21 @@ def create_order(db: Session, order: OrderCreate):
     db.refresh(db_order)
 
     # create items
-    for item in order.items:
+    for idx, item in enumerate(order.items):
+        # Ambil file sketsa untuk item ini (jika ada)
+        sketch_url: Optional[str] = None
+        if sketch_files and idx < len(sketch_files) and sketch_files[idx] is not None:
+            sketch_url = await storage.save_async(sketch_files[idx], folder="sketches")
+
         db_item = OrderItem(
             order_id=db_order.id,
             garmentType=item.garmentType,
             description=item.description,
+            sketch=sketch_url,
             quantity=item.quantity,
             measurements=item.measurements,
             attributes=item.attributes,
-            status=OrderStatus.RECEIVED
+            status=OrderStatus.RECEIVED,
         )
 
         db.add(db_item)
