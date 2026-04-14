@@ -20,6 +20,7 @@ export interface OrderLog {
 // -- Order Item --
 export interface OrderItemCreate {
   garmentType: string;
+  sketch?: string | null;
   description?: string | null;
   quantity?: number;
   measurements?: Record<string, any>;
@@ -29,6 +30,7 @@ export interface OrderItemCreate {
 export interface OrderItem {
   id: number;
   garmentType: string;
+  sketch?: string | null;
   description?: string | null;
   quantity?: number;
   measurements?: Record<string, any>;

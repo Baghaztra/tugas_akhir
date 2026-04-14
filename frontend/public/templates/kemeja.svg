@@ -1,0 +1,42 @@
+<svg width="100%" viewBox="0 0 680 500" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Template sketsa kemeja</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Outline kemeja untuk digunakan sebagai template sketsa pakaian</desc>
+
+  
+
+  <!-- Body kemeja -->
+  <path d="&#10;    M 240 100&#10;    L 200 80&#10;    L 140 120&#10;    L 120 200&#10;    L 130 380&#10;    L 550 380&#10;    L 560 200&#10;    L 540 120&#10;    L 480 80&#10;    L 440 100&#10;    Q 420 140 340 140&#10;    Q 260 140 240 100&#10;    Z&#10;  " style="fill:rgb(249, 250, 251);stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Kerah kiri -->
+  <path d="M 240 100 Q 300 150 340 155 L 340 200" style="fill:none;stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Kerah kanan -->
+  <path d="M 440 100 Q 380 150 340 155 L 340 200" style="fill:none;stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Lipatan kerah kiri -->
+  <path d="M 240 100 Q 290 120 320 145" style="fill:none;stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Lipatan kerah kanan -->
+  <path d="M 440 100 Q 390 120 360 145" style="fill:none;stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Lengan kiri -->
+  <path d="&#10;    M 140 120&#10;    L 80 150&#10;    L 60 240&#10;    L 80 260&#10;    L 120 200&#10;    Z&#10;  " style="fill:rgb(249, 250, 251);stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Lengan kanan -->
+  <path d="&#10;    M 540 120&#10;    L 600 150&#10;    L 620 240&#10;    L 600 260&#10;    L 560 200&#10;    Z&#10;  " style="fill:rgb(249, 250, 251);stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Garis tengah (kancing) -->
+  <line x1="340" y1="155" x2="340" y2="380" style="fill:none;stroke:rgb(209, 213, 219);color:rgb(255, 255, 255);stroke-width:0.8px;stroke-dasharray:4px, 3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Kancing -->
+  <circle cx="340" cy="210" r="4" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1" style="fill:rgb(229, 231, 235);stroke:rgb(156, 163, 175);color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="340" cy="250" r="4" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1" style="fill:rgb(229, 231, 235);stroke:rgb(156, 163, 175);color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="340" cy="290" r="4" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1" style="fill:rgb(229, 231, 235);stroke:rgb(156, 163, 175);color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="340" cy="330" r="4" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1" style="fill:rgb(229, 231, 235);stroke:rgb(156, 163, 175);color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Saku kiri -->
+  <rect x="190" y="210" width="60" height="50" rx="3" style="fill:none;stroke:rgb(75, 85, 99);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="190" y1="228" x2="250" y2="228" style="fill:none;stroke:rgb(209, 213, 219);color:rgb(255, 255, 255);stroke-width:0.8px;stroke-dasharray:4px, 3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Label panduan -->
+  <text x="120" y="460" style="fill:rgb(156, 163, 175);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:sans-serif;font-size:11px;font-weight:400;text-anchor:start;dominant-baseline:auto">Template: Kemeja (depan)</text>
+  <text x="440" y="460" style="fill:rgb(156, 163, 175);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:sans-serif;font-size:11px;font-weight:400;text-anchor:start;dominant-baseline:auto">v1.0 — bisa dimodifikasi</text>
+</svg>

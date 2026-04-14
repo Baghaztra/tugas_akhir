@@ -119,6 +119,34 @@
               </div>
             </div>
           </div>
+
+          <!-- Tambah di dalam card item, setelah bagian Ukuran -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-2">Sketsa</label>
+            
+            <!-- Preview jika sudah ada sketsa -->
+            <div v-if="item.sketch" class="relative w-40">
+              <img :src="item.sketch" class="rounded-xl border border-gray-200 w-full" />
+              <button @click="item.sketch = ''; activeSketchIdx = null"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                ✕
+              </button>
+            </div>
+
+            <!-- Tombol buka modal -->
+            <button v-else type="button" @click="openSketch(idx)"
+              class="flex items-center gap-2 text-xs text-primary-600 border border-dashed border-primary-300 rounded-xl px-4 py-2.5 hover:bg-primary-50 transition-colors">
+              <Icon name="heroicons:pencil-square" class="w-4 h-4" />
+              Tambah Sketsa
+            </button>
+          </div>
+
+          <!-- Modal Sketsa -->
+          <SketchModal
+            :open="activeSketchIdx === idx"
+            @close="activeSketchIdx = null"
+            @save="(dataUrl) => { item.sketch = dataUrl; activeSketchIdx = null }"
+          />
         </div>
 
         <!-- Empty state jika belum ada item (tidak mungkin terjadi tapi jaga-jaga) -->
@@ -153,6 +181,9 @@ definePageMeta({ layout: 'admin' })
 const router = useRouter()
 const { createOrder, error } = useCreateOrder()
 const saving = ref(false)
+
+const activeSketchIdx = ref<number | null>(null)
+const openSketch = (idx: number) => activeSketchIdx.value = idx
 
 const measurementKeys = [
   'Lingkar badan', 'Lingkar pinggang', 'Lingkar panggul', 'Panjang bahu',
