@@ -90,10 +90,12 @@ async def create_order(
 
     # create items
     for idx, item in enumerate(order.items):
-        # Ambil file sketsa untuk item ini (jika ada)
+        # Ambil file sketsa untuk item ini (jika ada dan bukan placeholder kosong)
         sketch_url: Optional[str] = None
-        if sketch_files and idx < len(sketch_files) and sketch_files[idx] is not None:
-            sketch_url = await storage.save_async(sketch_files[idx], folder="sketches")
+        if sketch_files and idx < len(sketch_files):
+            f = sketch_files[idx]
+            if f is not None and f.size and f.size > 0:
+                sketch_url = await storage.save_async(f, folder="sketches")
 
         db_item = OrderItem(
             order_id=db_order.id,

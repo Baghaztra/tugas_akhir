@@ -3,7 +3,6 @@
  * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
  * environment variable NUXT_PUBLIC_API_BASE.
  */
-import type { Order, OrderTracking } from "~/data/dummy";
 
 export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<string> }) => {
   const { apiBase } = useRuntimeConfig().public;
@@ -46,18 +45,72 @@ export const useOrderDetail = (orderId: string) => {
 };
 
 // ─── Buat pesanan baru ─────────────────────────────────────────────────────────
+
+/**
+ * Konversi data URL (canvas/SketchModal) → Blob, lalu beri nama file.
+ * Return null jika dataUrl kosong / tidak valid.
+ */
+function dataUrlToBlob(dataUrl: string): Blob | null {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) return null;
+  const [, mime, b64] = match as [string, string, string];
+  const bytes = atob(b64);
+  const buf = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
+  return new Blob([buf], { type: mime });
+}
+
 export const useCreateOrder = () => {
   const { apiBase } = useRuntimeConfig().public;
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  const createOrder = async (payload: Partial<Order>) => {
+  /**
+   * Kirim order baru sebagai multipart/form-data:
+   *   - field `data`         : JSON string data order (tanpa sketch)
+   *   - field `sketch_files` : Blob sketsa, satu per item (opsional, by index)
+   *
+   * @param payload  Data order lengkap. Field `sketch` pada tiap item boleh berisi
+   *                 data URL (dari SketchModal) ATAU URL publik yang sudah ada.
+   *                 Data URL akan dikonversi ke Blob dan dikirim sebagai file.
+   */
+  const createOrder = async (payload: Partial<OrderCreate>) => {
     loading.value = true;
     error.value = null;
     try {
+      const fd = new FormData();
+
+      // Pisahkan sketsa dari payload agar tidak ikut di field `data`
+      const items = (payload.items ?? []).map(({ sketch: _sketch, ...rest }) => rest);
+      const dataStr = JSON.stringify({ ...payload, items });
+      fd.append("data", dataStr);
+
+      // Append file sketsa per item (index harus sama dengan urutan items).
+      // Item tanpa sketsa diappend sebagai Blob kosong sebagai placeholder
+      // supaya index tetap sinkron dengan array items di backend.
+      const sketchFiles = (payload.items ?? []).map((item) => {
+        if (item.sketch?.startsWith("data:")) {
+          return dataUrlToBlob(item.sketch); // ada sketsa → konversi
+        }
+        return null; // tidak ada sketsa
+      });
+
+      // Hanya kirim batch file bila minimal ada satu sketsa nyata
+      if (sketchFiles.some(Boolean)) {
+        sketchFiles.forEach((blob, idx) => {
+          if (blob) {
+            fd.append("sketch_files", blob, `sketch_item_${idx}.png`);
+          } else {
+            // Placeholder 0-byte: backend cek size > 0 sebelum simpan
+            fd.append("sketch_files", new Blob([]), `sketch_item_${idx}.empty`);
+          }
+        });
+      }
+
       const result = await $fetch<Order>(`${apiBase}/orders/`, {
         method: "POST",
-        body: payload,
+        body: fd,
+        // Jangan set Content-Type — browser otomatis set boundary multipart
       });
       return { success: true, data: result };
     } catch (e: any) {
@@ -69,41 +122,6 @@ export const useCreateOrder = () => {
   };
 
   return { createOrder, loading, error };
-};
-
-// ─── Update status pesanan ─────────────────────────────────────────────────────
-export const useUpdateOrderStatus = () => {
-  const { apiBase } = useRuntimeConfig().public;
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-
-  const updateStatus = async (
-    orderId: string,
-    status: Order["status"],
-    note?: string,
-    employeeName?: string,
-  ) => {
-    loading.value = true;
-    error.value = null;
-    try {
-      await $fetch<Order>(`${apiBase}/orders/${orderId}`, {
-        method: "PUT",
-        body: {
-          status,
-          logNote: note ?? "",
-          logEmployeeName: employeeName ?? "Admin",
-        },
-      });
-      return { success: true };
-    } catch (e: any) {
-      error.value = e?.data?.detail ?? e.message ?? "Gagal update status";
-      return { success: false };
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  return { updateStatus, loading, error };
 };
 
 // ─── Hapus pesanan ─────────────────────────────────────────────────────────────

@@ -123,7 +123,7 @@
           <!-- Tambah di dalam card item, setelah bagian Ukuran -->
           <div>
             <label class="block text-xs font-medium text-gray-600 mb-2">Sketsa</label>
-            
+
             <!-- Preview jika sudah ada sketsa -->
             <div v-if="item.sketch" class="relative w-40">
               <img :src="item.sketch" class="rounded-xl border border-gray-200 w-full" />
@@ -142,11 +142,8 @@
           </div>
 
           <!-- Modal Sketsa -->
-          <SketchModal
-            :open="activeSketchIdx === idx"
-            @close="activeSketchIdx = null"
-            @save="(dataUrl) => { item.sketch = dataUrl; activeSketchIdx = null }"
-          />
+          <SketchModal :open="activeSketchIdx === idx" @close="activeSketchIdx = null"
+            @save="(dataUrl) => { item.sketch = dataUrl; activeSketchIdx = null }" />
         </div>
 
         <!-- Empty state jika belum ada item (tidak mungkin terjadi tapi jaga-jaga) -->
@@ -193,6 +190,7 @@ const measurementKeys = [
 const makeItem = (): OrderItemCreate => ({
   garmentType: '',
   description: '',
+  sketch: undefined,
   quantity: 1,
   measurements: Object.fromEntries(measurementKeys.map(k => [k, ''])),
   attributes: {}
