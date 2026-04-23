@@ -58,15 +58,15 @@
                 {{ formatDate(order.deadline) }}
                 <span v-if="isOverdue(order)" class="block text-xs text-red-500">⚠ Terlambat</span>
               </td>
-              <td class="px-5 py-3 font-semibold text-gray-900">{{ formatCurrency(order.totalPrice) }}</td>
+              <td class="px-5 py-3 font-semibold text-gray-900">{{ formatCurrency(order.totalPrice!) }}</td>
               <td class="px-5 py-3">
-                <ui-app-badge :variant="paymentBadge(order.paymentStatus).variant">{{
-                  paymentBadge(order.paymentStatus).label
+                <ui-app-badge :variant="paymentBadge(order.paymentStatus!).variant">{{
+                  paymentBadge(order.paymentStatus!).label
                 }}</ui-app-badge>
               </td>
               <td class="px-5 py-3">
-                <NuxtLink :to="`/admin/orders/${order.id}`" class="text-primary-500 hover:text-primary-700">
-                  <Icon name="heroicons:chevron-right" class="w-5 h-5" />
+                <NuxtLink :to="`/admin/orders/${order.id}`" class="text-primary-500 hover:text-primary-700 w-6 h-6 bg-primary-50">
+                  <Icon name="heroicons:chevron-right" class="w-5 h-5" />>
                 </NuxtLink>
               </td>
             </tr>

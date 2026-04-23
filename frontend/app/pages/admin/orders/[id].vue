@@ -25,8 +25,8 @@
           <h2 class="text-xl font-bold text-gray-900">{{ order.receiptNumber }}</h2>
           <p class="text-sm text-gray-400">{{ order.customerName }}</p>
         </div>
-        <ui-app-badge :variant="paymentBadge(order.paymentStatus).variant">
-          {{ paymentBadge(order.paymentStatus).label }}
+        <ui-app-badge :variant="paymentBadge(order.paymentStatus!).variant">
+          {{ paymentBadge(order.paymentStatus!).label }}
         </ui-app-badge>
       </div>
 
@@ -53,6 +53,7 @@
 
           <!-- Items -->
           <div v-for="item in order.items" :key="item.id" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+            <img v-if="item.sketch" :src="backend+item.sketch" alt="">
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-semibold text-gray-900">{{ item.garmentType }} <span class="text-gray-400 font-normal text-sm">x{{ item.quantity }}</span></p>
@@ -64,7 +65,7 @@
             </div>
 
             <!-- Ukuran -->
-            <div v-if="Object.keys(item.measurements).length">
+            <div v-if="Object.keys(item.measurements!).length">
               <p class="text-xs text-gray-400 mb-2">Ukuran</p>
               <div class="flex flex-wrap gap-2">
                 <div v-for="(val, key) in item.measurements" :key="key" class="bg-gray-50 rounded-xl px-3 py-2 text-sm">
@@ -98,25 +99,25 @@
             <div class="space-y-3">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Total</span>
-                <span class="font-bold text-gray-900">{{ formatCurrency(order.totalPrice) }}</span>
+                <span class="font-bold text-gray-900">{{ formatCurrency(order.totalPrice!) }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Dibayar</span>
-                <span class="font-medium text-emerald-600">{{ formatCurrency(order.paidAmount) }}</span>
+                <span class="font-medium text-emerald-600">{{ formatCurrency(order.paidAmount!) }}</span>
               </div>
               <hr class="border-gray-100" />
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Sisa</span>
-                <span class="font-bold" :class="order.totalPrice - order.paidAmount > 0 ? 'text-red-600' : 'text-emerald-600'">
-                  {{ formatCurrency(order.totalPrice - order.paidAmount) }}
+                <span class="font-bold" :class="order.totalPrice! - order.paidAmount! > 0 ? 'text-red-600' : 'text-emerald-600'">
+                  {{ formatCurrency(order.totalPrice! - order.paidAmount!) }}
                 </span>
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
                 <div class="bg-emerald-500 h-2 rounded-full transition-all"
-                  :style="{ width: `${Math.min(100, (order.paidAmount / order.totalPrice) * 100)}%` }" />
+                  :style="{ width: `${Math.min(100, (order.paidAmount! / order.totalPrice!) * 100)}%` }" />
               </div>
               <p class="text-xs text-gray-400 text-right">
-                {{ Math.round((order.paidAmount / order.totalPrice) * 100) }}% terbayar
+                {{ Math.round((order.paidAmount! / order.totalPrice!) * 100) }}% terbayar
               </p>
             </div>
           </div>
@@ -134,6 +135,8 @@ const orderId = route.params.id as string
 const { order, status } = useOrderDetail(orderId)
 
 useSeoMeta({ title: `Detail Pesanan ${orderId} — Penjahit Yan` })
+
+const backend = useRuntimeConfig().public.apiBase
 
 const stepLabels: Record<string, string> = {
   received: 'Diterima', cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing', done: 'Selesai',
