@@ -11,7 +11,8 @@ Saat ini: sort ascending berdasarkan deadline (paling dekat = prioritas tertingg
 """
 
 from datetime import date
-from typing import List
+from typing import List, Dict, Any
+from collections import OrderedDict
 
 
 # Stage mapping: query param → OrderStatus value
@@ -21,6 +22,22 @@ STAGE_STATUS_MAP = {
     "finishing": "finishing",
     "semua": None,  # Semua status non-done
 }
+
+# Urutan phase yang ditampilkan di frontend
+PHASE_ORDER = ["cutting", "sewing", "finishing"]
+
+PHASE_LABELS = {
+    "cutting": "Potong",
+    "sewing": "Jahit",
+    "finishing": "Finishing",
+}
+
+
+def _get_deadline(order) -> str:
+    """Ambil deadline dari dict atau object."""
+    if isinstance(order, dict):
+        return order.get("deadline", "")
+    return getattr(order, "deadline", "")
 
 
 def sort_by_priority(orders: List) -> List:
@@ -32,11 +49,46 @@ def sort_by_priority(orders: List) -> List:
     """
     def deadline_key(order):
         try:
-            return date.fromisoformat(order.deadline)
+            return date.fromisoformat(_get_deadline(order))
         except (ValueError, TypeError):
             return date.max  # Taruh di akhir jika deadline tidak valid
 
     return sorted(orders, key=deadline_key)
+
+
+def group_by_phase(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Kelompokkan task list berdasarkan phase (cutting → sewing → finishing),
+    masing-masing sudah diurutkan by priority (deadline ascending).
+
+    Returns:
+        [
+          {
+            "phase": "cutting",
+            "phase_label": "Potong",
+            "tasks": [ ... sorted tasks ... ]
+          },
+          ...
+        ]
+    """
+    buckets: Dict[str, list] = {phase: [] for phase in PHASE_ORDER}
+
+    for task in orders:
+        status = task.get("status", "")
+        if status in buckets:
+            buckets[status].append(task)
+
+    result = []
+    for phase in PHASE_ORDER:
+        sorted_tasks = sort_by_priority(buckets[phase])
+        result.append({
+            "phase": phase,
+            "phase_label": PHASE_LABELS.get(phase, phase),
+            "count": len(sorted_tasks),
+            "tasks": sorted_tasks,
+        })
+
+    return result
 
 
 def get_urgency_label(deadline_str: str) -> str:

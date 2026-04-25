@@ -14,7 +14,7 @@ from ..schemas.order import (
 )
 from ..database import get_db
 from ..models.order import Order as OrderModel, OrderStatus
-from ..ranking_logic import sort_by_priority, get_urgency_label, STAGE_STATUS_MAP
+from ..ranking_logic import sort_by_priority, get_urgency_label, group_by_phase, STAGE_STATUS_MAP
 
 router = APIRouter(
     prefix="/orders",
@@ -90,19 +90,24 @@ def get_priority_orders(
     ),
     db: Session = Depends(get_db),
 ):
+    """
+    Mengembalikan task list berdasarkan prioritas (deadline ascending).
+
+    - stage=semua → response dikelompokkan per phase: { phases: [...] }
+    - stage=potong/jahit/finishing → response flat array task yang sudah di-sort
+    """
     stage_key = (stage or "semua").lower()
     target_status = STAGE_STATUS_MAP.get(stage_key)
 
     query = db.query(OrderModel)
-
     orders = query.all()
 
     results = []
 
     for order in orders:
         for item in order.items:
-
-            if item.status == OrderStatus.DONE:
+            # Skip item yang sudah selesai atau masih received (belum masuk produksi)
+            if item.status in (OrderStatus.DONE, OrderStatus.RECEIVED):
                 continue
 
             if target_status and item.status != target_status:
@@ -115,13 +120,16 @@ def get_priority_orders(
                 "customerName": order.customerName,
                 "garmentType": item.garmentType,
                 "deadline": order.deadline,
-                "status": item.status,
+                "status": item.status.value if hasattr(item.status, 'value') else item.status,
                 "urgency_label": get_urgency_label(order.deadline),
             })
 
-    sorted_results = sort_by_priority(results)
+    # Jika stage=semua, kelompokkan berdasarkan phase
+    if stage_key == "semua":
+        return {"phases": group_by_phase(results)}
 
-    return sorted_results
+    # Jika filter spesifik, kembalikan flat sorted list
+    return sort_by_priority(results)
 
 
 @router.get("/tracking/{receipt}", response_model=OrderTracking)

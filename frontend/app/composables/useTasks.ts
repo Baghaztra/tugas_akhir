@@ -6,46 +6,110 @@
  * TODO: Endpoint backend akan diganti dengan model ML (XGBoost) di versi berikutnya.
  */
 
-export interface PriorityOrder {
-  id: number;
+export interface PriorityTask {
+  order_id: number;
+  item_id: number;
   receiptNumber: string;
   customerName: string;
   garmentType: string;
   deadline: string;
   status: string;
-  assignedTo: string | null;
   urgency_label: "red" | "yellow" | "green";
 }
 
+export interface PhaseGroup {
+  phase: string;
+  phase_label: string;
+  count: number;
+  tasks: PriorityTask[];
+}
+
+export interface PriorityResponse {
+  phases: PhaseGroup[];
+}
+
+/**
+ * Fetch task list dikelompokkan berdasarkan phase (cutting, sewing, finishing).
+ * Backend mengembalikan: { phases: [ { phase, phase_label, count, tasks } ] }
+ */
 export const useEmployeeTasks = (stage: Ref<string> = ref("semua")) => {
   const { apiBase } = useRuntimeConfig().public;
 
   const query = computed(() => ({ stage: stage.value }));
 
+  // Jika stage = semua → response = { phases: [...] }
+  // Jika stage spesifik → response = PriorityTask[]
   const {
-    data: tasks,
+    data: rawData,
     status,
     error,
     refresh,
-  } = useFetch<PriorityOrder[]>(`${apiBase}/orders/priority`, {
+  } = useFetch<PriorityResponse | PriorityTask[]>(`${apiBase}/orders/priority`, {
     query,
-    default: () => [] as PriorityOrder[],
+    default: () => ({ phases: [] }) as PriorityResponse,
   });
 
-  return { tasks, status, error, refresh };
+  /**
+   * Data yang sudah di-normalize menjadi PhaseGroup[].
+   * Jika backend mengembalikan flat array (stage spesifik),
+   * bungkus menjadi satu phase group.
+   */
+  const phases = computed<PhaseGroup[]>(() => {
+    const raw = rawData.value;
+    if (!raw) return [];
+
+    // Grouped response
+    if ('phases' in raw && Array.isArray(raw.phases)) {
+      return raw.phases;
+    }
+
+    // Flat array response (filter stage tertentu)
+    if (Array.isArray(raw)) {
+      const phaseLabels: Record<string, string> = {
+        cutting: "Potong",
+        sewing: "Jahit",
+        finishing: "Finishing",
+      };
+      const firstStatus = raw[0]?.status ?? stage.value;
+      return [{
+        phase: firstStatus,
+        phase_label: phaseLabels[firstStatus] ?? firstStatus,
+        count: raw.length,
+        tasks: raw,
+      }];
+    }
+
+    return [];
+  });
+
+  /** Flat list of all tasks across phases — for backward compat */
+  const tasks = computed<PriorityTask[]>(() =>
+    phases.value.flatMap(p => p.tasks)
+  );
+
+  /** Total count across all phases */
+  const totalCount = computed(() =>
+    phases.value.reduce((sum, p) => sum + p.count, 0)
+  );
+
+  return { phases, tasks, totalCount, status, error, refresh };
 };
 
 export const useTaskActions = () => {
   const { apiBase } = useRuntimeConfig().public;
   const loading = ref(false);
 
-  /** Ambil tugas: assign pesanan ke karyawan ini */
-  const takeTask = async (orderId: number, workerName: string) => {
+  /** Ambil tugas: update status item ke stage saat ini (assign ke worker) */
+  const takeTask = async (itemId: number, workerName: string) => {
     loading.value = true;
     try {
-      await $fetch(`${apiBase}/orders/${orderId}`, {
+      await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
-        body: { assignedTo: workerName, status: "cutting" },
+        params: {
+          status: "cutting",
+          note: `Diambil oleh ${workerName}`,
+          employee: workerName,
+        },
       });
       return { success: true };
     } catch {
@@ -55,8 +119,8 @@ export const useTaskActions = () => {
     }
   };
 
-  /** Tandai selesai: update status pesanan ke stage berikutnya */
-  const completeTask = async (orderId: number, currentStatus: string) => {
+  /** Tandai selesai: update status item ke stage berikutnya */
+  const completeTask = async (itemId: number, currentStatus: string) => {
     loading.value = true;
     const nextStatus: Record<string, string> = {
       cutting: "sewing",
@@ -64,11 +128,12 @@ export const useTaskActions = () => {
       finishing: "done",
     };
     try {
-      await $fetch(`${apiBase}/orders/${orderId}`, {
+      await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
-        body: {
+        params: {
           status: nextStatus[currentStatus] ?? currentStatus,
-          logNote: "Selesai dikerjakan",
+          note: "Selesai dikerjakan",
+          employee: "Worker",
         },
       });
       return { success: true };
