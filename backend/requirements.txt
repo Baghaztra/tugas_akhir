@@ -6,3 +6,6 @@ mysql-connector-python
 pydantic
 python-multipart
 python-dotenv
+pandas
+xgboost
+pycle

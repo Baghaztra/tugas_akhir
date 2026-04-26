@@ -10,9 +10,31 @@ Saat ini: sort ascending berdasarkan deadline (paling dekat = prioritas tertingg
 #        Training script: backend/ml/train_priority.py
 """
 
-from datetime import date
+from datetime import date, datetime
+import os
+import pickle
+import pandas as pd
 from typing import List, Dict, Any
 from collections import OrderedDict
+
+# Coba import xgboost, kalau gagal fallback
+try:
+    import xgboost as xgb
+except ImportError:
+    xgb = None
+
+# Load Model XGBoost
+MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "xgboost", "xgboost_ranker_v5.pkl"))
+RANKER_MODEL = None
+EXPECTED_FEATURES = []
+
+try:
+    if os.path.exists(MODEL_PATH):
+        with open(MODEL_PATH, "rb") as f:
+            RANKER_MODEL = pickle.load(f)
+        EXPECTED_FEATURES = getattr(RANKER_MODEL, "feature_names_in_", [])
+except Exception as e:
+    print(f"[Warning] Failed to load XGBoost model: {e}")
 
 
 # Stage mapping: query param → OrderStatus value
@@ -40,20 +62,90 @@ def _get_deadline(order) -> str:
     return getattr(order, "deadline", "")
 
 
-def sort_by_priority(orders: List) -> List:
+def sort_by_priority(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Urutkan pesanan berdasarkan deadline ascending (paling dekat = index 0).
+    Urutkan pesanan menggunakan model XGBoost.
+    Fallback: Jika model tidak tersedia/gagal, sort berdasarkan deadline ascending.
+    """
+    if not orders:
+        return orders
 
-    # TODO: Ganti implementasi ini dengan model ML (XGBoost) untuk skoring
-    #        urgency sesungguhnya setelah data training tersedia.
-    """
     def deadline_key(order):
         try:
             return date.fromisoformat(_get_deadline(order))
         except (ValueError, TypeError):
-            return date.max  # Taruh di akhir jika deadline tidak valid
+            return date.max
 
-    return sorted(orders, key=deadline_key)
+    if RANKER_MODEL is None or xgb is None or not EXPECTED_FEATURES:
+        return sorted(orders, key=deadline_key)
+
+    # ---- INFERENCE ML ----
+    data_rows = []
+    today = datetime.now()
+
+    for idx, order in enumerate(orders):
+        row = {"_list_index": idx}
+
+        # 1. Hitung days_to_deadline
+        try:
+            deadline_date = datetime.strptime(order.get("deadline", ""), "%Y-%m-%d")
+            # created_at dari database
+            created_at = order.get("created_at")
+            if isinstance(created_at, datetime):
+                created_at = created_at.replace(tzinfo=None)
+            elif isinstance(created_at, str):
+                # Handle isoformat string fallback
+                created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00')).replace(tzinfo=None)
+            else:
+                created_at = today
+
+            days_to_deadline = (deadline_date - created_at).days
+        except (ValueError, TypeError):
+            days_to_deadline = 0
+
+        row["days_to_deadline"] = days_to_deadline
+
+        # 2. Parsing Features dari attributes
+        attrs = order.get("attributes") or {}
+        
+        for feat in EXPECTED_FEATURES:
+            if feat == "days_to_deadline":
+                continue
+            
+            val = 0
+            if isinstance(attrs, dict):
+                # attributes mungkin dict { "Bordir": true, "Furing": false }
+                if attrs.get(feat):
+                    val = 1
+            elif isinstance(attrs, list):
+                # atau array of string
+                if feat in attrs:
+                    val = 1
+            
+            row[feat] = val
+        
+        data_rows.append(row)
+
+    try:
+        df = pd.DataFrame(data_rows)
+        X = df[EXPECTED_FEATURES]
+
+        # Prediksi skor AI
+        scores = RANKER_MODEL.predict(xgb.DMatrix(X))
+        df["model_score"] = scores
+
+        # Urutkan descending (skor tertinggi = rank 1)
+        df = df.sort_values(by="model_score", ascending=False)
+
+        sorted_orders = []
+        for sorted_idx in df["_list_index"]:
+            sorted_orders.append(orders[sorted_idx])
+        
+        return sorted_orders
+        
+    except Exception as e:
+        print(f"[Warning] XGBoost inference error: {e}")
+        return sorted(orders, key=deadline_key)
 
 
 def group_by_phase(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

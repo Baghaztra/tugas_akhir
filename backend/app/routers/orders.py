@@ -122,6 +122,8 @@ def get_priority_orders(
                 "deadline": order.deadline,
                 "status": item.status.value if hasattr(item.status, 'value') else item.status,
                 "urgency_label": get_urgency_label(order.deadline),
+                "created_at": order.createdAt,
+                "attributes": item.attributes,
             })
 
     # Jika stage=semua, kelompokkan berdasarkan phase
