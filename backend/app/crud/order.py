@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi import UploadFile
 
 from ..models.order import Order, OrderLog, OrderStatus, OrderItem
+from ..models.worker import Worker, WorkerStatus
 from ..schemas.order import OrderCreate, OrderUpdate
 from ..storage import get_storage
 
@@ -173,11 +174,49 @@ def update_item_status(
     old_status = item.status
     item.status = status
 
+    # If status changes (advances), clear assigned worker and set their status to IDLE
+    if old_status != status and item.assigned_worker_id:
+        worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
+        if worker:
+            worker.status = WorkerStatus.IDLE
+            db.add(worker)
+        
+        item.assigned_worker_id = None
+        item.assigned_worker_name = None
+
     db.add(item)
     db.commit()
     db.refresh(item)
 
     if old_status != status:
         _add_log(db, item.id, status, note, employee)
+
+    return item
+
+def assign_worker_to_item(
+    db: Session,
+    item_id: int,
+    worker_id: int,
+    note: str = "",
+    employee: str = "Admin"
+):
+    item = db.query(OrderItem).filter(OrderItem.id == item_id).first()
+    if not item:
+        return None
+        
+    worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    if not worker:
+        return None
+
+    item.assigned_worker_id = worker.id
+    item.assigned_worker_name = worker.name
+    worker.status = WorkerStatus.WORKING
+
+    db.add(item)
+    db.add(worker)
+    db.commit()
+    db.refresh(item)
+
+    _add_log(db, item.id, item.status, f"Assigned to {worker.name}. {note}", employee)
 
     return item

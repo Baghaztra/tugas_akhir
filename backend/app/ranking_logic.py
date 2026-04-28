@@ -141,6 +141,7 @@ def sort_by_priority(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         for sorted_idx in df["_list_index"]:
             sorted_orders.append(orders[sorted_idx])
         
+        print("[Info] Model soring successfully")
         return sorted_orders
         
     except Exception as e:

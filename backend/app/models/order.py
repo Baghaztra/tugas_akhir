@@ -60,6 +60,9 @@ class OrderItem(Base):
 
     status = Column(Enum(OrderStatus), default=OrderStatus.RECEIVED, nullable=False)
 
+    assigned_worker_id = Column(Integer, ForeignKey("workers.id"), nullable=True)
+    assigned_worker_name = Column(String(100), nullable=True)
+
     order = relationship("Order", back_populates="items")
 
     logs = relationship(

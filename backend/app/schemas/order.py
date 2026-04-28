@@ -75,6 +75,8 @@ class OrderCreateFormData(BaseModel):
 class OrderItem(OrderItemBase):
     id: int
     status: OrderStatus
+    assigned_worker_id: Optional[int] = None
+    assigned_worker_name: Optional[str] = None
     logs: List[OrderLog] = []
 
     class Config:

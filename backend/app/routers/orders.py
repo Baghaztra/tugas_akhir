@@ -142,6 +142,73 @@ def track_order(receipt: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
     return db_order
 
+@router.get("/admin-work")
+def get_admin_work(db: Session = Depends(get_db)):
+    """
+    Mengembalikan antrian pesanan untuk halaman admin (Kanban).
+    Dikelompokkan per phase, lalu dibagi lagi menjadi 'ready' (belum di-assign) 
+    dan 'in_progress' (sedang dikerjakan).
+    """
+    query = db.query(OrderModel)
+    orders = query.all()
+
+    results = []
+
+    for order in orders:
+        for item in order.items:
+            # Skip item yang sudah selesai atau masih received (belum masuk produksi)
+            if item.status in (OrderStatus.DONE, OrderStatus.RECEIVED):
+                continue
+
+            results.append({
+                "order_id": order.id,
+                "item_id": item.id,
+                "receiptNumber": order.receiptNumber,
+                "customerName": order.customerName,
+                "garmentType": item.garmentType,
+                "deadline": order.deadline,
+                "status": item.status.value if hasattr(item.status, 'value') else item.status,
+                "urgency_label": get_urgency_label(order.deadline),
+                "created_at": order.createdAt,
+                "attributes": item.attributes,
+                "assigned_worker_id": item.assigned_worker_id,
+                "assigned_worker_name": item.assigned_worker_name,
+            })
+
+    # Sort results
+    sorted_results = sort_by_priority(results)
+
+    # Group by phase and status
+    PHASE_ORDER = ["cutting", "sewing", "finishing"]
+    PHASE_LABELS = {
+        "cutting": "Potong",
+        "sewing": "Jahit",
+        "finishing": "Finishing",
+    }
+
+    buckets = {phase: {"ready": [], "in_progress": []} for phase in PHASE_ORDER}
+
+    for task in sorted_results:
+        status = task.get("status", "")
+        if status in buckets:
+            if task.get("assigned_worker_id"):
+                buckets[status]["in_progress"].append(task)
+            else:
+                buckets[status]["ready"].append(task)
+
+    phases_response = []
+    for phase in PHASE_ORDER:
+        phases_response.append({
+            "phase": phase,
+            "phase_label": PHASE_LABELS.get(phase, phase),
+            "ready": buckets[phase]["ready"],
+            "in_progress": buckets[phase]["in_progress"],
+            "ready_count": len(buckets[phase]["ready"]),
+            "in_progress_count": len(buckets[phase]["in_progress"]),
+        })
+
+    return {"phases": phases_response}
+
 @router.put("/items/{item_id}/status")
 def update_item_status(
     item_id: int,
@@ -160,6 +227,27 @@ def update_item_status(
 
     if not item:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
+
+    return item
+
+@router.put("/items/{item_id}/assign")
+def assign_worker(
+    item_id: int,
+    worker_id: int = Query(...),
+    note: Optional[str] = "",
+    employee: Optional[str] = "Admin",
+    db: Session = Depends(get_db)
+):
+    item = crud_order.assign_worker_to_item(
+        db,
+        item_id=item_id,
+        worker_id=worker_id,
+        note=note,
+        employee=employee
+    )
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item atau Worker tidak ditemukan")
 
     return item
 

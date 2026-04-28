@@ -146,3 +146,82 @@ export const useTaskActions = () => {
 
   return { takeTask, completeTask, loading };
 };
+
+// ─── ADMIN WORK ─────────────────────────────────────────────────────────────
+
+export interface AdminPriorityTask extends PriorityTask {
+  assigned_worker_id?: number | null;
+  assigned_worker_name?: string | null;
+}
+
+export interface AdminPhaseGroup {
+  phase: string;
+  phase_label: string;
+  ready: AdminPriorityTask[];
+  in_progress: AdminPriorityTask[];
+  ready_count: number;
+  in_progress_count: number;
+}
+
+export interface AdminWorkResponse {
+  phases: AdminPhaseGroup[];
+}
+
+export const useAdminWork = () => {
+  const { apiBase } = useRuntimeConfig().public;
+
+  const { data, status, error, refresh } = useFetch<AdminWorkResponse>(`${apiBase}/orders/admin-work`, {
+    default: () => ({ phases: [] }) as AdminWorkResponse,
+  });
+
+  return { data, status, error, refresh };
+};
+
+export const useAdminTaskActions = () => {
+  const { apiBase } = useRuntimeConfig().public;
+  const loading = ref(false);
+
+  const assignWorker = async (itemId: number, workerId: number, adminName: string = "Admin") => {
+    loading.value = true;
+    try {
+      await $fetch(`${apiBase}/orders/items/${itemId}/assign`, {
+        method: "PUT",
+        params: {
+          worker_id: workerId,
+          employee: adminName,
+        },
+      });
+      return { success: true };
+    } catch {
+      return { success: false };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const completeTask = async (itemId: number, currentStatus: string, adminName: string = "Admin") => {
+    loading.value = true;
+    const nextStatus: Record<string, string> = {
+      cutting: "sewing",
+      sewing: "finishing",
+      finishing: "done",
+    };
+    try {
+      await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
+        method: "PUT",
+        params: {
+          status: nextStatus[currentStatus] ?? currentStatus,
+          note: "Diselesaikan oleh admin",
+          employee: adminName,
+        },
+      });
+      return { success: true };
+    } catch {
+      return { success: false };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  return { assignWorker, completeTask, loading };
+};
