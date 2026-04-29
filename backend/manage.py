@@ -2,12 +2,13 @@
 manage.py – CLI helper untuk migrasi, seeding, dan reset database.
 
 Perintah:
-  python manage.py migrate          → Jalankan semua migration yang pending
-  python manage.py migrate:down     → Rollback migration terakhir
-  python manage.py migrate:reset    → Rollback semua migration (downgrade ke base)
-  python manage.py seed             → Isi database dengan data dummy
-  python manage.py reset            → Kosongkan semua tabel (reset auto-increment)
-  python manage.py fresh            → reset + seed (fresh start)
+  python manage.py generate      -> Buat migration baru
+  python manage.py migrate       -> Jalankan semua migration yang pending
+  python manage.py migrate:down  -> Rollback migration terakhir
+  python manage.py migrate:reset -> Rollback semua migration (downgrade ke base)
+  python manage.py seed          -> Isi database dengan data dummy
+  python manage.py reset         -> Kosongkan semua tabel (reset auto-increment)
+  python manage.py fresh         -> reset + seed (fresh start)
 """
 
 import sys
@@ -29,7 +30,11 @@ def main():
     command = sys.argv[1].lower()
 
     # ── Migration commands ──────────────────────────────────────────────────
-    if command == "migrate":
+    if command == "generate":
+        print("▶  Membuat migration baru...")
+        run(["alembic", "revision", "--autogenerate"])
+
+    elif command == "migrate":
         print("▶  Menjalankan migration ke versi terbaru...")
         run(["alembic", "upgrade", "head"])
 

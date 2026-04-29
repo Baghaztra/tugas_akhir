@@ -168,8 +168,12 @@ def group_by_phase(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
     for task in orders:
         status = task.get("status", "")
-        if status in buckets:
-            buckets[status].append(task)
+        if status in ("received", "cutting"):
+            buckets["cutting"].append(task)
+        elif status in ("cutted", "sewing"):
+            buckets["sewing"].append(task)
+        elif status in ("sewed", "finishing"):
+            buckets["finishing"].append(task)
 
     result = []
     for phase in PHASE_ORDER:

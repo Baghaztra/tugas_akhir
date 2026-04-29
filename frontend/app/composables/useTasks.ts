@@ -59,7 +59,7 @@ export const useEmployeeTasks = (stage: Ref<string> = ref("semua")) => {
     if (!raw) return [];
 
     // Grouped response
-    if ('phases' in raw && Array.isArray(raw.phases)) {
+    if ("phases" in raw && Array.isArray(raw.phases)) {
       return raw.phases;
     }
 
@@ -71,26 +71,24 @@ export const useEmployeeTasks = (stage: Ref<string> = ref("semua")) => {
         finishing: "Finishing",
       };
       const firstStatus = raw[0]?.status ?? stage.value;
-      return [{
-        phase: firstStatus,
-        phase_label: phaseLabels[firstStatus] ?? firstStatus,
-        count: raw.length,
-        tasks: raw,
-      }];
+      return [
+        {
+          phase: firstStatus,
+          phase_label: phaseLabels[firstStatus] ?? firstStatus,
+          count: raw.length,
+          tasks: raw,
+        },
+      ];
     }
 
     return [];
   });
 
   /** Flat list of all tasks across phases — for backward compat */
-  const tasks = computed<PriorityTask[]>(() =>
-    phases.value.flatMap(p => p.tasks)
-  );
+  const tasks = computed<PriorityTask[]>(() => phases.value.flatMap((p) => p.tasks));
 
   /** Total count across all phases */
-  const totalCount = computed(() =>
-    phases.value.reduce((sum, p) => sum + p.count, 0)
-  );
+  const totalCount = computed(() => phases.value.reduce((sum, p) => sum + p.count, 0));
 
   return { phases, tasks, totalCount, status, error, refresh };
 };
@@ -100,13 +98,18 @@ export const useTaskActions = () => {
   const loading = ref(false);
 
   /** Ambil tugas: update status item ke stage saat ini (assign ke worker) */
-  const takeTask = async (itemId: number, workerName: string) => {
+  const takeTask = async (itemId: number, currentStatus: string, workerName: string) => {
     loading.value = true;
+    const nextStatus: Record<string, string> = {
+      received: "cutting",
+      cutted: "sewing",
+      sewed: "finishing",
+    };
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
         params: {
-          status: "cutting",
+          status: nextStatus[currentStatus] ?? currentStatus,
           note: `Diambil oleh ${workerName}`,
           employee: workerName,
         },
@@ -120,21 +123,12 @@ export const useTaskActions = () => {
   };
 
   /** Tandai selesai: update status item ke stage berikutnya */
-  const completeTask = async (itemId: number, currentStatus: string) => {
+  const completeTask = async (itemId: number) => {
     loading.value = true;
-    const nextStatus: Record<string, string> = {
-      cutting: "sewing",
-      sewing: "finishing",
-      finishing: "done",
-    };
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
-        params: {
-          status: nextStatus[currentStatus] ?? currentStatus,
-          note: "Selesai dikerjakan",
-          employee: "Worker",
-        },
+        body: {}
       });
       return { success: true };
     } catch {
@@ -170,9 +164,12 @@ export interface AdminWorkResponse {
 export const useAdminWork = () => {
   const { apiBase } = useRuntimeConfig().public;
 
-  const { data, status, error, refresh } = useFetch<AdminWorkResponse>(`${apiBase}/orders/admin-work`, {
-    default: () => ({ phases: [] }) as AdminWorkResponse,
-  });
+  const { data, status, error, refresh } = useFetch<AdminWorkResponse>(
+    `${apiBase}/orders/admin-work`,
+    {
+      default: () => ({ phases: [] }) as AdminWorkResponse,
+    },
+  );
 
   return { data, status, error, refresh };
 };
@@ -184,11 +181,10 @@ export const useAdminTaskActions = () => {
   const assignWorker = async (itemId: number, workerId: number, adminName: string = "Admin") => {
     loading.value = true;
     try {
-      await $fetch(`${apiBase}/orders/items/${itemId}/assign`, {
+      await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
-        params: {
+        body: {
           worker_id: workerId,
-          employee: adminName,
         },
       });
       return { success: true };
@@ -199,21 +195,12 @@ export const useAdminTaskActions = () => {
     }
   };
 
-  const completeTask = async (itemId: number, currentStatus: string, adminName: string = "Admin") => {
+  const completeTask = async (itemId: number, workerName: string = "Admin") => {
     loading.value = true;
-    const nextStatus: Record<string, string> = {
-      cutting: "sewing",
-      sewing: "finishing",
-      finishing: "done",
-    };
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
-        params: {
-          status: nextStatus[currentStatus] ?? currentStatus,
-          note: "Diselesaikan oleh admin",
-          employee: adminName,
-        },
+        body: {}
       });
       return { success: true };
     } catch {

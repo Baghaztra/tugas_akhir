@@ -8,7 +8,9 @@ from ..database import Base
 class OrderStatus(str, enum.Enum):
     RECEIVED = "received"
     CUTTING = "cutting"
+    CUTTED = "cutted"
     SEWING = "sewing"
+    SEWED = "sewed"
     FINISHING = "finishing"
     DONE = "done"
 

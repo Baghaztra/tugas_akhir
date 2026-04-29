@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Query, Form, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from pydantic import BaseModel
 
 from ..crud import order as crud_order
 from ..schemas.order import (
@@ -80,60 +81,6 @@ def read_orders(
         search=search
     )
 
-# ─── Priority (Employee Tasks) — HARUS sebelum /{order_id} ───────────────────
-
-@router.get("/priority")
-def get_priority_orders(
-    stage: Optional[str] = Query(
-        default="semua",
-        description="Filter tahap: potong | jahit | finishing | semua",
-    ),
-    db: Session = Depends(get_db),
-):
-    """
-    Mengembalikan task list berdasarkan prioritas (deadline ascending).
-
-    - stage=semua → response dikelompokkan per phase: { phases: [...] }
-    - stage=potong/jahit/finishing → response flat array task yang sudah di-sort
-    """
-    stage_key = (stage or "semua").lower()
-    target_status = STAGE_STATUS_MAP.get(stage_key)
-
-    query = db.query(OrderModel)
-    orders = query.all()
-
-    results = []
-
-    for order in orders:
-        for item in order.items:
-            # Skip item yang sudah selesai atau masih received (belum masuk produksi)
-            if item.status in (OrderStatus.DONE, OrderStatus.RECEIVED):
-                continue
-
-            if target_status and item.status != target_status:
-                continue
-
-            results.append({
-                "order_id": order.id,
-                "item_id": item.id,
-                "receiptNumber": order.receiptNumber,
-                "customerName": order.customerName,
-                "garmentType": item.garmentType,
-                "deadline": order.deadline,
-                "status": item.status.value if hasattr(item.status, 'value') else item.status,
-                "urgency_label": get_urgency_label(order.deadline),
-                "created_at": order.createdAt,
-                "attributes": item.attributes,
-            })
-
-    # Jika stage=semua, kelompokkan berdasarkan phase
-    if stage_key == "semua":
-        return {"phases": group_by_phase(results)}
-
-    # Jika filter spesifik, kembalikan flat sorted list
-    return sort_by_priority(results)
-
-
 @router.get("/tracking/{receipt}", response_model=OrderTracking)
 def track_order(receipt: str, db: Session = Depends(get_db)):
     """Public endpoint — track order by receipt number."""
@@ -156,8 +103,8 @@ def get_admin_work(db: Session = Depends(get_db)):
 
     for order in orders:
         for item in order.items:
-            # Skip item yang sudah selesai atau masih received (belum masuk produksi)
-            if item.status in (OrderStatus.DONE, OrderStatus.RECEIVED):
+            # Skip item yang sudah selesai (done)
+            if item.status == OrderStatus.DONE:
                 continue
 
             results.append({
@@ -190,11 +137,19 @@ def get_admin_work(db: Session = Depends(get_db)):
 
     for task in sorted_results:
         status = task.get("status", "")
-        if status in buckets:
-            if task.get("assigned_worker_id"):
-                buckets[status]["in_progress"].append(task)
-            else:
-                buckets[status]["ready"].append(task)
+        
+        if status == "received":
+            buckets["cutting"]["ready"].append(task)
+        elif status == "cutting":
+            buckets["cutting"]["in_progress"].append(task)
+        elif status == "cutted":
+            buckets["sewing"]["ready"].append(task)
+        elif status == "sewing":
+            buckets["sewing"]["in_progress"].append(task)
+        elif status == "sewed":
+            buckets["finishing"]["ready"].append(task)
+        elif status == "finishing":
+            buckets["finishing"]["in_progress"].append(task)
 
     phases_response = []
     for phase in PHASE_ORDER:
@@ -209,45 +164,23 @@ def get_admin_work(db: Session = Depends(get_db)):
 
     return {"phases": phases_response}
 
+class ItemStatusUpdate(BaseModel):
+    worker_id: Optional[int] = None
+
 @router.put("/items/{item_id}/status")
 def update_item_status(
     item_id: int,
-    status: OrderStatus,
-    note: Optional[str] = "",
-    employee: Optional[str] = "Admin",
+    payload: ItemStatusUpdate,
     db: Session = Depends(get_db)
 ):
-    item = crud_order.update_item_status(
+    item = crud_order.update_item_status_flow(
         db,
         item_id=item_id,
-        status=status,
-        note=note,
-        employee=employee
+        worker_id=payload.worker_id
     )
 
     if not item:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
-
-    return item
-
-@router.put("/items/{item_id}/assign")
-def assign_worker(
-    item_id: int,
-    worker_id: int = Query(...),
-    note: Optional[str] = "",
-    employee: Optional[str] = "Admin",
-    db: Session = Depends(get_db)
-):
-    item = crud_order.assign_worker_to_item(
-        db,
-        item_id=item_id,
-        worker_id=worker_id,
-        note=note,
-        employee=employee
-    )
-
-    if not item:
-        raise HTTPException(status_code=404, detail="Item atau Worker tidak ditemukan")
 
     return item
 

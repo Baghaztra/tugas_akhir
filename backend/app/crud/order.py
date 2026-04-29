@@ -160,63 +160,74 @@ def _add_log(db: Session, order_item_id: int, status: str, note: str, employee_n
     db.add(log)
     db.commit()
 
-def update_item_status(
+def update_item_status_flow(
     db: Session,
     item_id: int,
-    status: str,
-    note: str = "",
-    employee: str = "Admin"
+    worker_id: Optional[int] = None
 ):
     item = db.query(OrderItem).filter(OrderItem.id == item_id).first()
     if not item:
         return None
 
-    old_status = item.status
-    item.status = status
-
-    # If status changes (advances), clear assigned worker and set their status to IDLE
-    if old_status != status and item.assigned_worker_id:
-        worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
-        if worker:
-            worker.status = WorkerStatus.IDLE
-            db.add(worker)
-        
+    # Determine next state based on current state and worker_id
+    if item.status == OrderStatus.RECEIVED:
+        if worker_id:
+            worker = db.query(Worker).filter(Worker.id == worker_id).first()
+            if worker:
+                item.status = OrderStatus.CUTTING
+                item.assigned_worker_id = worker.id
+                item.assigned_worker_name = worker.name
+                worker.status = WorkerStatus.WORKING
+                _add_log(db, item.id, item.status, "Pesanan mulai dipotong", worker.name)
+    elif item.status == OrderStatus.CUTTING:
+        worker_name = item.assigned_worker_name or "Admin"
+        if item.assigned_worker_id:
+            worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
+            if worker:
+                worker.status = WorkerStatus.IDLE
+        item.status = OrderStatus.CUTTED
         item.assigned_worker_id = None
         item.assigned_worker_name = None
-
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-
-    if old_status != status:
-        _add_log(db, item.id, status, note, employee)
-
-    return item
-
-def assign_worker_to_item(
-    db: Session,
-    item_id: int,
-    worker_id: int,
-    note: str = "",
-    employee: str = "Admin"
-):
-    item = db.query(OrderItem).filter(OrderItem.id == item_id).first()
-    if not item:
-        return None
+        _add_log(db, item.id, item.status, "Pesanan selesai dipotong", worker_name)
+    elif item.status == OrderStatus.CUTTED:
+        if worker_id:
+            worker = db.query(Worker).filter(Worker.id == worker_id).first()
+            if worker:
+                item.status = OrderStatus.SEWING
+                item.assigned_worker_id = worker.id
+                item.assigned_worker_name = worker.name
+                worker.status = WorkerStatus.WORKING
+                _add_log(db, item.id, item.status, "Pesanan mulai dijahit", worker.name)
+    elif item.status == OrderStatus.SEWING:
+        worker_name = item.assigned_worker_name or "Admin"
+        if item.assigned_worker_id:
+            worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
+            if worker:
+                worker.status = WorkerStatus.IDLE
+        item.status = OrderStatus.SEWED
+        item.assigned_worker_id = None
+        item.assigned_worker_name = None
+        _add_log(db, item.id, item.status, "Pesanan selesai dijahit", worker_name)
+    elif item.status == OrderStatus.SEWED:
+        if worker_id:
+            worker = db.query(Worker).filter(Worker.id == worker_id).first()
+            if worker:
+                item.status = OrderStatus.FINISHING
+                item.assigned_worker_id = worker.id
+                item.assigned_worker_name = worker.name
+                worker.status = WorkerStatus.WORKING
+                _add_log(db, item.id, item.status, "Pesanan mulai difinishing", worker.name)
+    elif item.status == OrderStatus.FINISHING:
+        worker_name = item.assigned_worker_name or "Admin"
+        if item.assigned_worker_id:
+            worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
+            if worker:
+                worker.status = WorkerStatus.IDLE
+        item.status = OrderStatus.DONE
+        item.assigned_worker_id = None
+        item.assigned_worker_name = None
+        _add_log(db, item.id, item.status, "Pesanan selesai difinishing", worker_name)
         
-    worker = db.query(Worker).filter(Worker.id == worker_id).first()
-    if not worker:
-        return None
-
-    item.assigned_worker_id = worker.id
-    item.assigned_worker_name = worker.name
-    worker.status = WorkerStatus.WORKING
-
-    db.add(item)
-    db.add(worker)
     db.commit()
     db.refresh(item)
-
-    _add_log(db, item.id, item.status, f"Assigned to {worker.name}. {note}", employee)
-
     return item

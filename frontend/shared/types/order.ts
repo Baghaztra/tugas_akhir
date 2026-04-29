@@ -1,5 +1,12 @@
-export type OrderStatus = 'received' | 'cutting' | 'sewing' | 'finishing' | 'done';
-export type PaymentStatus = 'paid' | 'unpaid' | 'partial';
+export type OrderStatus =
+  | "received"
+  | "cutting"
+  | "cutted"
+  | "sewing"
+  | "sewed"
+  | "finishing"
+  | "done";
+export type PaymentStatus = "paid" | "unpaid" | "partial";
 
 // -- Order Log --
 export interface OrderLogCreate {

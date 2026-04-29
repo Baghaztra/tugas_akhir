@@ -7,7 +7,9 @@ from enum import Enum
 class OrderStatus(str, Enum):
     RECEIVED = "received"
     CUTTING = "cutting"
+    CUTTED = "cutted"
     SEWING = "sewing"
+    SEWED = "sewed"
     FINISHING = "finishing"
     DONE = "done"
 

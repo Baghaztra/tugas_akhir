@@ -76,7 +76,7 @@
                       </div>
                       {{ task.assigned_worker_name }}
                     </div>
-                    <ui-app-button variant="primary" size="sm" @click="handleComplete(task.item_id, task.status)"
+                    <ui-app-button variant="primary" size="sm" @click="handleComplete(task.item_id)"
                       :loading="actionLoading">
                       Selesai
                     </ui-app-button>
@@ -238,10 +238,10 @@ const submitAssign = async () => {
   }
 }
 
-const handleComplete = async (itemId: number, currentStatus: string) => {
+const handleComplete = async (itemId: number) => {
   if (!confirm("Tandai item ini selesai dan lanjutkan ke tahap berikutnya?")) return
 
-  const res = await completeTask(itemId, currentStatus)
+  const res = await completeTask(itemId)
   if (res.success) {
     refreshWork()
   } else {
