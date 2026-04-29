@@ -161,6 +161,19 @@
       </div>
     </ui-app-modal>
 
+    <!-- Confirm Modal -->
+    <ui-app-confirm-modal
+      :show="confirmModal.show"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      :confirm-text="confirmModal.confirmText"
+      :confirm-variant="confirmModal.confirmVariant"
+      :icon="confirmModal.icon"
+      :loading="confirmModal.loading"
+      @confirm="confirmModal.onConfirm"
+      @cancel="confirmModal.show = false"
+    />
+
   </div>
 </template>
 
@@ -206,6 +219,37 @@ const selectedItemId = ref<number | null>(null)
 const selectedWorkerId = ref<number | null>(null)
 const currentModalPhase = ref('')
 
+const confirmModal = ref({
+  show: false,
+  title: 'Konfirmasi',
+  message: '',
+  confirmText: 'Konfirmasi',
+  confirmVariant: 'primary' as 'primary' | 'secondary' | 'danger',
+  icon: 'heroicons:exclamation-triangle',
+  onConfirm: () => {},
+  loading: false
+})
+
+const openConfirm = (config: {
+  title?: string,
+  message: string,
+  confirmText?: string,
+  variant?: 'primary' | 'secondary' | 'danger',
+  icon?: string,
+  onConfirm: () => void
+}) => {
+  confirmModal.value = {
+    show: true,
+    title: config.title || 'Konfirmasi',
+    message: config.message,
+    confirmText: config.confirmText || 'Konfirmasi',
+    confirmVariant: config.variant || 'primary',
+    icon: config.icon || 'heroicons:exclamation-triangle',
+    onConfirm: config.onConfirm,
+    loading: false
+  }
+}
+
 const openAssignModal = (itemId: number, phase: string) => {
   selectedItemId.value = itemId
   currentModalPhase.value = phase
@@ -234,18 +278,42 @@ const submitAssign = async () => {
     isAssignModalOpen.value = false
     refreshWork()
   } else {
-    alert("Gagal menugaskan pekerja")
+    openConfirm({
+      title: 'Gagal',
+      message: 'Gagal menugaskan pekerja. Silakan coba lagi.',
+      confirmText: 'Tutup',
+      variant: 'danger',
+      onConfirm: () => confirmModal.value.show = false
+    })
   }
 }
 
-const handleComplete = async (itemId: number) => {
-  if (!confirm("Tandai item ini selesai dan lanjutkan ke tahap berikutnya?")) return
-
-  const res = await completeTask(itemId)
-  if (res.success) {
-    refreshWork()
-  } else {
-    alert("Gagal memperbarui status")
-  }
+const handleComplete = (itemId: number) => {
+  openConfirm({
+    title: 'Selesaikan Pekerjaan',
+    message: 'Tandai item ini selesai dan lanjutkan ke tahap berikutnya?',
+    confirmText: 'Ya, Selesai',
+    icon: 'heroicons:check-circle',
+    onConfirm: async () => {
+      confirmModal.value.loading = true
+      try {
+        const res = await completeTask(itemId)
+        if (res.success) {
+          refreshWork()
+          confirmModal.value.show = false
+        } else {
+          openConfirm({
+            title: 'Gagal',
+            message: 'Gagal memperbarui status. Silakan coba lagi.',
+            confirmText: 'Tutup',
+            variant: 'danger',
+            onConfirm: () => confirmModal.value.show = false
+          })
+        }
+      } finally {
+        confirmModal.value.loading = false
+      }
+    }
+  })
 }
 </script>
