@@ -10,4 +10,15 @@ export default defineNuxtConfig({
       apiBase: "http://localhost:8000",
     },
   },
+
+  // Hybrid Rendering: Mengatur strategi rendering per rute
+  routeRules: {
+    // Landing page di-prerender (dijadikan statis saat build) untuk performa dan SEO maksimal
+    '/': { prerender: true },
+    
+    // Halaman internal dijadikan SPA murni (client-side rendering) untuk mengurangi beban server
+    '/admin/**': { ssr: false },
+    '/task-list/**': { ssr: false },
+    '/tracking/**': { ssr: false }
+  }
 });

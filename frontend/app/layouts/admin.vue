@@ -16,18 +16,14 @@
       <!-- Navigation -->
       <nav class="flex-1 py-4 overflow-y-auto">
         <div v-for="section in navSections" :key="section.label">
-          <p v-show="sidebarOpen" class="px-4 py-2 text-xs font-semibold text-primary-400 uppercase tracking-wider">{{ section.label }}</p>
-          <NuxtLink
-            v-for="item in section.items"
-            :key="item.to"
-            :to="item.to"
-            :class="[
-              'flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm font-medium transition-colors group',
-              $route.path === item.to || $route.path.startsWith(item.to + '/')
-                ? 'bg-primary-600 text-white'
-                : 'text-primary-200 hover:bg-primary-700/60 hover:text-white'
-            ]"
-          >
+          <p v-show="sidebarOpen" class="px-4 py-2 text-xs font-semibold text-primary-400 uppercase tracking-wider">{{
+            section.label }}</p>
+          <NuxtLink v-for="item in section.items" :key="item.to" :to="item.to" :class="[
+            'flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm font-medium transition-colors group',
+            $route.path === item.to || $route.path.startsWith(item.to + '/')
+              ? 'bg-primary-600 text-white'
+              : 'text-primary-200 hover:bg-primary-700/60 hover:text-white'
+          ]">
             <Icon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
             <span v-show="sidebarOpen" class="whitespace-nowrap">{{ item.label }}</span>
           </NuxtLink>
@@ -36,12 +32,15 @@
 
       <!-- Bottom: Back to public & toggle -->
       <div class="border-t border-primary-700/50 p-3 space-y-1">
-        <NuxtLink to="/" class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary-300 hover:text-white hover:bg-primary-700/60 text-sm transition-colors">
+        <NuxtLink to="/"
+          class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary-300 hover:text-white hover:bg-primary-700/60 text-sm transition-colors">
           <Icon name="heroicons:arrow-left" class="w-4 h-4 flex-shrink-0" />
           <span v-show="sidebarOpen" class="whitespace-nowrap">Halaman Publik</span>
         </NuxtLink>
-        <button @click="sidebarOpen = !sidebarOpen" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-primary-300 hover:text-white hover:bg-primary-700/60 text-sm transition-colors">
-          <Icon :name="sidebarOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'" class="w-4 h-4 flex-shrink-0" />
+        <button @click="sidebarOpen = !sidebarOpen"
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-primary-300 hover:text-white hover:bg-primary-700/60 text-sm transition-colors">
+          <Icon :name="sidebarOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'"
+            class="w-4 h-4 flex-shrink-0" />
           <span v-show="sidebarOpen" class="whitespace-nowrap">Sembunyikan</span>
         </button>
       </div>
@@ -74,17 +73,12 @@
 
     <!-- Bottom Navigation Bar (mobile only) -->
     <nav class="fixed bottom-0 inset-x-0 z-50 bg-primary-900 border-t border-primary-700/50 flex md:hidden">
-      <NuxtLink
-        v-for="item in bottomNavItems"
-        :key="item.to"
-        :to="item.to"
-        :class="[
-          'flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium transition-colors',
-          $route.path === item.to || $route.path.startsWith(item.to + '/')
-            ? 'text-white'
-            : 'text-primary-400'
-        ]"
-      >
+      <NuxtLink v-for="item in bottomNavItems" :key="item.to" :to="item.to" :class="[
+        'flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium transition-colors',
+        $route.path === item.to || $route.path.startsWith(item.to + '/')
+          ? 'text-white'
+          : 'text-primary-400'
+      ]">
         <div :class="[
           'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
           $route.path === item.to || $route.path.startsWith(item.to + '/')
@@ -97,10 +91,8 @@
       </NuxtLink>
 
       <!-- Halaman Publik -->
-      <NuxtLink
-        to="/"
-        class="flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium text-primary-400 transition-colors"
-      >
+      <NuxtLink to="/"
+        class="flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium text-primary-400 transition-colors">
         <div class="w-8 h-8 rounded-lg flex items-center justify-center">
           <Icon name="heroicons:arrow-left" class="w-5 h-5" />
         </div>
@@ -142,6 +134,7 @@ const bottomNavItems = navSections.flatMap(s => s.items)
 
 const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/dashboard': { title: 'Dashboard', desc: 'Ringkasan aktivitas bisnis' },
+  '/admin/work': { title: 'Assign', desc: 'Papan pekerjaan' },
   '/admin/orders': { title: 'Manajemen Pesanan', desc: 'Kelola seluruh pesanan jahit' },
   '/admin/employees': { title: 'Manajemen Karyawan', desc: 'Kelola data dan performa karyawan' },
   '/admin/reports': { title: 'Laporan & Analitik', desc: 'Data statistik dan performa bisnis' },

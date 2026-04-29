@@ -89,37 +89,45 @@ STATUSES_FLOW = [
     OrderStatus.DONE,
 ]
 
+BASE_URL = "http://localhost:8000"
+
 PORTFOLIO_DATA = [
-    {
-        "title": "Kemeja Batik Eksklusif",
-        "category": "Kemeja",
-        "description": "Kemeja batik motif parang dengan bahan katun premium, cocok untuk acara formal.",
-    },
-    {
-        "title": "Gaun Pesta Mewah",
-        "category": "Gaun",
-        "description": "Gaun pesta dengan detail bordir tangan menggunakan bahan satin berkualitas tinggi.",
-    },
-    {
-        "title": "Jas Pernikahan Custom",
-        "category": "Jas",
-        "description": "Jas pengantin custom dengan fitting sempurna, bahan wool impor pilihan.",
-    },
-    {
-        "title": "Kebaya Modern",
-        "category": "Kebaya",
-        "description": "Kebaya modern dengan sentuhan kontemporer, cocok untuk wisuda dan lamaran.",
-    },
-    {
-        "title": "Celana Bahan Formal",
-        "category": "Celana",
-        "description": "Celana bahan dengan potongan slim-fit, nyaman dipakai seharian di kantor.",
-    },
-    {
-        "title": "Blazer Wanita Elegan",
-        "category": "Blazer",
-        "description": "Blazer wanita dengan potongan tailored, tersedia dalam berbagai pilihan warna.",
-    },
+  {
+    "title": "Kebaya Merah Bordir",
+    "category": "Kebaya",
+    "description": "Kebaya merah dengan bordir elegan dan rok batik",
+    "image": BASE_URL+"/uploads/portofolio/kebaya_merah.png",
+  },
+  {
+    "title": "Blouse Bunga Merah",
+    "category": "Blouse",
+    "description": "Blouse asimetris dengan motif bunga merah putih",
+    "image": BASE_URL+"/uploads/portofolio/blouse_bunga.png",
+  },
+  {
+    "title": "Baju Pesta Pink",
+    "category": "Baju Pesta",
+    "description": "Baju pesta pink dengan sulam hijau dan kuning",
+    "image": BASE_URL+"/uploads/portofolio/baju_pesta_pink.png",
+  },
+  {
+    "title": "Blouse Bunga Biru",
+    "category": "Blouse",
+    "description": "Blouse biru dengan motif bunga putih dan ruffles",
+    "image": BASE_URL+"/uploads/portofolio/blouse_bunga_biru.png",
+  },
+  {
+    "title": "Blouse Kombinasi Pink",
+    "category": "Blouse",
+    "description": "Blouse pink kombinasi dengan lengan transparan",
+    "image": BASE_URL+"/uploads/portofolio/blouse_jambu.png",
+  },
+  {
+    "title": "Baju Maroon Batik",
+    "category": "Baju Batik",
+    "description": "Baju maroon dengan kombinasi batik tribal",
+    "image": BASE_URL+"/uploads/portofolio/merah_maroon.png",
+  }
 ]
 
 BUSINESS_PROFILE = {
@@ -133,6 +141,8 @@ BUSINESS_PROFILE = {
     "instagram": "@rumahjahityan",
     "logo": None,
 }
+
+ORDERS = 0
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -203,68 +213,69 @@ def seed(db):
     worker_names = [w.name for w in workers]
 
     # 2. Orders + OrderLogs
-    print("   → Menanam data orders & logs...")
-    status_weights = [0.1, 0.15, 0.25, 0.15, 0.35]
-    for i in range(1, 31):   # 30 pesanan dummy
-        final_status = random.choices(STATUSES_FLOW, weights=status_weights, k=1)[0]
-        payment = random.choices(
-            [PaymentStatus.PAID, PaymentStatus.UNPAID, PaymentStatus.PARTIAL],
-            weights=[0.4, 0.3, 0.3],
-            k=1,
-        )[0]
-        total = random.choice([150_000, 200_000, 250_000, 300_000, 400_000, 500_000])
-        paid = 0
-        if payment == PaymentStatus.PAID:
-            paid = total
-        elif payment == PaymentStatus.PARTIAL:
-            paid = total // 2
-
-        order = Order(
-            receiptNumber=generate_receipt(i),
-            customerName=random.choice(CUSTOMER_NAMES),
-            customerPhone=random_phone(),
-            paymentStatus=payment,
-            totalPrice=float(total),
-            paidAmount=float(paid),
-            deadline=random_deadline(),
-            notes="Harap dikerjakan dengan teliti." if random.random() > 0.6 else None,
-            createdAt=datetime.now() - timedelta(days=random.randint(1, 60)),
-        )
-        db.add(order)
-        db.flush()
-
-        # Buat item
-        num_items = random.randint(1, 3)
-        for _ in range(num_items):
-            item_status = random.choices(
-                STATUSES_FLOW,
-                weights=[0.1, 0.2, 0.3, 0.2, 0.2],
-                k=1
+    if (ORDERS >=0):
+        print("   → Menanam data orders & logs...")
+        status_weights = [0.1, 0.15, 0.25, 0.15, 0.35]
+        for i in range(1, (ORDERS + 1)):
+            final_status = random.choices(STATUSES_FLOW, weights=status_weights, k=1)[0]
+            payment = random.choices(
+                [PaymentStatus.PAID, PaymentStatus.UNPAID, PaymentStatus.PARTIAL],
+                weights=[0.4, 0.3, 0.3],
+                k=1,
             )[0]
+            total = random.choice([150_000, 200_000, 250_000, 300_000, 400_000, 500_000])
+            paid = 0
+            if payment == PaymentStatus.PAID:
+                paid = total
+            elif payment == PaymentStatus.PARTIAL:
+                paid = total // 2
 
-            item = OrderItem(
-                order_id=order.id,
-                garmentType=random.choice(GARMENT_TYPES),
-                description="Item custom",
-                quantity=random.randint(1, 5),
-                measurements={
-                    "lingkar_dada": random.randint(85, 110),
-                    "lingkar_pinggang": random.randint(65, 90),
-                },
-                attributes={
-                    "bordir": random.choice([True, False]),
-                    "payet": random.choice([True, False]),
-                },
-                status=item_status,
+            order = Order(
+                receiptNumber=generate_receipt(i),
+                customerName=random.choice(CUSTOMER_NAMES),
+                customerPhone=random_phone(),
+                paymentStatus=payment,
+                totalPrice=float(total),
+                paidAmount=float(paid),
+                deadline=random_deadline(),
+                notes="Harap dikerjakan dengan teliti." if random.random() > 0.6 else None,
+                createdAt=datetime.now() - timedelta(days=random.randint(1, 60)),
             )
-
-            db.add(item)
+            db.add(order)
             db.flush()
 
-            # buat log per item
-            logs = build_item_logs(item, item_status)
-            for log in logs:
-                db.add(log)
+            # Buat item
+            num_items = random.randint(1, 3)
+            for _ in range(num_items):
+                item_status = random.choices(
+                    STATUSES_FLOW,
+                    weights=[0.1, 0.2, 0.3, 0.2, 0.2],
+                    k=1
+                )[0]
+
+                item = OrderItem(
+                    order_id=order.id,
+                    garmentType=random.choice(GARMENT_TYPES),
+                    description="Item custom",
+                    quantity=random.randint(1, 5),
+                    measurements={
+                        "lingkar_dada": random.randint(85, 110),
+                        "lingkar_pinggang": random.randint(65, 90),
+                    },
+                    attributes={
+                        "bordir": random.choice([True, False]),
+                        "payet": random.choice([True, False]),
+                    },
+                    status=item_status,
+                )
+
+                db.add(item)
+                db.flush()
+
+                # buat log per item
+                logs = build_item_logs(item, item_status)
+                for log in logs:
+                    db.add(log)
         
     # 3. Business Profile
     print("   → Menanam data business profile...")
@@ -280,7 +291,7 @@ def seed(db):
     db.commit()
     print("✅ Seeding selesai!")
     print(f"   Workers        : {len(WORKERS_DATA)}")
-    print(f"   Orders         : 30")
+    print(f"   Orders         : {ORDERS}")
     print(f"   Portfolio Items: {len(PORTFOLIO_DATA)}")
     print(f"   Business Profile: 1")
 
