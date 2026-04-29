@@ -16,8 +16,9 @@
       <!-- Toolbar -->
       <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
         <div class="relative w-64">
-          <Icon name="heroicons:magnifying-glass" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input v-model="searchQuery" type="text" placeholder="Cari resi / pelanggan..." 
+          <Icon name="heroicons:magnifying-glass"
+            class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input v-model="searchQuery" type="text" placeholder="Cari resi / pelanggan..."
             class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all" />
         </div>
         <div class="text-sm text-gray-500 font-medium">
@@ -39,11 +40,21 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-if="status === 'pending'" v-for="i in 5" :key="i" class="animate-pulse">
-              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-24"></div></td>
-              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-32"></div></td>
-              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-28"></div></td>
-              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-20"></div></td>
-              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-16 ml-auto"></div></td>
+              <td class="px-6 py-4">
+                <div class="h-4 bg-gray-200 rounded w-24"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="h-4 bg-gray-200 rounded w-32"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="h-4 bg-gray-200 rounded w-28"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="h-4 bg-gray-200 rounded w-20"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="h-4 bg-gray-200 rounded w-16 ml-auto"></div>
+              </td>
             </tr>
             <tr v-else-if="!doneItems.length" class="bg-gray-50/30">
               <td colspan="5" class="px-6 py-12 text-center">
@@ -51,9 +62,10 @@
                 <p class="text-gray-500">Tidak ada riwayat pekerjaan yang cocok.</p>
               </td>
             </tr>
-            <tr v-else v-for="item in doneItems" :key="`${item.order.id}-${item.id}`" class="hover:bg-gray-50 transition-colors">
+            <tr v-else v-for="item in doneItems" :key="`${item.order.id}-${item.id}`"
+              class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4">
-                <div class="font-medium text-gray-900">{{ item.garmentType }}</div>
+                <div class="font-medium text-gray-900">{{ item.garmentType?.name }}</div>
                 <div class="text-xs text-gray-500 mt-0.5">Selesai</div>
               </td>
               <td class="px-6 py-4 font-mono text-xs text-gray-500">
@@ -89,9 +101,9 @@ const { orders, status } = useOrders({ search: searchQuery })
 
 const doneItems = computed(() => {
   if (!orders.value) return []
-  
+
   const items: any[] = []
-  
+
   for (const order of orders.value) {
     for (const item of order.items) {
       if (item.status === 'done') {
@@ -107,7 +119,7 @@ const doneItems = computed(() => {
       }
     }
   }
-  
+
   // Sort by order deadline descending
   return items.sort((a, b) => new Date(b.order.deadline).getTime() - new Date(a.order.deadline).getTime())
 })

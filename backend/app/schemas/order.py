@@ -80,7 +80,7 @@ class OrderItem(OrderItemBase):
     status: OrderStatus
     assigned_worker_id: Optional[int] = None
     assigned_worker_name: Optional[str] = None
-    garment_type: Optional[GarmentTypeName] = None
+    garmentType: Optional[GarmentTypeName] = None
     logs: List[OrderLog] = []
 
     class Config:

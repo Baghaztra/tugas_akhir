@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-from ..models.order import GarmentType
+from ..models.order import GarmentType, OrderItem
 from ..schemas.garment_type import GarmentTypeCreate, GarmentTypeUpdate
 
 
@@ -15,13 +16,23 @@ def get_garment_type(db: Session, garment_type_id: int):
 
 def get_garment_types(db: Session, skip: int = 0, limit: int = 100):
     """Ambil semua garment type yang belum dihapus (soft-delete filter)."""
-    return (
-        db.query(GarmentType)
+    result = (
+        db.query(GarmentType,func.count(OrderItem.id).label("item_count"))
+        .outerjoin(OrderItem,OrderItem.garmentTypeId == GarmentType.id)
         .filter(GarmentType.is_deleted == False)
+        .group_by(GarmentType.id)
         .offset(skip)
         .limit(limit)
         .all()
     )
+    return [
+        {
+            "id": gt.id,
+            "name": gt.name,
+            "is_deleted": gt.is_deleted,
+            "item_count": count
+        } for gt, count in result
+    ]
 
 
 def create_garment_type(db: Session, garment_type: GarmentTypeCreate):

@@ -54,7 +54,7 @@ class GarmentType(Base):
 
     order_items = relationship(
         "OrderItem",
-        back_populates="garment_type"
+        back_populates="garmentType"
     )
 
 class OrderItem(Base):
@@ -85,7 +85,7 @@ class OrderItem(Base):
         order_by="OrderLog.id"
     )
 
-    garment_type = relationship(
+    garmentType = relationship(
         "GarmentType",
         back_populates="order_items",
         foreign_keys=[garmentTypeId]

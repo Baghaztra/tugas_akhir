@@ -26,7 +26,7 @@ export interface OrderLog {
 
 // -- Order Item --
 export interface OrderItemCreate {
-  garmentType: string;
+  garmentTypeId: number | null;
   sketch?: string | null;
   description?: string | null;
   quantity?: number;
@@ -36,7 +36,7 @@ export interface OrderItemCreate {
 
 export interface OrderItem {
   id: number;
-  garmentType: string;
+  garmentType?: { name: string } | null;
   sketch?: string | null;
   description?: string | null;
   quantity?: number;

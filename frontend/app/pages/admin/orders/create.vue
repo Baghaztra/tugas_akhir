@@ -92,8 +92,13 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Pakaian *</label>
-              <input v-model="item.garmentType" type="text" required placeholder="Cth: Kemeja Batik"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+              <select v-model="item.garmentTypeId" required
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white">
+                <option :value="null" disabled>Pilih jenis pakaian</option>
+                <option v-for="gt in garmentTypes" :key="gt.id" :value="gt.id">
+                  {{ gt.name }}
+                </option>
+              </select>
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah</label>
@@ -177,6 +182,7 @@ definePageMeta({ layout: 'admin' })
 
 const router = useRouter()
 const { createOrder, error } = useCreateOrder()
+const { garmentTypes } = useGarmentTypes()
 const saving = ref(false)
 
 const activeSketchIdx = ref<number | null>(null)
@@ -188,7 +194,7 @@ const measurementKeys = [
 ]
 
 const makeItem = (): OrderItemCreate => ({
-  garmentType: '',
+  garmentTypeId: null,
   description: '',
   sketch: undefined,
   quantity: 1,

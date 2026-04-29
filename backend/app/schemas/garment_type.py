@@ -23,6 +23,7 @@ class GarmentTypeUpdate(GarmentTypeBase):
 class GarmentType(GarmentTypeBase):
     id: int
     is_deleted: bool = False
+    item_count: Optional[int] = 0
 
     class Config:
         from_attributes = True

@@ -56,7 +56,7 @@
             <img v-if="item.sketch" :src="backend+item.sketch" alt="">
             <div class="flex items-center justify-between">
               <div>
-                <p class="font-semibold text-gray-900">{{ item.garmentType }} <span class="text-gray-400 font-normal text-sm">x{{ item.quantity }}</span></p>
+                <p class="font-semibold text-gray-900">{{ item.garmentType?.name || 'Jenis Pakaian' }} <span class="text-gray-400 font-normal text-sm">x{{ item.quantity }}</span></p>
                 <p v-if="item.description" class="text-sm text-gray-500 mt-0.5">{{ item.description }}</p>
               </div>
               <ui-app-badge :variant="statusBadge(item.status).variant" dot>

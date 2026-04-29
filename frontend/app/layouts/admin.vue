@@ -114,6 +114,7 @@ const navSections = [
       { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
       { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
       { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
+      { to: '/admin/garment-types', icon: 'icon-park-outline:clothes-suit', label: 'Jenis Pakaian' },
     ],
   },
   {
@@ -137,6 +138,7 @@ const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/dashboard': { title: 'Dashboard', desc: 'Ringkasan aktivitas bisnis' },
   '/admin/work': { title: 'Papan Kerja', desc: 'Papan pekerjaan' },
   '/admin/orders': { title: 'Manajemen Pesanan', desc: 'Kelola seluruh pesanan jahit' },
+  '/admin/garmen-types': { title: 'Jenis Pakaian', desc: 'Kelola jenis pesanan tersedia' },
   '/admin/workers': { title: 'Manajemen Karyawan', desc: 'Kelola data dan performa karyawan' },
   '/admin/reports': { title: 'Laporan & Analitik', desc: 'Data statistik dan performa bisnis' },
   '/admin/settings': { title: 'Pengaturan', desc: 'Konfigurasi profil usaha' },

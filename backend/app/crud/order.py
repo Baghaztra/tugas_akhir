@@ -26,7 +26,7 @@ def get_order(db: Session, order_id: int):
             joinedload(Order.items)
             .joinedload(OrderItem.logs),
             joinedload(Order.items)
-            .joinedload(OrderItem.garment_type)
+            .joinedload(OrderItem.garmentType)
         )
         .filter(Order.id == order_id)
         .first()
@@ -39,14 +39,16 @@ def get_order_by_receipt(db: Session, receipt: str):
             joinedload(Order.items)
             .joinedload(OrderItem.logs),
             joinedload(Order.items)
-            .joinedload(OrderItem.garment_type)
+            .joinedload(OrderItem.garmentType)
         )
         .filter(Order.receiptNumber == receipt)
         .first()
     )
 
-def get_orders(db: Session,skip: int = 0,limit: int = 100,search: str = None):
-    query = db.query(Order)
+def get_orders(db: Session, skip: int = 0, limit: int = 100, search: str = None):
+    query = db.query(Order).options(
+        joinedload(Order.items).joinedload(OrderItem.garmentType)
+    )
 
     if search:
         query = query.filter(

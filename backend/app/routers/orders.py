@@ -98,7 +98,7 @@ def get_admin_work(db: Session = Depends(get_db)):
     """
     from sqlalchemy.orm import joinedload
     query = db.query(OrderModel).options(
-        joinedload(OrderModel.items).joinedload(OrderItem.garment_type)
+        joinedload(OrderModel.items).joinedload(OrderItem.garmentType)
     )
     orders = query.all()
 
@@ -115,7 +115,7 @@ def get_admin_work(db: Session = Depends(get_db)):
                 "item_id": item.id,
                 "receiptNumber": order.receiptNumber,
                 "customerName": order.customerName,
-                "garmentType": item.garment_type.name if item.garment_type else None,
+                "garmentType": item.garmentType.name if item.garmentType else None,
                 "deadline": order.deadline,
                 "status": item.status.value if hasattr(item.status, 'value') else item.status,
                 "urgency_label": get_urgency_label(order.deadline),
