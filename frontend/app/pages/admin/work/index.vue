@@ -35,7 +35,7 @@
             <div>
               <h2 class="font-bold text-gray-900 text-lg">{{ phase.phase_label }}</h2>
               <div class="flex gap-2 text-xs font-medium mt-1">
-                <span class="text-gray-500">{{ phase.ready_count }} Siap</span>
+                <span class="text-gray-500">{{ phase.ready_count }} Menunggu</span>
                 <span class="text-gray-300">•</span>
                 <span :class="phaseCountColors[phase.phase]">{{ phase.in_progress_count }} Sedang Dikerjakan</span>
               </div>
@@ -50,7 +50,7 @@
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Icon name="heroicons:play-circle" class="w-4 h-4" /> Sedang Dikerjakan
                 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{{ phase.in_progress_count
-                  }}</span>
+                }}</span>
               </h3>
 
               <div class="space-y-3">
@@ -59,23 +59,25 @@
                   Tidak ada yang sedang dikerjakan
                 </div>
                 <div v-else v-for="task in phase.in_progress" :key="task.item_id"
-                  class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 transition-all hover:shadow-md">
+                  class="bg-white rounded-xl border border-primary-500 shadow-sm p-4 transition-all hover:shadow-md">
                   <div class="flex justify-between items-start mb-2">
                     <span class="text-xs text-gray-400 font-mono">{{ task.receiptNumber }}</span>
                     <ui-app-badge :variant="urgencyVariant(task.urgency_label)">{{ urgencyText(task.urgency_label)
-                      }}</ui-app-badge>
+                    }}</ui-app-badge>
                   </div>
                   <h4 class="font-semibold text-gray-900 mb-1">{{ task.garmentType }}</h4>
                   <p class="text-sm text-gray-500 mb-3">{{ task.customerName }}</p>
 
-                  <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
-                    <div
-                      class="flex items-center gap-2 bg-primary-50 text-primary-700 px-2.5 py-1 rounded-lg text-xs font-medium">
-                      <div class="w-5 h-5 rounded-full bg-primary-200 flex items-center justify-center text-[10px]">
-                        {{ task.assigned_worker_name?.charAt(0) ?? 'W' }}
-                      </div>
-                      {{ task.assigned_worker_name }}
+                  <div
+                    class="flex items-center gap-2 bg-primary-50 text-primary-700 px-2.5 py-1 rounded-lg text-xs font-medium">
+                    <div class="w-5 h-5 rounded-full bg-primary-200 flex items-center justify-center text-[10px]">
+                      {{ task.assigned_worker_name?.charAt(0) ?? 'W' }}
                     </div>
+                    {{ task.assigned_worker_name }}
+                  </div>
+                  <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
+                    <p class="text-sm text-gray-500">Diambil {{ task.deadline }}</p>
+
                     <ui-app-button variant="primary" size="sm" @click="handleComplete(task.item_id)"
                       :loading="actionLoading">
                       Selesai
@@ -85,12 +87,12 @@
               </div>
             </div>
 
-            <!-- Siap Dikerjakan (Ready) -->
+            <!-- Meninggu Dikerjakan (Ready) -->
             <div>
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Icon name="heroicons:inbox-arrow-down" class="w-4 h-4" /> Siap Dikerjakan
+                <Icon name="heroicons:inbox-arrow-down" class="w-4 h-4" /> Meninggu Dikerjakan
                 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{{ phase.ready_count
-                  }}</span>
+                }}</span>
               </h3>
 
               <div class="space-y-3">
@@ -103,12 +105,14 @@
                   <div class="flex justify-between items-start mb-2">
                     <span class="text-xs text-gray-400 font-mono">{{ task.receiptNumber }}</span>
                     <ui-app-badge :variant="urgencyVariant(task.urgency_label)">{{ urgencyText(task.urgency_label)
-                      }}</ui-app-badge>
+                    }}</ui-app-badge>
                   </div>
                   <h4 class="font-semibold text-gray-900 mb-1">{{ task.garmentType }}</h4>
                   <p class="text-sm text-gray-500 mb-3">{{ task.customerName }}</p>
 
-                  <div class="mt-4 pt-3 border-t border-gray-50 flex justify-end">
+                  <div class="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+                    <p class="text-sm text-gray-500">Diambil {{ task.deadline }}</p>
+
                     <ui-app-button variant="secondary" size="sm" @click="openAssignModal(task.item_id, phase.phase)">
                       <Icon name="heroicons:user-plus" class="w-4 h-4 mr-1.5" /> Tugaskan
                     </ui-app-button>
@@ -162,17 +166,9 @@
     </ui-app-modal>
 
     <!-- Confirm Modal -->
-    <ui-app-confirm-modal
-      :show="confirmModal.show"
-      :title="confirmModal.title"
-      :message="confirmModal.message"
-      :confirm-text="confirmModal.confirmText"
-      :confirm-variant="confirmModal.confirmVariant"
-      :icon="confirmModal.icon"
-      :loading="confirmModal.loading"
-      @confirm="confirmModal.onConfirm"
-      @cancel="confirmModal.show = false"
-    />
+    <ui-app-confirm-modal :show="confirmModal.show" :title="confirmModal.title" :message="confirmModal.message"
+      :confirm-text="confirmModal.confirmText" :confirm-variant="confirmModal.confirmVariant" :icon="confirmModal.icon"
+      :loading="confirmModal.loading" @confirm="confirmModal.onConfirm" @cancel="confirmModal.show = false" />
 
   </div>
 </template>
@@ -226,7 +222,7 @@ const confirmModal = ref({
   confirmText: 'Konfirmasi',
   confirmVariant: 'primary' as 'primary' | 'secondary' | 'danger',
   icon: 'heroicons:exclamation-triangle',
-  onConfirm: () => {},
+  onConfirm: () => { },
   loading: false
 })
 
