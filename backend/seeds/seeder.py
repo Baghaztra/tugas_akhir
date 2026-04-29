@@ -63,6 +63,13 @@ GARMENT_TYPES = [
     "Rok",
 ]
 
+ATTRIBUTES = [
+    "Ban", "Batik", "Bis", "Bordir", "Borkat", "Celana", "Furing", "Furingpayet", 
+    "Karet", "Karet Lengan", "Kerah Sanghai", "Kerat", "Kog", "Kubnat", "Mutiara", 
+    "Payet", "Pita", "Polos", "Rok", "Rok Payung", "Selendang", "Songket", "Stik", 
+    "Sulam", "Tic"
+]
+
 CUSTOMER_NAMES = [
     "Andi Wijaya", "Bela Kurnia", "Cahyo Nugroho", "Dina Marlina",
     "Erwin Saputra", "Fiona Halim", "Gunawan Hadi", "Hesti Agustina",
@@ -210,6 +217,12 @@ def seed(db):
     db.add_all(garments)
     db.flush()
 
+    # Attributes
+    print("   → Generating data attributes...")
+    attrs = [Attribute(name=a) for a in ATTRIBUTES]
+    db.add_all(attrs)
+    db.flush()
+
     garment_map = {gt.name: gt.id for gt in garments}
     
     # Orders + OrderLogs
@@ -294,6 +307,7 @@ def seed(db):
     print(f"   Orders         : {ORDERS}")
     print(f"   Portfolio Items: {len(PORTFOLIO_DATA)}")
     print(f"   Business Profile: 1")
+    print(f"   Attributes     : {len(ATTRIBUTES)}")
 
 
 if __name__ == "__main__":

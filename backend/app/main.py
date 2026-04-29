@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
-from .routers import workers, orders, profile, portfolio, dashboard, analytics, garment_types
+from .routers import workers, orders, profile, portfolio, dashboard, analytics, garment_types, attributes
 from dotenv import load_dotenv
 import os
 
@@ -29,6 +29,7 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 # Routers
 app.include_router(workers.router)
 app.include_router(garment_types.router)
+app.include_router(attributes.router)
 app.include_router(orders.router)
 app.include_router(profile.router)
 app.include_router(portfolio.router)
