@@ -10,18 +10,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.database import SessionLocal, engine
-from app.models.order import Order, OrderLog
-from app.models.worker import Worker
-from app.models.profile import BusinessProfile
-from app.models.portfolio import PortfolioItem
+from app.models import * #noqa
 from sqlalchemy import text
-
-# Import agar semua model terdaftar di Base.metadata
-import app.models.order      # noqa
-import app.models.worker     # noqa
-import app.models.profile    # noqa
-import app.models.portfolio  # noqa
-
 
 def reset(db, reseed: bool = False):
     """
@@ -35,7 +25,7 @@ def reset(db, reseed: bool = False):
     # Nonaktifkan FK checks sementara (MySQL)
     db.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
 
-    tables = ["order_logs", "orders", "order_items", "workers", "portfolio_items", "business_profiles"]
+    tables = ["garment_types", "order_logs", "order_items", "orders", "workers", "portfolio_items", "business_profiles"]
     for table in tables:
         db.execute(text(f"TRUNCATE TABLE `{table}`"))
         print(f"   ✓ Tabel '{table}' dikosongkan")

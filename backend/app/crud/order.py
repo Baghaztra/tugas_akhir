@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from fastapi import UploadFile
 
-from ..models.order import Order, OrderLog, OrderStatus, OrderItem
+from ..models.order import Order, OrderLog, OrderStatus, OrderItem, GarmentType
 from ..models.worker import Worker, WorkerStatus
 from ..schemas.order import OrderCreate, OrderUpdate
 from ..storage import get_storage
@@ -23,7 +23,10 @@ def get_order(db: Session, order_id: int):
     return (
         db.query(Order)
         .options(
-            joinedload(Order.items).joinedload(OrderItem.logs)
+            joinedload(Order.items)
+            .joinedload(OrderItem.logs),
+            joinedload(Order.items)
+            .joinedload(OrderItem.garment_type)
         )
         .filter(Order.id == order_id)
         .first()
@@ -33,7 +36,10 @@ def get_order_by_receipt(db: Session, receipt: str):
     return (
         db.query(Order)
         .options(
-            joinedload(Order.items).joinedload(OrderItem.logs)
+            joinedload(Order.items)
+            .joinedload(OrderItem.logs),
+            joinedload(Order.items)
+            .joinedload(OrderItem.garment_type)
         )
         .filter(Order.receiptNumber == receipt)
         .first()
@@ -100,7 +106,7 @@ async def create_order(
 
         db_item = OrderItem(
             order_id=db_order.id,
-            garmentType=item.garmentType,
+            garmentTypeId=item.garmentTypeId,
             description=item.description,
             sketch=sketch_url,
             quantity=item.quantity,

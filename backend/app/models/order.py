@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, DateTime, Float, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Enum, DateTime, Float, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -45,6 +45,17 @@ class Order(Base):
         cascade="all, delete-orphan"
     )
 
+class GarmentType(Base):
+    __tablename__ = "garment_types"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+
+    order_items = relationship(
+        "OrderItem",
+        back_populates="garment_type"
+    )
 
 class OrderItem(Base):
     __tablename__ = "order_items"
@@ -52,7 +63,7 @@ class OrderItem(Base):
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
 
-    garmentType = Column(String(100), nullable=False)
+    garmentTypeId = Column(Integer, ForeignKey("garment_types.id"), nullable=True)
     description = Column(String(300), nullable=True)
     sketch = Column(String(200), nullable=True)
 
@@ -74,6 +85,11 @@ class OrderItem(Base):
         order_by="OrderLog.id"
     )
 
+    garment_type = relationship(
+        "GarmentType",
+        back_populates="order_items",
+        foreign_keys=[garmentTypeId]
+    )
 
 class OrderLog(Base):
     __tablename__ = "order_logs"

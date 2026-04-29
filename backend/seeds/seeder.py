@@ -16,16 +16,8 @@ import random
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.database import SessionLocal, engine, Base
-from app.models.worker import Worker, WorkerRole, WorkerStatus
-from app.models.order import Order, OrderItem, OrderLog, OrderStatus, PaymentStatus
-from app.models.profile import BusinessProfile
-from app.models.portfolio import PortfolioItem
+from app.models import * #noqa
 
-# Membuat semua tabel
-import app.models.order      # noqa
-import app.models.worker     # noqa
-import app.models.profile    # noqa
-import app.models.portfolio  # noqa
 Base.metadata.create_all(bind=engine)
 
 
@@ -142,7 +134,7 @@ BUSINESS_PROFILE = {
     "logo": None,
 }
 
-ORDERS = 0
+ORDERS = 10
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -197,8 +189,8 @@ def build_item_logs(item: OrderItem, final_status: OrderStatus) -> list[OrderLog
 def seed(db):
     print("🌱 Memulai seeding database...")
 
-    # 1. Workers
-    print("   → Menanam data workers...")
+    # Workers
+    print("   → Generating data workers...")
     workers = []
     for data in WORKERS_DATA:
         worker = Worker(
@@ -212,9 +204,17 @@ def seed(db):
 
     worker_names = [w.name for w in workers]
 
-    # 2. Orders + OrderLogs
+    # Garment Types
+    print("   → Generating data garment types...")
+    garments = [GarmentType(name=gt) for gt in GARMENT_TYPES]
+    db.add_all(garments)
+    db.flush()
+
+    garment_map = {gt.name: gt.id for gt in garments}
+    
+    # Orders + OrderLogs
     if (ORDERS >=0):
-        print("   → Menanam data orders & logs...")
+        print("   → Generating data orders & logs...")
         status_weights = [0.1, 0.15, 0.25, 0.15, 0.35]
         for i in range(1, (ORDERS + 1)):
             final_status = random.choices(STATUSES_FLOW, weights=status_weights, k=1)[0]
@@ -255,7 +255,7 @@ def seed(db):
 
                 item = OrderItem(
                     order_id=order.id,
-                    garmentType=random.choice(GARMENT_TYPES),
+                    garmentTypeId=garment_map.get(random.choice(GARMENT_TYPES)),
                     description="Item custom",
                     quantity=random.randint(1, 5),
                     measurements={
@@ -277,14 +277,14 @@ def seed(db):
                 for log in logs:
                     db.add(log)
         
-    # 3. Business Profile
-    print("   → Menanam data business profile...")
+    # Business Profile
+    print("   → Generating data business profile...")
     existing = db.query(BusinessProfile).filter_by(id=1).first()
     if not existing:
         db.add(BusinessProfile(**BUSINESS_PROFILE))
 
-    # 4. Portfolio
-    print("   → Menanam data portfolio...")
+    # Portfolio
+    print("   → Generating data portfolio...")
     for p in PORTFOLIO_DATA:
         db.add(PortfolioItem(**p))
 

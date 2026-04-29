@@ -4,20 +4,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
-from .routers import workers, orders, profile, portfolio, dashboard, analytics
+from .routers import workers, orders, profile, portfolio, dashboard, analytics, garment_types
+from dotenv import load_dotenv
+import os
 
-# Import models so Base.metadata picks them up before create_all
-from .models import worker, order, profile as profile_model, portfolio as portfolio_model  # noqa: F401
+load_dotenv()
 
-# Create database tables (will create new tables, won't drop existing ones)
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Production Management System API", version="1.0.0")
+app = FastAPI(title=os.getenv("APP_NAME"), version=os.getenv("APP_VERSION"))
 
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS"),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,6 +28,7 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Routers
 app.include_router(workers.router)
+app.include_router(garment_types.router)
 app.include_router(orders.router)
 app.include_router(profile.router)
 app.include_router(portfolio.router)

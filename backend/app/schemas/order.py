@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from .garment_type import GarmentTypeName
 
 
 class OrderStatus(str, Enum):
@@ -40,7 +41,7 @@ class OrderLog(OrderLogBase):
 
 # OrderItem
 class OrderItemBase(BaseModel):
-    garmentType: str
+    garmentTypeId: int
     description: Optional[str] = None
     sketch: Optional[str] = None
     quantity: Optional[int] = 1
@@ -53,7 +54,7 @@ class OrderItemCreate(BaseModel):
     Field `sketch` TIDAK ada di sini — file sketsa dikirim lewat multipart
     dan URL-nya diinjeksi oleh CRUD setelah upload.
     """
-    garmentType: str
+    garmentTypeId: int
     description: Optional[str] = None
     quantity: Optional[int] = 1
     measurements: Optional[Dict[str, Any]] = Field(default_factory=dict)
@@ -79,6 +80,7 @@ class OrderItem(OrderItemBase):
     status: OrderStatus
     assigned_worker_id: Optional[int] = None
     assigned_worker_name: Optional[str] = None
+    garment_type: Optional[GarmentTypeName] = None
     logs: List[OrderLog] = []
 
     class Config:

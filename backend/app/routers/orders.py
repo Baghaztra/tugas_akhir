@@ -14,7 +14,7 @@ from ..schemas.order import (
     OrderCreateFormData,
 )
 from ..database import get_db
-from ..models.order import Order as OrderModel, OrderStatus
+from ..models.order import Order as OrderModel, OrderStatus, OrderItem
 from ..ranking_logic import sort_by_priority, get_urgency_label, group_by_phase, STAGE_STATUS_MAP
 
 router = APIRouter(
@@ -96,7 +96,10 @@ def get_admin_work(db: Session = Depends(get_db)):
     Dikelompokkan per phase, lalu dibagi lagi menjadi 'ready' (belum di-assign) 
     dan 'in_progress' (sedang dikerjakan).
     """
-    query = db.query(OrderModel)
+    from sqlalchemy.orm import joinedload
+    query = db.query(OrderModel).options(
+        joinedload(OrderModel.items).joinedload(OrderItem.garment_type)
+    )
     orders = query.all()
 
     results = []
@@ -112,7 +115,7 @@ def get_admin_work(db: Session = Depends(get_db)):
                 "item_id": item.id,
                 "receiptNumber": order.receiptNumber,
                 "customerName": order.customerName,
-                "garmentType": item.garmentType,
+                "garmentType": item.garment_type.name if item.garment_type else None,
                 "deadline": order.deadline,
                 "status": item.status.value if hasattr(item.status, 'value') else item.status,
                 "urgency_label": get_urgency_label(order.deadline),
