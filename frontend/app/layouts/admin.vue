@@ -111,8 +111,9 @@ const navSections = [
     label: 'Utama',
     items: [
       { to: '/admin/dashboard', icon: 'heroicons:chart-bar', label: 'Dashboard' },
+      { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
       { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
-      { to: '/admin/employees', icon: 'heroicons:users', label: 'Karyawan' },
+      { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
     ],
   },
   {
@@ -134,9 +135,9 @@ const bottomNavItems = navSections.flatMap(s => s.items)
 
 const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/dashboard': { title: 'Dashboard', desc: 'Ringkasan aktivitas bisnis' },
-  '/admin/work': { title: 'Assign', desc: 'Papan pekerjaan' },
+  '/admin/work': { title: 'Papan Kerja', desc: 'Papan pekerjaan' },
   '/admin/orders': { title: 'Manajemen Pesanan', desc: 'Kelola seluruh pesanan jahit' },
-  '/admin/employees': { title: 'Manajemen Karyawan', desc: 'Kelola data dan performa karyawan' },
+  '/admin/workers': { title: 'Manajemen Karyawan', desc: 'Kelola data dan performa karyawan' },
   '/admin/reports': { title: 'Laporan & Analitik', desc: 'Data statistik dan performa bisnis' },
   '/admin/settings': { title: 'Pengaturan', desc: 'Konfigurasi profil usaha' },
 }

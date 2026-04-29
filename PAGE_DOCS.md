@@ -5,6 +5,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
 ## A. Halaman Publik (Modul Profil Usaha & Pelanggan)
 
 ### 1. Landing Page / Profil Usaha
+
 **Route**: `/`
 
 - **Fitur**:
@@ -15,6 +16,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
 - **API**: `GET /profile/public`, `GET /portfolio`.
 
 ### 2. Tracking Pesanan (Modul Tracking)
+
 **Route**: `/tracking` (atau `/tracking/:orderId`)
 
 - **Fitur**:
@@ -29,6 +31,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
 ## B. Halaman Admin (Modul Manajemen)
 
 ### 3. Dashboard Admin
+
 **Route**: `/admin/dashboard`
 
 - **Fitur**:
@@ -37,6 +40,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
   - **Notifikasi**: Pesanan yang mendekati deadline (Urgency tinggi).
 
 ### 4. Manajemen Pesanan (Orders)
+
 **Route**: `/admin/orders`
 
 - **Fitur**:
@@ -45,6 +49,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
   - **Detail Pesanan**: Edit status, cetak nota fisik, lihat log pengerjaan.
 
 ### 5. Manajemen Karyawan (Employees)
+
 **Route**: `/admin/employees`
 
 - **Fitur**:
@@ -56,6 +61,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
 - **API**: `GET /employees`, `GET /employees/{id}/performance`, `GET /employees/{id}/wages`.
 
 ### 6. Laporan & Analitik (Reports)
+
 **Route**: `/admin/reports`
 
 - **Fitur**:
@@ -65,6 +71,7 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
   - **Export Laporan**: Tombol download PDF/Excel (Laporan Mingguan Otomatis).
 
 ### 7. Pengaturan Profil (Settings)
+
 **Route**: `/admin/settings`
 
 - **Fitur**:
@@ -76,9 +83,10 @@ Dokumen ini menjelaskan struktur halaman yang akan dibangun dalam aplikasi Nuxt 
 ## C. Halaman Khusus Karyawan
 
 ### 8. Papan Kerja (Employee View)
-**Route**: `/employee/tasks`
+
+**Route**: `/admin/work`
 
 - **Fitur**:
-  - **Daftar Prioritas**: List pekerjaan yang *harus* dikerjakan sekarang (Diurutkan oleh ML).
+  - **Daftar Prioritas**: List pekerjaan yang _harus_ dikerjakan sekarang (Diurutkan oleh ML).
   - **Tombol Aksi**: "Ambil Tugas" dan "Selesai".
   - **Riwayat Saya**: Daftar pekerjaan yang sudah diselesaikan hari ini.

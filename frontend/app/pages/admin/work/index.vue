@@ -2,10 +2,6 @@
   <div class="h-[calc(100vh-2rem)] flex flex-col">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between shrink-0">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Papan Kerja Admin</h1>
-        <p class="text-sm text-gray-500 mt-1">Kelola dan tugaskan pesanan ke pekerja</p>
-      </div>
       <div class="flex gap-3">
         <ui-app-button variant="secondary" @click="refreshWork" :loading="status === 'pending'">
           <Icon name="heroicons:arrow-path" class="w-4 h-4 mr-2" /> Segarkan
