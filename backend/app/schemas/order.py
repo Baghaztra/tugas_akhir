@@ -26,6 +26,8 @@ class OrderLogBase(BaseModel):
     status: str
     note: Optional[str] = ""
     employeeName: Optional[str] = "Admin"
+    worker_id: Optional[int] = None
+    worker_name: Optional[str] = None
 
 class OrderLogCreate(OrderLogBase):
     pass
@@ -78,8 +80,6 @@ class OrderCreateFormData(BaseModel):
 class OrderItem(OrderItemBase):
     id: int
     status: OrderStatus
-    assigned_worker_id: Optional[int] = None
-    assigned_worker_name: Optional[str] = None
     garmentType: Optional[GarmentTypeName] = None
     logs: List[OrderLog] = []
 

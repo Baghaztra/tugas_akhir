@@ -73,9 +73,6 @@ class OrderItem(Base):
 
     status = Column(Enum(OrderStatus), default=OrderStatus.RECEIVED, nullable=False)
 
-    assigned_worker_id = Column(Integer, ForeignKey("workers.id"), nullable=True)
-    assigned_worker_name = Column(String(100), nullable=True)
-
     order = relationship("Order", back_populates="items")
 
     logs = relationship(
@@ -101,7 +98,10 @@ class OrderLog(Base):
     status = Column(String(30), nullable=False)
     note = Column(String(300), nullable=True, default="")
     employeeName = Column(String(100), nullable=True, default="Admin")
+    worker_id = Column(Integer, ForeignKey("workers.id"), nullable=True)
+    worker_name = Column(String(100), nullable=True)
 
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
 
     item = relationship("OrderItem", back_populates="logs")
+    worker = relationship("Worker", foreign_keys=[worker_id])

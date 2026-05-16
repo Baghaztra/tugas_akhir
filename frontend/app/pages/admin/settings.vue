@@ -190,7 +190,6 @@
 </template>
 
 <script setup lang="ts">
-import type { BusinessProfile, PortfolioItem } from '~/data/dummy'
 import { useProfile, usePortfolio, usePortfolioAdmin, useProfileAdmin } from '~/composables/usePublic'
 
 definePageMeta({ layout: 'admin' })
@@ -205,7 +204,7 @@ const { updateProfile } = useProfileAdmin()
 const editing = ref(false)
 const saving = ref(false)
 
-const form = reactive<Partial<BusinessProfile>>({
+const form = reactive<Partial<BusinessProfileRead>>({
   name: '', slogan: '', address: '', phone: '', email: '', hours: '',
 })
 
@@ -296,10 +295,10 @@ const uploadPortfolio = async () => {
 }
 
 // ─── Delete portfolio ───────────────────────────────────────────────────────────
-const deletingItem = ref<PortfolioItem | null>(null)
+const deletingItem = ref<PortfolioItemRead | null>(null)
 const deleting = ref(false)
 
-const confirmDelete = (item: PortfolioItem) => { deletingItem.value = item }
+const confirmDelete = (item: PortfolioItemRead) => { deletingItem.value = item }
 
 const doDelete = async () => {
   if (!deletingItem.value) return

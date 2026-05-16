@@ -158,15 +158,34 @@ def delete_order(db: Session, order_id: int):
     return db_order
 
 
-def _add_log(db: Session, order_item_id: int, status: str, note: str, employee_name: str):
+def _add_log(db: Session, order_item_id: int, status: str, note: str, employee_name: str, worker_id: Optional[int] = None, worker_name: Optional[str] = None):
     log = OrderLog(
         order_item_id=order_item_id,
         status=status,
         note=note,
         employeeName=employee_name,
+        worker_id=worker_id,
+        worker_name=worker_name,
     )
     db.add(log)
     db.commit()
+
+
+def _complete_phase(db: Session, item: OrderItem, target_status: OrderStatus, note: str):
+    last_log = db.query(OrderLog).filter(
+        OrderLog.order_item_id == item.id,
+        OrderLog.worker_id.isnot(None)
+    ).order_by(OrderLog.id.desc()).first()
+    worker_id = last_log.worker_id if last_log else None
+    worker_name = last_log.worker_name or "Admin" if last_log else "Admin"
+
+    if worker_id:
+        worker = db.query(Worker).filter(Worker.id == worker_id).first()
+        if worker:
+            worker.status = WorkerStatus.IDLE
+
+    item.status = target_status
+    _add_log(db, item.id, item.status, note, worker_name, worker_id, worker_name)
 
 def update_item_status_flow(
     db: Session,
@@ -177,65 +196,34 @@ def update_item_status_flow(
     if not item:
         return None
 
-    # Determine next state based on current state and worker_id
     if item.status == OrderStatus.RECEIVED:
         if worker_id:
             worker = db.query(Worker).filter(Worker.id == worker_id).first()
             if worker:
                 item.status = OrderStatus.CUTTING
-                item.assigned_worker_id = worker.id
-                item.assigned_worker_name = worker.name
                 worker.status = WorkerStatus.WORKING
-                _add_log(db, item.id, item.status, "Pesanan mulai dipotong", worker.name)
+                _add_log(db, item.id, item.status, "Pesanan mulai dipotong", worker.name, worker.id, worker.name)
     elif item.status == OrderStatus.CUTTING:
-        worker_name = item.assigned_worker_name or "Admin"
-        if item.assigned_worker_id:
-            worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
-            if worker:
-                worker.status = WorkerStatus.IDLE
-        item.status = OrderStatus.CUTTED
-        item.assigned_worker_id = None
-        item.assigned_worker_name = None
-        _add_log(db, item.id, item.status, "Pesanan selesai dipotong", worker_name)
+        _complete_phase(db, item, OrderStatus.CUTTED, "Pesanan selesai dipotong")
     elif item.status == OrderStatus.CUTTED:
         if worker_id:
             worker = db.query(Worker).filter(Worker.id == worker_id).first()
             if worker:
                 item.status = OrderStatus.SEWING
-                item.assigned_worker_id = worker.id
-                item.assigned_worker_name = worker.name
                 worker.status = WorkerStatus.WORKING
-                _add_log(db, item.id, item.status, "Pesanan mulai dijahit", worker.name)
+                _add_log(db, item.id, item.status, "Pesanan mulai dijahit", worker.name, worker.id, worker.name)
     elif item.status == OrderStatus.SEWING:
-        worker_name = item.assigned_worker_name or "Admin"
-        if item.assigned_worker_id:
-            worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
-            if worker:
-                worker.status = WorkerStatus.IDLE
-        item.status = OrderStatus.SEWED
-        item.assigned_worker_id = None
-        item.assigned_worker_name = None
-        _add_log(db, item.id, item.status, "Pesanan selesai dijahit", worker_name)
+        _complete_phase(db, item, OrderStatus.SEWED, "Pesanan selesai dijahit")
     elif item.status == OrderStatus.SEWED:
         if worker_id:
             worker = db.query(Worker).filter(Worker.id == worker_id).first()
             if worker:
                 item.status = OrderStatus.FINISHING
-                item.assigned_worker_id = worker.id
-                item.assigned_worker_name = worker.name
                 worker.status = WorkerStatus.WORKING
-                _add_log(db, item.id, item.status, "Pesanan mulai difinishing", worker.name)
+                _add_log(db, item.id, item.status, "Pesanan mulai difinishing", worker.name, worker.id, worker.name)
     elif item.status == OrderStatus.FINISHING:
-        worker_name = item.assigned_worker_name or "Admin"
-        if item.assigned_worker_id:
-            worker = db.query(Worker).filter(Worker.id == item.assigned_worker_id).first()
-            if worker:
-                worker.status = WorkerStatus.IDLE
-        item.status = OrderStatus.DONE
-        item.assigned_worker_id = None
-        item.assigned_worker_name = None
-        _add_log(db, item.id, item.status, "Pesanan selesai difinishing", worker_name)
-        
+        _complete_phase(db, item, OrderStatus.DONE, "Pesanan selesai difinishing")
+
     db.commit()
     db.refresh(item)
     return item

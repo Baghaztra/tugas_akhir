@@ -161,7 +161,7 @@
     <!-- Portfolio Modal -->
     <ui-app-modal :show="!!selectedItem" :title="selectedItem?.title" size="lg" @close="selectedItem = null">
       <div v-if="selectedItem" class="p-0">
-        <img :src="selectedItem.image" :alt="selectedItem.title" class="w-full h-72 object-cover" />
+        <img :src="selectedItem.image?? 'https://coryn.club/images/PH-Light.png'" :alt="selectedItem.title" class="w-full h-72 object-cover" />
         <div class="p-6">
           <span class="inline-block px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-xs font-medium mb-3">{{
             selectedItem.category }}</span>
@@ -173,12 +173,9 @@
 </template>
 
 <script setup lang="ts">
-import type { PortfolioItem } from '~/data/dummy'
-import { useProfile, usePortfolio } from '~/composables/usePublic'
-
 const router = useRouter()
 const trackingInput = ref('')
-const selectedItem = ref<PortfolioItem | null>(null)
+const selectedItem = ref<PortfolioItemRead | null>(null)
 
 const { business, status: businessStatus } = useProfile()
 const { portfolio, status: portfolioStatus, error: portfolioError } = usePortfolio()
@@ -198,7 +195,7 @@ const goToTracking = () => {
   }
 }
 
-const openPortfolioModal = (item: PortfolioItem) => {
+const openPortfolioModal = (item: PortfolioItemRead) => {
   selectedItem.value = item
 }
 

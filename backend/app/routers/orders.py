@@ -98,7 +98,8 @@ def get_admin_work(db: Session = Depends(get_db)):
     """
     from sqlalchemy.orm import joinedload
     query = db.query(OrderModel).options(
-        joinedload(OrderModel.items).joinedload(OrderItem.garmentType)
+        joinedload(OrderModel.items).joinedload(OrderItem.garmentType),
+        joinedload(OrderModel.items).joinedload(OrderItem.logs),
     )
     orders = query.all()
 
@@ -109,6 +110,9 @@ def get_admin_work(db: Session = Depends(get_db)):
             # Skip item yang sudah selesai (done)
             if item.status == OrderStatus.DONE:
                 continue
+
+            # Cari worker dari log terakhir yang punya worker_id
+            worker_log = next((log for log in reversed(item.logs) if log.worker_id is not None), None)
 
             results.append({
                 "order_id": order.id,
@@ -121,8 +125,8 @@ def get_admin_work(db: Session = Depends(get_db)):
                 "urgency_label": get_urgency_label(order.deadline),
                 "created_at": order.createdAt,
                 "attributes": item.attributes,
-                "assigned_worker_id": item.assigned_worker_id,
-                "assigned_worker_name": item.assigned_worker_name,
+                "assigned_worker_id": worker_log.worker_id if worker_log else None,
+                "assigned_worker_name": worker_log.worker_name if worker_log else None,
             })
 
     # Sort results
