@@ -17,6 +17,7 @@ export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<str
 
   const { data, status, error, refresh } = useFetch<Order[]>(`${apiBase}/orders/`, {
     query,
+    credentials: 'include',
     default: () => [] as Order[],
   });
 
@@ -29,6 +30,7 @@ export const useOrderTracking = (receipt: string) => {
   const { data, status, error } = useFetch<OrderTracking>(
     `${apiBase}/orders/tracking/${encodeURIComponent(receipt)}`,
     {
+      credentials: 'include',
       default: () => null as unknown as OrderTracking,
     },
   );
@@ -39,6 +41,7 @@ export const useOrderTracking = (receipt: string) => {
 export const useOrderDetail = (orderId: string) => {
   const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<Order>(`${apiBase}/orders/${orderId}`, {
+    credentials: 'include',
     default: () => null as unknown as Order,
   });
   return { order: data, status, error, refresh };
@@ -132,7 +135,10 @@ export const useDeleteOrder = () => {
   const deleteOrder = async (orderId: string) => {
     loading.value = true;
     try {
-      await $fetch(`${apiBase}/orders/${orderId}`, { method: "DELETE" });
+      await $fetch(`${apiBase}/orders/${orderId}`, { 
+        credentials: 'include',
+        method: "DELETE" 
+      });
       return { success: true };
     } catch {
       return { success: false };

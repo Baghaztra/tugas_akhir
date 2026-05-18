@@ -150,3 +150,12 @@ Semua 9 skenario test lulus:
 
 - **Email**: `owner@rumahjahit.id`
 - **Password**: `admin123`
+
+INFO:     127.0.0.1:52982 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51701 - "GET /dashboard/summary HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54448 - "GET /dashboard/trend HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51701 - "GET /dashboard/notifications HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54448 - "GET /orders/ HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53715 - "GET /dashboard/summary HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63433 - "GET /dashboard/trend HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52578 - "GET /dashboard/notifications HTTP/1.1" 401 Unauthorized

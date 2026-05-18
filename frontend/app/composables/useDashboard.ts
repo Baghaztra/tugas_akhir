@@ -32,17 +32,20 @@ export const useDashboard = () => {
   const { data: summary, status, error, refresh } = useFetch<DashboardSummary>(
     `${apiBase}/dashboard/summary`,
     {
+      credentials: 'include',
       default: () => ({ activeOrders: 0, weeklyRevenue: 0, todayDone: 0 }),
     },
   );
 
   const { data: trend } = useFetch<TrendData>(`${apiBase}/dashboard/trend`, {
+    credentials: 'include',
     default: () => ({ labels: [], incoming: [], completed: [] }),
   });
 
   const { data: notifications } = useFetch<DashboardNotification[]>(
     `${apiBase}/dashboard/notifications`,
     {
+      credentials: 'include',
       default: () => [] as DashboardNotification[],
     },
   );

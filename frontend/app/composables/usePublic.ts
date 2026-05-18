@@ -3,20 +3,18 @@
  * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
  * environment variable NUXT_PUBLIC_API_BASE.
  */
-import type { BusinessProfile, PortfolioItem } from "~/data/dummy";
-
 // ─── Public composables ────────────────────────────────────────────────────────
 
 export const useProfile = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error, refresh } = useFetch<BusinessProfile>(`${apiBase}/profile/public`);
+  const { data, status, error, refresh } = useFetch<BusinessProfileRead>(`${apiBase}/profile/public`);
   return { business: data, status, error, refresh };
 };
 
 export const usePortfolio = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error, refresh } = useFetch<PortfolioItem[]>(`${apiBase}/portfolio`, {
-    default: () => [] as PortfolioItem[],
+  const { data, status, error, refresh } = useFetch<PortfolioItemRead[]>(`${apiBase}/portfolio`, {
+    default: () => [] as PortfolioItemRead[],
   });
   return { portfolio: data, status, error, refresh };
 };
@@ -32,14 +30,14 @@ export const usePortfolioAdmin = () => {
     category: string;
     description?: string;
     image?: File;
-  }): Promise<PortfolioItem> => {
+  }): Promise<PortfolioItemCreate> => {
     const form = new FormData();
     form.append("title", payload.title);
     form.append("category", payload.category);
     form.append("description", payload.description ?? "");
     if (payload.image) form.append("image", payload.image);
 
-    const res = await $fetch<PortfolioItem>(`${apiBase}/portfolio`, {
+    const res = await $fetch<PortfolioItemRead>(`${apiBase}/portfolio`, {
       method: "POST",
       body: form,
     });
@@ -47,10 +45,10 @@ export const usePortfolioAdmin = () => {
   };
 
   /** Ganti gambar item yang sudah ada. */
-  const updateImage = async (id: number, image: File): Promise<PortfolioItem> => {
+  const updateImage = async (id: number, image: File): Promise<PortfolioItemRead> => {
     const form = new FormData();
     form.append("image", image);
-    return $fetch<PortfolioItem>(`${apiBase}/portfolio/${id}/image`, {
+    return $fetch<PortfolioItemRead>(`${apiBase}/portfolio/${id}/image`, {
       method: "POST",
       body: form,
     });
@@ -59,9 +57,9 @@ export const usePortfolioAdmin = () => {
   /** Update metadata (title, category, description). */
   const updateItem = async (
     id: number,
-    data: Partial<Pick<PortfolioItem, "title" | "category" | "description">>,
-  ): Promise<PortfolioItem> => {
-    return $fetch<PortfolioItem>(`${apiBase}/portfolio/${id}`, {
+    data: Partial<Pick<PortfolioItemUpdate, "title" | "category" | "description">>,
+  ): Promise<PortfolioItemRead> => {
+    return $fetch<PortfolioItemRead>(`${apiBase}/portfolio/${id}`, {
       method: "PUT",
       body: data,
     });
@@ -80,8 +78,8 @@ export const usePortfolioAdmin = () => {
 export const useProfileAdmin = () => {
   const { apiBase } = useRuntimeConfig().public;
 
-  const updateProfile = async (data: Partial<BusinessProfile>): Promise<BusinessProfile> => {
-    return $fetch<BusinessProfile>(`${apiBase}/profile`, {
+  const updateProfile = async (data: Partial<BusinessProfileUpdate>): Promise<BusinessProfileUpdate> => {
+    return $fetch<BusinessProfileRead>(`${apiBase}/profile`, {
       method: "PUT",
       body: data,
     });

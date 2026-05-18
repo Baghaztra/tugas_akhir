@@ -46,6 +46,7 @@ export const useEmployeeTasks = (stage: Ref<string> = ref("semua")) => {
     refresh,
   } = useFetch<PriorityResponse | PriorityTask[]>(`${apiBase}/orders/priority`, {
     query,
+    credentials: 'include',
     default: () => ({ phases: [] }) as PriorityResponse,
   });
 
@@ -108,6 +109,7 @@ export const useTaskActions = () => {
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
+        credentials: 'include',
         params: {
           status: nextStatus[currentStatus] ?? currentStatus,
           note: `Diambil oleh ${workerName}`,
@@ -128,6 +130,7 @@ export const useTaskActions = () => {
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
+        credentials: 'include',
         body: {}
       });
       return { success: true };
@@ -167,6 +170,7 @@ export const useAdminWork = () => {
   const { data, status, error, refresh } = useFetch<AdminWorkResponse>(
     `${apiBase}/orders/admin-work`,
     {
+      credentials: 'include',
       default: () => ({ phases: [] }) as AdminWorkResponse,
     },
   );
@@ -183,6 +187,7 @@ export const useAdminTaskActions = () => {
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
+        credentials: 'include',
         body: {
           worker_id: workerId,
         },
@@ -200,6 +205,7 @@ export const useAdminTaskActions = () => {
     try {
       await $fetch(`${apiBase}/orders/items/${itemId}/status`, {
         method: "PUT",
+        credentials: 'include',
         body: {}
       });
       return { success: true };

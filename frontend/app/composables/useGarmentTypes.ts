@@ -17,6 +17,7 @@ export const useCreateGarmentType = () => {
     try {
       const result = await $fetch<GarmentType>(`${apiBase}/garment-types/`, {
         method: "POST",
+        credentials: 'include',
         body: payload,
       });
       return { success: true, data: result };
@@ -40,6 +41,7 @@ export const useUpdateGarmentType = () => {
     try {
       const result = await $fetch<GarmentType>(`${apiBase}/garment-types/${id}`, {
         method: "PUT",
+        credentials: 'include',
         body: payload,
       });
       return { success: true, data: result };
@@ -60,7 +62,10 @@ export const useDeleteGarmentType = () => {
   const deleteGarmentType = async (id: number) => {
     loading.value = true;
     try {
-      await $fetch(`${apiBase}/garment-types/${id}`, { method: "DELETE" });
+      await $fetch(`${apiBase}/garment-types/${id}`, { 
+        credentials: 'include',
+        method: "DELETE" 
+      });
       return { success: true };
     } catch {
       return { success: false };

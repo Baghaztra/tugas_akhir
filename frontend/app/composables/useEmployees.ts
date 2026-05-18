@@ -2,11 +2,10 @@
  * Composable untuk API Karyawan/Workers
  * Endpoint: /workers (sesuai backend prefix)
  */
-import type { Worker, WorkerWage, WorkerPerformance } from "~/types/worker";
-
 export const useEmployees = () => {
   const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<Worker[]>(`${apiBase}/workers`, {
+    credentials: 'include',
     default: () => [] as Worker[],
   });
   return { employees: data, status, error, refresh };
@@ -15,6 +14,7 @@ export const useEmployees = () => {
 export const useEmployeeDetail = (id: number) => {
   const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<Worker | null>(`${apiBase}/workers/${id}`, {
+    credentials: 'include',
     default: () => null,
   });
   return { employee: data, status, error, refresh };
@@ -25,6 +25,7 @@ export const useEmployeePerformance = (id: number) => {
   const { data, status, error } = useFetch<WorkerPerformance>(
     `${apiBase}/workers/${id}/performance`,
     {
+      credentials: 'include',
       default: () => ({ worker_id: id, worker_name: "", performance_score: 0, total_finished: 0, daily: [] }),
     },
   );
@@ -36,6 +37,7 @@ export const useEmployeeWages = (id: number) => {
   const { data, status, error } = useFetch<WorkerWage>(
     `${apiBase}/workers/${id}/wages`,
     {
+      credentials: 'include',
       default: () => ({ worker_id: id, worker_name: "", period: "", total_finished: 0, wage: 0 }),
     },
   );
@@ -52,6 +54,7 @@ export const useCreateWorker = () => {
     error.value = null;
     try {
       const result = await $fetch<Worker>(`${apiBase}/workers/`, {
+        credentials: 'include',
         method: "POST",
         body: payload,
       });
@@ -75,6 +78,7 @@ export const useUpdateWorker = () => {
     loading.value = true;
     try {
       const result = await $fetch<Worker>(`${apiBase}/workers/${id}`, {
+        credentials: 'include',
         method: "PUT",
         body: payload,
       });
@@ -96,7 +100,10 @@ export const useDeleteWorker = () => {
   const deleteWorker = async (id: number) => {
     loading.value = true;
     try {
-      await $fetch(`${apiBase}/workers/${id}`, { method: "DELETE" });
+      await $fetch(`${apiBase}/workers/${id}`, { 
+        credentials: 'include',
+        method: "DELETE" 
+      });
       return { success: true };
     } catch {
       return { success: false };
