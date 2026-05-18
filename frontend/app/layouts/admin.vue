@@ -57,11 +57,26 @@
           <h1 class="text-lg font-bold text-gray-900">{{ pageTitle }}</h1>
           <p class="text-xs text-gray-400">{{ pageDescription }}</p>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-            <Icon name="heroicons:user" class="w-4 h-4 text-primary-600" />
+        <div class="flex items-center gap-3 relative">
+          <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-2 hover:opacity-80">
+            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+              <Icon name="heroicons:user" class="w-4 h-4 text-primary-600" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">{{ auth.user?.name ?? 'Admin' }}</span>
+            <Icon name="heroicons:chevron-down" class="w-3 h-3 text-gray-400" />
+          </button>
+          <!-- Dropdown -->
+          <div v-if="showUserMenu" class="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50" @click.outside="showUserMenu = false">
+            <span class="block px-4 py-2 text-xs text-gray-400 border-b border-gray-50">{{ auth.user?.email }}</span>
+            <NuxtLink to="/admin/settings" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" @click="showUserMenu = false">
+              <Icon name="heroicons:cog-6-tooth" class="w-4 h-4" />
+              Pengaturan
+            </NuxtLink>
+            <button @click="handleLogout" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+              <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4" />
+              Keluar
+            </button>
           </div>
-          <span class="text-sm font-medium text-gray-700">Admin</span>
         </div>
       </header>
 
@@ -104,7 +119,20 @@
 
 <script setup lang="ts">
 const route = useRoute()
+const router = useRouter()
 const sidebarOpen = ref(true)
+const showUserMenu = ref(false)
+const auth = useAuthStore()
+
+auth.init()
+if (!auth.isAuthenticated) {
+  router.replace('/login')
+}
+
+function handleLogout() {
+  auth.logout()
+  router.replace('/login')
+}
 
 const navSections = [
   {

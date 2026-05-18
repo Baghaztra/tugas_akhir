@@ -6,11 +6,14 @@ from datetime import date, timedelta
 from ..crud import garment_type as crud_garment_type
 from ..schemas import garment_type as schema_garment_type
 from ..database import get_db
+from ..auth import get_current_user
+from ..models.user import User
 
 router = APIRouter(
     prefix="/garment-types",
     tags=["garment-types"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(get_current_user)],
 )
 
 

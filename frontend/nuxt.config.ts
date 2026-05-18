@@ -2,12 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/icon", "@nuxtjs/tailwindcss"],
+  modules: ["@nuxt/icon", "@nuxtjs/tailwindcss", "@pinia/nuxt"],
 
   runtimeConfig: {
     public: {
-      // Override with env var: NUXT_PUBLIC_API_BASE=http://your-api-domain.com
-      apiBase: "http://localhost:8000",
+      apiBase: process.env.NUXT_PUBLIC_API_BASE,
     },
   },
 
@@ -17,6 +16,7 @@ export default defineNuxtConfig({
     '/': { prerender: true },
     
     // Halaman internal dijadikan SPA murni (client-side rendering) untuk mengurangi beban server
+    '/login': { ssr: false },
     '/admin/**': { ssr: false },
     '/task-list/**': { ssr: false },
     '/tracking/**': { ssr: false }

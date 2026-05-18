@@ -110,6 +110,37 @@
         </div>
       </div>
 
+      <!-- Change Password -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <h3 class="font-semibold text-gray-900 mb-5 flex items-center gap-2">
+          <Icon name="heroicons:lock-closed" class="w-5 h-5 text-primary-500" />
+          Ubah Password
+        </h3>
+        <form @submit.prevent="handleChangePassword" class="space-y-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1.5 font-medium">Password Saat Ini</label>
+            <input v-model="passwordForm.current" type="password" required
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1.5 font-medium">Password Baru</label>
+            <input v-model="passwordForm.newPass" type="password" required minlength="6"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1.5 font-medium">Konfirmasi Password Baru</label>
+            <input v-model="passwordForm.confirm" type="password" required
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+          </div>
+          <p v-if="passwordError" class="text-red-500 text-xs">{{ passwordError }}</p>
+          <div class="flex justify-end">
+            <ui-app-button type="submit" size="sm" :loading="passwordSaving">
+              Simpan Password
+            </ui-app-button>
+          </div>
+        </form>
+      </div>
+
       <!-- Portfolio Existing Items -->
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div class="flex items-center justify-between mb-5">
@@ -196,6 +227,39 @@ definePageMeta({ layout: 'admin' })
 useSeoMeta({ title: 'Pengaturan — Penjahit Yan' })
 
 const { apiBase } = useRuntimeConfig().public
+
+// ─── Change Password ──────────────────────────────────────────────────────────
+const passwordForm = reactive({ current: '', newPass: '', confirm: '' })
+const passwordSaving = ref(false)
+const passwordError = ref('')
+
+async function handleChangePassword() {
+  passwordError.value = ''
+  if (passwordForm.newPass !== passwordForm.confirm) {
+    passwordError.value = 'Konfirmasi password tidak cocok'
+    return
+  }
+  if (passwordForm.newPass.length < 6) {
+    passwordError.value = 'Password baru minimal 6 karakter'
+    return
+  }
+  passwordSaving.value = true
+  try {
+    await $fetch(`${apiBase}/auth/password`, {
+      method: 'PUT',
+      body: { current_password: passwordForm.current, new_password: passwordForm.newPass },
+      credentials: 'include',
+    })
+    passwordForm.current = ''
+    passwordForm.newPass = ''
+    passwordForm.confirm = ''
+    showToast('Password berhasil diubah!', 'success')
+  } catch (e: any) {
+    passwordError.value = e?.data?.detail ?? 'Gagal mengubah password'
+  } finally {
+    passwordSaving.value = false
+  }
+}
 
 // ─── Profile state ─────────────────────────────────────────────────────────────
 const { business } = useProfile()

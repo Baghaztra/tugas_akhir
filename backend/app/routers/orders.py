@@ -15,6 +15,8 @@ from ..schemas.order import (
 )
 from ..database import get_db
 from ..models.order import Order as OrderModel, OrderStatus, OrderItem
+from ..models.user import User
+from ..auth import get_current_user
 from ..ranking_logic import sort_by_priority, get_urgency_label, group_by_phase, STAGE_STATUS_MAP
 
 router = APIRouter(
@@ -43,6 +45,7 @@ async def create_order(
         ),
     ),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Buat order baru via multipart/form-data.
@@ -73,6 +76,7 @@ def read_orders(
     limit: int = 100,
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     return crud_order.get_orders(
         db,
@@ -90,7 +94,10 @@ def track_order(receipt: str, db: Session = Depends(get_db)):
     return db_order
 
 @router.get("/admin-work")
-def get_admin_work(db: Session = Depends(get_db)):
+def get_admin_work(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """
     Mengembalikan antrian pesanan untuk halaman admin (Kanban).
     Dikelompokkan per phase, lalu dibagi lagi menjadi 'ready' (belum di-assign) 
@@ -178,7 +185,8 @@ class ItemStatusUpdate(BaseModel):
 def update_item_status(
     item_id: int,
     payload: ItemStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     item = crud_order.update_item_status_flow(
         db,
@@ -192,7 +200,11 @@ def update_item_status(
     return item
 
 @router.get("/{order_id}", response_model=Order)
-def read_order(order_id: int, db: Session = Depends(get_db)):
+def read_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     db_order = crud_order.get_order(db, order_id=order_id)
     if db_order is None:
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
@@ -200,7 +212,12 @@ def read_order(order_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{order_id}", response_model=Order)
-def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db)):
+def update_order(
+    order_id: int,
+    order: OrderUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     db_order = crud_order.update_order(db, order_id=order_id, order=order)
     if db_order is None:
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
@@ -208,7 +225,11 @@ def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db
 
 
 @router.delete("/{order_id}", response_model=Order)
-def delete_order(order_id: int, db: Session = Depends(get_db)):
+def delete_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     db_order = crud_order.delete_order(db, order_id=order_id)
     if db_order is None:
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")

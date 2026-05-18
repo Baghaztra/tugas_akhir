@@ -3,3 +3,4 @@ from app.models.order import Order, GarmentType, OrderItem, OrderLog, OrderStatu
 from app.models.profile import BusinessProfile
 from app.models.portfolio import PortfolioItem
 from app.models.attributes import Attribute
+from app.models.user import User

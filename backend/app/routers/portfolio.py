@@ -6,6 +6,8 @@ from ..crud import portfolio as crud_portfolio
 from ..schemas.portfolio import PortfolioItemCreate, PortfolioItemRead, PortfolioItemUpdate
 from ..database import get_db
 from ..storage import get_storage
+from ..auth import get_current_user
+from ..models.user import User
 
 router = APIRouter(
     prefix="/portfolio",
@@ -26,6 +28,7 @@ def create_portfolio_item(
     description: Optional[str] = Form(""),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Buat item portofolio baru (opsional: sertakan gambar)."""
     image_url: Optional[str] = None
@@ -38,7 +41,12 @@ def create_portfolio_item(
 
 
 @router.put("/{item_id}", response_model=PortfolioItemRead)
-def update_portfolio_item(item_id: int, data: PortfolioItemUpdate, db: Session = Depends(get_db)):
+def update_portfolio_item(
+    item_id: int,
+    data: PortfolioItemUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Update metadata item (title, category, description) — tanpa mengubah gambar."""
     item = crud_portfolio.update(db, item_id, data)
     if item is None:
@@ -51,6 +59,7 @@ def update_portfolio_image(
     item_id: int,
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Ganti gambar item portofolio yang sudah ada."""
     existing = crud_portfolio.get_one(db, item_id)
@@ -68,7 +77,11 @@ def update_portfolio_image(
 
 
 @router.delete("/{item_id}", response_model=PortfolioItemRead)
-def delete_portfolio_item(item_id: int, db: Session = Depends(get_db)):
+def delete_portfolio_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Hapus item portofolio beserta file gambarnya."""
     existing = crud_portfolio.get_one(db, item_id)
     if existing is None:

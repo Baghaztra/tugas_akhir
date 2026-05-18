@@ -7,10 +7,13 @@ from collections import defaultdict
 from ..database import get_db
 from ..models.order import Order, OrderLog, OrderStatus
 from ..models.worker import Worker
+from ..auth import get_current_user
+from ..models.user import User
 
 router = APIRouter(
     prefix="/reports",
     tags=["reports"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

@@ -4,11 +4,14 @@ from typing import List
 from ..crud import attributes as crud_attributes
 from ..schemas import attributes as schema_attributes
 from ..database import get_db
+from ..auth import get_current_user
+from ..models.user import User
 
 router = APIRouter(
     prefix="/attributes",
     tags=["attributes"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(get_current_user)],
 )
 
 @router.post("/", response_model=schema_attributes.Attribute)

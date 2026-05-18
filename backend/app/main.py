@@ -5,10 +5,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
 from .routers import workers, orders, profile, portfolio, dashboard, analytics, garment_types, attributes
+from .routers import auth as auth_router
+from .auth import init_auth
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+# Init auth with secret from env
+init_auth(
+    secret_key=os.getenv("JWT_SECRET", "fallback-secret-change-me"),
+    expire_minutes=int(os.getenv("JWT_EXPIRE_MINUTES", "1440")),
+)
 
 app = FastAPI(title=os.getenv("APP_NAME"), version=os.getenv("APP_VERSION"))
 
@@ -27,6 +35,7 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Routers
+app.include_router(auth_router.router)
 app.include_router(workers.router)
 app.include_router(garment_types.router)
 app.include_router(attributes.router)

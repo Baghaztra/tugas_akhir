@@ -6,11 +6,14 @@ from datetime import date, timedelta
 from ..crud import worker as crud_worker
 from ..schemas import worker as schema_worker
 from ..database import get_db
+from ..auth import get_current_user
+from ..models.user import User
 
 router = APIRouter(
     prefix="/workers",
     tags=["workers"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(get_current_user)],
 )
 
 

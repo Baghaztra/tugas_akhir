@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.database import SessionLocal, engine, Base
 from app.models import * #noqa
+from app.auth import get_password_hash
 
 Base.metadata.create_all(bind=engine)
 
@@ -196,6 +197,18 @@ def build_item_logs(item: OrderItem, final_status: OrderStatus) -> list[OrderLog
 def seed(db):
     print("🌱 Memulai seeding database...")
 
+    # Owner User
+    print("   → Generating owner user...")
+    existing_user = db.query(User).filter(User.email == "owner@rumahjahit.id").first()
+    if not existing_user:
+        db.add(User(
+            email="owner@rumahjahit.id",
+            password_hash=get_password_hash("admin123"),
+            name="Owner",
+            is_owner=True,
+        ))
+        db.flush()
+
     # Workers
     print("   → Generating data workers...")
     workers = []
@@ -303,6 +316,7 @@ def seed(db):
 
     db.commit()
     print("✅ Seeding selesai!")
+    print(f"   Users          : 1 (owner@rumahjahit.id)")
     print(f"   Workers        : {len(WORKERS_DATA)}")
     print(f"   Orders         : {ORDERS}")
     print(f"   Portfolio Items: {len(PORTFOLIO_DATA)}")
