@@ -81,7 +81,7 @@
       </header>
 
       <!-- Content -->
-      <main class="flex-1 p-6 overflow-x-hidden overflow-y-auto">
+      <main class="flex-1 md:p-6 overflow-x-hidden overflow-y-auto">
         <slot />
       </main>
     </div>
@@ -102,7 +102,7 @@
         ]">
           <Icon :name="item.icon" class="w-5 h-5" />
         </div>
-        <span>{{ item.label }}</span>
+        <!-- <span>{{ item.label }}</span> -->
       </NuxtLink>
 
       <!-- Halaman Publik -->

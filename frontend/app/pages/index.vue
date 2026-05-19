@@ -137,7 +137,7 @@
           class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group"
           @click="openPortfolioModal(item)">
           <div class="relative h-64 bg-gray-50 overflow-hidden">
-            <img :src="item.image" :alt="item.title"
+            <img :src="item.image!" :alt="item.title"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
             <div
               class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
