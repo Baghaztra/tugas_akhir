@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     
     // Halaman internal dijadikan SPA murni (client-side rendering) untuk mengurangi beban server
     '/login': { ssr: false },
+    '/forgot-password': { ssr: false },
     '/admin/**': { ssr: false },
     '/task-list/**': { ssr: false },
     '/tracking/**': { ssr: false }

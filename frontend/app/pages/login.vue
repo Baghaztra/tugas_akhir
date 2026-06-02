@@ -38,6 +38,12 @@
           <ui-app-button type="submit" class="w-full" :loading="loading">
             Masuk
           </ui-app-button>
+
+          <div class="text-center mt-4">
+            <NuxtLink to="/forgot-password" class="text-sm text-primary-600 hover:text-primary-700">
+              Lupa password?
+            </NuxtLink>
+          </div>
         </form>
       </div>
     </div>

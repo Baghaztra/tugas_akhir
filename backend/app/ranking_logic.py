@@ -1,13 +1,11 @@
 """
 Modul prioritas pesanan untuk halaman Employee Tasks.
 
-Saat ini: sort ascending berdasarkan deadline (paling dekat = prioritas tertinggi).
+Sort by priority menggunakan model XGBoost (jika tersedia).
+Fallback: ascending berdasarkan deadline (paling dekat = prioritas tertinggi).
 
-# TODO: Ganti fungsi sort_by_priority() dengan model ML (XGBoost) yang
-#        memperhitungkan: deadline proximity, beban kerja, jenis pakaian,
-#        riwayat durasi pengerjaan worker, dll.
-#        Model disimpan di: backend/app/ml_model/priority_model.pkl
-#        Training script: backend/ml/train_priority.py
+Feature days_to_deadline dihitung dari hari ini (bukan dari created_at)
+agar urutan prioritas mencerminkan urgensi aktual.
 """
 
 from datetime import date, datetime
@@ -86,20 +84,10 @@ def sort_by_priority(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for idx, order in enumerate(orders):
         row = {"_list_index": idx}
 
-        # 1. Hitung days_to_deadline
+        # 1. Hitung days_to_deadline (sisa hari dari sekarang)
         try:
             deadline_date = datetime.strptime(order.get("deadline", ""), "%Y-%m-%d")
-            # created_at dari database
-            created_at = order.get("created_at")
-            if isinstance(created_at, datetime):
-                created_at = created_at.replace(tzinfo=None)
-            elif isinstance(created_at, str):
-                # Handle isoformat string fallback
-                created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00')).replace(tzinfo=None)
-            else:
-                created_at = today
-
-            days_to_deadline = (deadline_date - created_at).days
+            days_to_deadline = (deadline_date - today).days
         except (ValueError, TypeError):
             days_to_deadline = 0
 

@@ -36,5 +36,26 @@ export const useAuthStore = defineStore('auth', () => {
     $fetch(`${apiBase}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {})
   }
 
-  return { user, isAuthenticated, init, login, logout }
+  async function requestPasswordReset(email: string) {
+    const { apiBase } = useRuntimeConfig().public
+    return $fetch<{ success: boolean; message: string }>(`${apiBase}/auth/forgot-password`, {
+      method: 'POST',
+      body: { email },
+      credentials: 'include',
+    })
+  }
+
+  async function resetPasswordWithOtp(email: string, otp: string, newPassword: string) {
+    const { apiBase } = useRuntimeConfig().public
+    const res = await $fetch<{ success: boolean; user: AuthUser }>(`${apiBase}/auth/reset-password`, {
+      method: 'PUT',
+      body: { email, otp, new_password: newPassword },
+      credentials: 'include',
+    })
+    user.value = res.user
+    localStorage.setItem('auth_user', JSON.stringify(res.user))
+    return res.user
+  }
+
+  return { user, isAuthenticated, init, login, logout, requestPasswordReset, resetPasswordWithOtp }
 })

@@ -1,3 +1,6 @@
+import random
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -9,6 +12,8 @@ from ..auth import (
     verify_password,
 )
 from ..database import get_db
+from ..email import send_otp_email
+from ..models.password_reset_token import PasswordResetToken
 from ..models.user import User
 
 router = APIRouter(
@@ -94,3 +99,110 @@ def change_password(
     db.commit()
 
     return {"success": True}
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    otp: str
+    new_password: str
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    body: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.email == body.email).first()
+
+    if user:
+        db.query(PasswordResetToken).filter(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.used == False,  # noqa: E712
+        ).update({"used": True})
+
+        otp = f"{random.randint(100000, 999999):06d}"
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+
+        token = PasswordResetToken(
+            user_id=user.id,
+            otp_code=otp,
+            expires_at=expires_at,
+        )
+        db.add(token)
+        db.commit()
+
+        send_otp_email(user.email, otp, user.name)
+
+    return {
+        "success": True,
+        "message": "Jika email terdaftar, kode OTP telah dikirim",
+    }
+
+
+@router.put("/reset-password")
+def reset_password(
+    body: ResetPasswordRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    if len(body.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password baru minimal 6 karakter",
+        )
+
+    user = db.query(User).filter(User.email == body.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email tidak terdaftar",
+        )
+
+    token = (
+        db.query(PasswordResetToken)
+        .filter(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.otp_code == body.otp,
+            PasswordResetToken.used == False,  # noqa: E712
+        )
+        .first()
+    )
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kode OTP tidak valid",
+        )
+
+    if token.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kode OTP sudah kedaluwarsa",
+        )
+
+    token.used = True
+    user.password_hash = get_password_hash(body.new_password)
+    db.commit()
+
+    new_token = create_access_token(data={"sub": str(user.id)})
+    response.set_cookie(
+        key="access_token",
+        value=new_token,
+        httponly=True,
+        samesite="lax",
+        max_age=86400,
+        path="/",
+    )
+
+    return {
+        "success": True,
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+        },
+    }
