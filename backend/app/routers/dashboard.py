@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from collections import defaultdict
 
 from ..database import get_db
-from ..models.order import Order, OrderLog, OrderStatus, PaymentStatus
+from ..models.order import Order, OrderItem, OrderLog, OrderStatus, PaymentStatus, GarmentType
 from ..auth import get_current_user
 from ..models.user import User
 
@@ -20,13 +20,15 @@ router = APIRouter(
 def get_summary(db: Session = Depends(get_db)):
     """
     Ringkasan dashboard admin:
-    - Total pesanan aktif (belum DONE)
+    - Total pesanan aktif (memiliki item belum DONE)
     - Pendapatan minggu ini (paidAmount pada pesanan yang dibuat minggu ini)
-    - Jumlah worker (diambil dari /workers di frontend, tidak dihitung di sini)
+    - Pesanan selesai hari ini (updatedAt hari ini & semua item DONE)
     """
+    # Pesanan aktif: order yang punya minimal 1 item belum DONE
     active_orders = (
-        db.query(func.count(Order.id))
-        .filter(Order.status != OrderStatus.DONE)
+        db.query(func.count(func.distinct(Order.id)))
+        .join(OrderItem, OrderItem.order_id == Order.id)
+        .filter(OrderItem.status != OrderStatus.DONE)
         .scalar()
     ) or 0
 
@@ -38,12 +40,16 @@ def get_summary(db: Session = Depends(get_db)):
         .scalar()
     ) or 0
 
-    # Pesanan selesai hari ini
+    # Pesanan selesai hari ini: updatedAt hari ini & semua item DONE
     today_done = (
         db.query(func.count(Order.id))
         .filter(
-            Order.status == OrderStatus.DONE,
             cast(Order.updatedAt, Date) == date.today(),
+            ~Order.id.in_(
+                db.query(OrderItem.order_id)
+                .filter(OrderItem.status != OrderStatus.DONE)
+                .distinct()
+            ),
         )
         .scalar()
     ) or 0
@@ -72,12 +78,16 @@ def get_trend(db: Session = Depends(get_db)):
         .all()
     )
 
-    # Pesanan selesai (status DONE, updatedAt per hari)
+    # Pesanan selesai (semua item DONE, updatedAt per hari)
     done_rows = (
         db.query(cast(Order.updatedAt, Date).label("day"), func.count(Order.id).label("cnt"))
         .filter(
-            Order.status == OrderStatus.DONE,
             cast(Order.updatedAt, Date) >= start,
+            ~Order.id.in_(
+                db.query(OrderItem.order_id)
+                .filter(OrderItem.status != OrderStatus.DONE)
+                .distinct()
+            ),
         )
         .group_by(cast(Order.updatedAt, Date))
         .all()
@@ -100,16 +110,27 @@ def get_trend(db: Session = Depends(get_db)):
 @router.get("/notifications")
 def get_notifications(db: Session = Depends(get_db)):
     """
-    Pesanan yang mendekati deadline (≤3 hari) dan belum selesai.
+    Pesanan yang mendekati deadline (≤3 hari) dan belum selesai
+    (memiliki setidaknya 1 item yang belum DONE).
     """
+    from sqlalchemy.orm import joinedload
+
     today = date.today()
     threshold = today + timedelta(days=3)
 
+    # Cari order yang punya minimal 1 item belum DONE & deadline <= threshold
     orders = (
         db.query(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.garmentType),
+        )
         .filter(
-            Order.status != OrderStatus.DONE,
             Order.deadline <= threshold.isoformat(),
+            Order.id.in_(
+                db.query(OrderItem.order_id)
+                .filter(OrderItem.status != OrderStatus.DONE)
+                .distinct()
+            ),
         )
         .order_by(Order.deadline.asc())
         .limit(20)
@@ -119,14 +140,24 @@ def get_notifications(db: Session = Depends(get_db)):
     result = []
     for o in orders:
         days_left = (date.fromisoformat(o.deadline) - today).days
+        # Ambil garment type dari item pertama yang belum DONE
+        active_item = next(
+            (i for i in o.items if i.status != OrderStatus.DONE), None
+        )
+        garment_name = (
+            active_item.garmentType.name
+            if active_item and active_item.garmentType
+            else None
+        )
+        item_status = active_item.status.value if active_item else "done"
         result.append({
             "id": o.id,
             "receiptNumber": o.receiptNumber,
             "customerName": o.customerName,
-            "garmentType": o.garmentType,
+            "garmentType": garment_name,
             "deadline": o.deadline,
             "daysLeft": days_left,
-            "status": o.status.value,
+            "status": item_status,
             "urgency": "critical" if days_left <= 0 else ("high" if days_left <= 1 else "medium"),
         })
 

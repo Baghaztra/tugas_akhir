@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import UploadFile
@@ -238,6 +238,18 @@ def update_item_status_flow(
                 _add_log(db, item.id, item.status, "Pesanan mulai difinishing", worker.name, worker.id, worker.name)
     elif item.status == OrderStatus.FINISHING:
         _complete_phase(db, item, OrderStatus.DONE, "Pesanan selesai difinishing")
+
+    # Jika item berubah ke DONE, cek apakah semua item di order sudah selesai
+    if item.status == OrderStatus.DONE:
+        order = db.query(Order).filter(Order.id == item.order_id).first()
+        if order:
+            all_done = all(
+                i.status == OrderStatus.DONE
+                for i in db.query(OrderItem).filter(OrderItem.order_id == order.id).all()
+            )
+            if all_done:
+                order.updatedAt = datetime.now(timezone.utc)
+                db.add(order)
 
     db.commit()
     db.refresh(item)
