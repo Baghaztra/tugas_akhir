@@ -119,6 +119,14 @@ class Order(OrderBase):
     class Config:
         from_attributes = True
 
+class CustomerHistoryItem(BaseModel):
+    customerName: str
+    customerPhone: Optional[str] = None
+    orderDate: datetime
+    garmentTypeName: Optional[str] = None
+    measurements: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
 # Tracking
 class OrderTracking(BaseModel):
     id: int

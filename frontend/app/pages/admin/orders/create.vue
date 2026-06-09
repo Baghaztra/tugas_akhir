@@ -10,6 +10,13 @@
         <h1 class="text-xl font-semibold text-gray-900">Pesanan Baru</h1>
         <p class="text-xs text-gray-400">Isi data pelanggan dan item pesanan</p>
       </div>
+      <div class="ml-auto">
+        <button type="button" @click="showHistoryModal = true"
+          class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
+          <Icon name="heroicons:magnifying-glass" class="w-4 h-4" />
+          Cari dari Histori
+        </button>
+      </div>
     </div>
 
     <form @submit.prevent="submit" class="space-y-6">
@@ -221,6 +228,10 @@
         </ui-app-button>
       </div>
     </form>
+
+    <!-- Histori Ukuran Modal -->
+    <HistoryMeasurementModal :open="showHistoryModal" @close="showHistoryModal = false"
+      @select="fillMeasurements" />
   </div>
 </template>
 
@@ -233,8 +244,15 @@ const { garmentTypes } = useGarmentTypes()
 const { attributes } = useAttributes()
 const saving = ref(false)
 
+const showHistoryModal = ref(false)
 const activeSketchIdx = ref<number | null>(null)
 const openSketch = (idx: number) => activeSketchIdx.value = idx
+
+const fillMeasurements = (m: Record<string, string>) => {
+  if (form.items.length > 0 && form.items[0].measurements) {
+    form.items[0].measurements = { ...form.items[0].measurements, ...m }
+  }
+}
 
 const measurementKeys = [
   'Lingkar badan', 'Lingkar pinggang', 'Lingkar panggul', 'Panjang bahu',

@@ -12,6 +12,7 @@ from ..schemas.order import (
     OrderUpdate,
     OrderTracking,
     OrderCreateFormData,
+    CustomerHistoryItem,
 )
 from ..database import get_db
 from ..models.order import Order as OrderModel, OrderStatus, OrderItem
@@ -84,6 +85,25 @@ def read_orders(
         limit=limit,
         search=search
     )
+
+@router.get("/history", response_model=List[CustomerHistoryItem])
+def get_order_history(
+    search: str = Query(..., min_length=1),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    items = crud_order.get_customer_history(db, search=search)
+    return [
+        CustomerHistoryItem(
+            customerName=item.order.customerName,
+            customerPhone=item.order.customerPhone,
+            orderDate=item.order.createdAt,
+            garmentTypeName=item.garmentType.name if item.garmentType else None,
+            measurements=item.measurements or {},
+        )
+        for item in items
+    ]
+
 
 @router.get("/tracking/{receipt}", response_model=OrderTracking)
 def track_order(receipt: str, db: Session = Depends(get_db)):

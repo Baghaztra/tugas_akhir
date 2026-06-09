@@ -45,6 +45,21 @@ def get_order_by_receipt(db: Session, receipt: str):
         .first()
     )
 
+def get_customer_history(db: Session, search: str, limit: int = 20):
+    return (
+        db.query(OrderItem)
+        .join(Order, OrderItem.order_id == Order.id)
+        .options(
+            joinedload(OrderItem.garmentType),
+            joinedload(OrderItem.order),
+        )
+        .filter(Order.customerName.ilike(f"%{search}%"))
+        .order_by(Order.createdAt.desc())
+        .limit(limit)
+        .all()
+    )
+
+
 def get_orders(db: Session, skip: int = 0, limit: int = 100, search: str = None):
     query = db.query(Order).options(
         joinedload(Order.items).joinedload(OrderItem.garmentType)

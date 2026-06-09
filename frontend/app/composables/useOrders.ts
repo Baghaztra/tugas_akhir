@@ -1,3 +1,5 @@
+import type { CustomerHistoryItem, Order, OrderCreate, OrderTracking } from '~/shared/types'
+
 /**
  * Composable untuk API Pesanan/Orders
  * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
@@ -46,6 +48,29 @@ export const useOrderDetail = (orderId: string) => {
   });
   return { order: data, status, error, refresh };
 };
+
+// ─── Cari histori pelanggan ────────────────────────────────────────────────────
+export const useCustomerHistory = () => {
+  const { apiBase } = useRuntimeConfig().public
+  const results = ref<CustomerHistoryItem[]>([])
+  const loading = ref(false)
+
+  const search = async (query: string) => {
+    if (!query || query.length < 1) { results.value = []; return }
+    loading.value = true
+    try {
+      results.value = await $fetch<CustomerHistoryItem[]>(
+        `${apiBase}/orders/history?search=${encodeURIComponent(query)}`
+      )
+    } catch {
+      results.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return { results, loading, search }
+}
 
 // ─── Buat pesanan baru ─────────────────────────────────────────────────────────
 

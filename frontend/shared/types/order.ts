@@ -83,6 +83,15 @@ export interface Order {
   items: OrderItem[];
 }
 
+// -- Customer History --
+export interface CustomerHistoryItem {
+  customerName: string
+  customerPhone?: string | null
+  orderDate: string
+  garmentTypeName?: string | null
+  measurements: Record<string, string>
+}
+
 // -- Tracking --
 export interface OrderTracking {
   id: number;
