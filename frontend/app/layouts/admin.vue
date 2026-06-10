@@ -134,7 +134,7 @@ function handleLogout() {
   router.replace('/login')
 }
 
-const navSections = [
+const navSections = computed(() => [
   {
     label: 'Utama',
     items: [
@@ -154,13 +154,14 @@ const navSections = [
   {
     label: 'Pengaturan',
     items: [
+      ...(auth.user?.is_owner ? [{ to: '/admin/users', icon: 'heroicons:user-group', label: 'Kelola User' }] : []),
       { to: '/admin/settings', icon: 'heroicons:cog-6-tooth', label: 'Pengaturan' },
     ],
   },
-]
+])
 
 // Flatten nav items for bottom bar (semua item dari semua section)
-const bottomNavItems = navSections.flatMap(s => s.items)
+const bottomNavItems = computed(() => navSections.value.flatMap(s => s.items))
 
 const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/dashboard': { title: 'Dashboard', desc: 'Ringkasan aktivitas bisnis' },
@@ -168,6 +169,7 @@ const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/orders': { title: 'Manajemen Pesanan', desc: 'Kelola seluruh pesanan jahit' },
   '/admin/garmen-types': { title: 'Jenis Pakaian', desc: 'Kelola jenis pesanan tersedia' },
   '/admin/workers': { title: 'Manajemen Karyawan', desc: 'Kelola data dan performa karyawan' },
+  '/admin/users': { title: 'Kelola User', desc: 'Manajemen akun pengguna sistem' },
   '/admin/reports': { title: 'Laporan & Analitik', desc: 'Data statistik dan performa bisnis' },
   '/admin/settings': { title: 'Pengaturan', desc: 'Konfigurasi profil usaha' },
 }

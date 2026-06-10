@@ -13,4 +13,9 @@ export default defineNuxtRouteMiddleware((to) => {
   if (!auth.isAuthenticated && to.path.startsWith('/admin')) {
     return navigateTo('/login')
   }
+
+  // Owner-only routes
+  if (to.path.startsWith('/admin/users') && !auth.user?.is_owner) {
+    return navigateTo('/admin/dashboard')
+  }
 })

@@ -10,3 +10,4 @@ pandas
 xgboost
 pycle
 openpyxl
+email-validator

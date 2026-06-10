@@ -17,7 +17,7 @@ const props = defineProps<{
   label: string
   value?: number | string
   icon: string
-  color?: 'primary' | 'success' | 'warning' | 'danger'
+  color?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
   isCurrency?: boolean
   sub?: string
   loading?: boolean
@@ -28,6 +28,7 @@ const iconBg = computed(() => ({
   success: 'bg-emerald-50',
   warning: 'bg-amber-50',
   danger: 'bg-red-50',
+  info: 'bg-blue-50',
 })[props.color ?? 'primary'])
 
 const iconColor = computed(() => ({
@@ -35,6 +36,7 @@ const iconColor = computed(() => ({
   success: 'text-emerald-500',
   warning: 'text-amber-500',
   danger: 'text-red-500',
+  info: 'text-blue-500',
 })[props.color ?? 'primary'])
 
 const formattedValue = computed(() => {

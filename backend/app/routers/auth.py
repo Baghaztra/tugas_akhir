@@ -67,6 +67,7 @@ def login(
             "id": user.id,
             "email": user.email,
             "name": user.name,
+            "is_owner": user.is_owner,
         },
     )
 
@@ -204,5 +205,6 @@ def reset_password(
             "id": user.id,
             "email": user.email,
             "name": user.name,
+            "is_owner": user.is_owner,
         },
     }

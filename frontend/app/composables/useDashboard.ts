@@ -3,10 +3,19 @@
  * Endpoint: /dashboard/summary, /dashboard/trend, /dashboard/notifications
  */
 
+export interface PaymentBreakdown {
+  paid: number;
+  partial: number;
+  unpaid: number;
+}
+
 export interface DashboardSummary {
   activeOrders: number;
   weeklyRevenue: number;
   todayDone: number;
+  activeEmployees: number;
+  overdueOrders: number;
+  paymentBreakdown: PaymentBreakdown;
 }
 
 export interface TrendData {
@@ -19,7 +28,7 @@ export interface DashboardNotification {
   id: number;
   receiptNumber: string;
   customerName: string;
-  garmentType: string;
+  garmentType: string | null;
   deadline: string;
   daysLeft: number;
   status: string;
@@ -29,11 +38,20 @@ export interface DashboardNotification {
 export const useDashboard = () => {
   const { apiBase } = useRuntimeConfig().public;
 
+  const emptySummary: DashboardSummary = {
+    activeOrders: 0,
+    weeklyRevenue: 0,
+    todayDone: 0,
+    activeEmployees: 0,
+    overdueOrders: 0,
+    paymentBreakdown: { paid: 0, partial: 0, unpaid: 0 },
+  };
+
   const { data: summary, status, error, refresh } = useFetch<DashboardSummary>(
     `${apiBase}/dashboard/summary`,
     {
       credentials: 'include',
-      default: () => ({ activeOrders: 0, weeklyRevenue: 0, todayDone: 0 }),
+      default: () => emptySummary,
     },
   );
 
@@ -131,6 +149,20 @@ export const useReports = (filters?: {
   );
 
   return { volume, productTrends, productivity, refreshVolume };
+};
+
+export const useProductTrends = () => {
+  const { apiBase } = useRuntimeConfig().public;
+
+  const { data: productTrends, status } = useFetch<ProductTrend[]>(
+    `${apiBase}/reports/product-trends`,
+    {
+      credentials: "include",
+      default: () => [] as ProductTrend[],
+    },
+  );
+
+  return { productTrends, status };
 };
 
 export const useProductivity = (filters?: {

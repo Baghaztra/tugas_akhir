@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from ..database import get_db
 from ..models.order import Order, OrderItem, OrderLog, OrderStatus, PaymentStatus, GarmentType
+from ..models.worker import Worker, WorkerStatus
 from ..auth import get_current_user
 from ..models.user import User
 
@@ -23,6 +24,9 @@ def get_summary(db: Session = Depends(get_db)):
     - Total pesanan aktif (memiliki item belum DONE)
     - Pendapatan minggu ini (paidAmount pada pesanan yang dibuat minggu ini)
     - Pesanan selesai hari ini (updatedAt hari ini & semua item DONE)
+    - Karyawan aktif (status Working)
+    - Pesanan mendekati/deadline lewat (deadline < hari ini & ada item belum DONE)
+    - Breakdown status pembayaran dari pesanan aktif
     """
     # Pesanan aktif: order yang punya minimal 1 item belum DONE
     active_orders = (
@@ -54,10 +58,49 @@ def get_summary(db: Session = Depends(get_db)):
         .scalar()
     ) or 0
 
+    # Karyawan aktif
+    active_employees = (
+        db.query(func.count(Worker.id))
+        .filter(Worker.status == WorkerStatus.WORKING)
+        .scalar()
+    ) or 0
+
+    # Pesanan overdue: deadline < hari ini & punya item belum DONE
+    overdue_orders = (
+        db.query(func.count(func.distinct(Order.id)))
+        .join(OrderItem, OrderItem.order_id == Order.id)
+        .filter(
+            OrderItem.status != OrderStatus.DONE,
+            Order.deadline < date.today().isoformat(),
+        )
+        .scalar()
+    ) or 0
+
+    # Breakdown pembayaran dari semua order yang punya item belum DONE
+    active_order_ids = (
+        db.query(func.distinct(Order.id))
+        .join(OrderItem, OrderItem.order_id == Order.id)
+        .filter(OrderItem.status != OrderStatus.DONE)
+    )
+    payment_rows = (
+        db.query(Order.paymentStatus, func.count(Order.id))
+        .filter(Order.id.in_(active_order_ids))
+        .group_by(Order.paymentStatus)
+        .all()
+    )
+    payment_map = {row[0].value if hasattr(row[0], 'value') else row[0]: row[1] for row in payment_rows}
+
     return {
         "activeOrders": active_orders,
         "weeklyRevenue": float(weekly_revenue),
         "todayDone": today_done,
+        "activeEmployees": active_employees,
+        "overdueOrders": overdue_orders,
+        "paymentBreakdown": {
+            "paid": payment_map.get("paid", 0),
+            "partial": payment_map.get("partial", 0),
+            "unpaid": payment_map.get("unpaid", 0),
+        },
     }
 
 
