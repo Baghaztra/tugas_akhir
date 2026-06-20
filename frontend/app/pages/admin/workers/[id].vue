@@ -135,8 +135,6 @@
 </template>
 
 <script setup lang="ts">
-import type { WorkerPerformance } from '@types/worker'
-
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
@@ -148,7 +146,7 @@ const { wages, status: wagesStatus } = useEmployeeWages(empId)
 
 useSeoMeta({ title: `Karyawan — Penjahit Yan` })
 
-const maxDaily = computed(() => Math.max(...(performance.value?.daily.map((d: WorkerPerformance) => d.count) ?? [1])))
+const maxDaily = computed(() => Math.max(...(performance.value?.daily.map((d) => d.count) ?? [1])))
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)

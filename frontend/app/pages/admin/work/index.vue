@@ -87,10 +87,10 @@
               </div>
             </div>
 
-            <!-- Meninggu Dikerjakan (Ready) -->
+            <!-- Menunggu Dikerjakan (Ready) -->
             <div>
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Icon name="heroicons:inbox-arrow-down" class="w-4 h-4" /> Meninggu Dikerjakan
+                <Icon name="heroicons:inbox-arrow-down" class="w-4 h-4" /> Menunggu Dikerjakan
                 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">{{ phase.ready_count
                 }}</span>
               </h3>

@@ -153,7 +153,7 @@ def update_order(db: Session, order_id: int, order: OrderUpdate):
     if not db_order:
         return None
 
-    update_data = order.dict(exclude_unset=True)
+    update_data = order.model_dump(exclude_unset=True)
 
     for key, value in update_data.items():
         setattr(db_order, key, value)

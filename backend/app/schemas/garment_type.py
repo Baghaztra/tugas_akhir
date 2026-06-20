@@ -17,8 +17,8 @@ class GarmentTypeCreate(GarmentTypeBase):
     """
     pass
 
-class GarmentTypeUpdate(GarmentTypeBase):
-    pass
+class GarmentTypeUpdate(BaseModel):
+    name: Optional[str] = None
 
 class GarmentType(GarmentTypeBase):
     id: int

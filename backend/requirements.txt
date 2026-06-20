@@ -8,6 +8,5 @@ python-multipart
 python-dotenv
 pandas
 xgboost
-pycle
 openpyxl
 email-validator

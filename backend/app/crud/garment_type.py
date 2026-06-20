@@ -36,7 +36,7 @@ def get_garment_types(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_garment_type(db: Session, garment_type: GarmentTypeCreate):
-    db_garment_type = GarmentType(**garment_type.dict())
+    db_garment_type = GarmentType(**garment_type.model_dump())
     db.add(db_garment_type)
     db.commit()
     db.refresh(db_garment_type)
@@ -47,7 +47,7 @@ def update_garment_type(db: Session, garment_type_id: int, garment_type: Garment
     db_garment_type = get_garment_type(db, garment_type_id)
     if not db_garment_type:
         return None
-    update_data = garment_type.dict(exclude_unset=True)
+    update_data = garment_type.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_garment_type, key, value)
     db.add(db_garment_type)

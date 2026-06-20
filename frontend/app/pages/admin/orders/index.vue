@@ -52,7 +52,7 @@
                 <div class="text-xs text-gray-400">{{ order.customerPhone }}</div>
               </td>
               <td class="px-5 py-3">
-                [belum diimplementasikan]
+                <span class="text-gray-400 text-xs">—</span>
               </td>
               <td class="px-5 py-3 text-xs" :class="isOverdue(order) ? 'text-red-600 font-medium' : 'text-gray-500'">
                 {{ formatDate(order.deadline) }}

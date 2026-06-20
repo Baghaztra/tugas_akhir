@@ -12,7 +12,7 @@ def get_attributes(db: Session, skip: int = 0, limit: int = 100):
     )
 
 def create_attribute(db: Session, attribute: AttributeCreate):
-    db_attribute = Attribute(**attribute.dict())
+    db_attribute = Attribute(**attribute.model_dump())
     db.add(db_attribute)
     db.commit()
     db.refresh(db_attribute)

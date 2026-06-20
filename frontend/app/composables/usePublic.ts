@@ -1,3 +1,5 @@
+import type { BusinessProfileRead, BusinessProfileUpdate, PortfolioItemCreate, PortfolioItemRead, PortfolioItemUpdate } from '~/shared/types'
+
 /**
  * Composable untuk API Profil Bisnis & Portofolio (Halaman Publik)
  * Base URL dikonfigurasi via nuxt.config runtimeConfig atau

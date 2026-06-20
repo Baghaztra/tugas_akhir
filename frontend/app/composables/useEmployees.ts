@@ -1,3 +1,5 @@
+import type { Worker, WorkerPerformance, WorkerWage } from '~/shared/types'
+
 /**
  * Composable untuk API Karyawan/Workers
  * Endpoint: /workers (sesuai backend prefix)

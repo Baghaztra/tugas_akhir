@@ -6,7 +6,7 @@ venv/
 .env
 
 # Python cache
-**pycache**/
+__pycache__/
 *.pyc
 
 # IDE
@@ -15,6 +15,9 @@ venv/
 
 # Upload / runtime files
 uploads/
+
+# Model binaries
+*.pkl
 
 # OS files
 .DS_Store

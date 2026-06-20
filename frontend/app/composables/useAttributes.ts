@@ -1,3 +1,5 @@
+import type { Attribute } from '~/shared/types'
+
 /**
  * Composable untuk API Attributes
  * GET /attributes — mengambil semua atribut yang tersedia

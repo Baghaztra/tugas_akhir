@@ -13,7 +13,6 @@ router = APIRouter(
     prefix="/workers",
     tags=["workers"],
     responses={404: {"description": "Not found"}},
-    dependencies=[Depends(get_current_user)],
 )
 
 
@@ -23,12 +22,12 @@ def create_worker(worker: schema_worker.WorkerCreate, db: Session = Depends(get_
 
 
 @router.get("/", response_model=List[schema_worker.Worker])
-def read_workers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_workers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud_worker.get_workers(db, skip=skip, limit=limit)
 
 
 @router.get("/{worker_id}", response_model=schema_worker.Worker)
-def read_worker(worker_id: int, db: Session = Depends(get_db)):
+def read_worker(worker_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_worker = crud_worker.get_worker(db, worker_id=worker_id)
     if db_worker is None:
         raise HTTPException(status_code=404, detail="Worker not found")
@@ -36,7 +35,7 @@ def read_worker(worker_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{worker_id}", response_model=schema_worker.Worker)
-def update_worker(worker_id: int, worker: schema_worker.WorkerUpdate, db: Session = Depends(get_db)):
+def update_worker(worker_id: int, worker: schema_worker.WorkerUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_worker = crud_worker.update_worker(db, worker_id=worker_id, worker=worker)
     if db_worker is None:
         raise HTTPException(status_code=404, detail="Worker not found")
@@ -44,7 +43,7 @@ def update_worker(worker_id: int, worker: schema_worker.WorkerUpdate, db: Sessio
 
 
 @router.delete("/{worker_id}", response_model=schema_worker.Worker)
-def delete_worker(worker_id: int, db: Session = Depends(get_db)):
+def delete_worker(worker_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_worker = crud_worker.delete_worker(db, worker_id=worker_id)
     if db_worker is None:
         raise HTTPException(status_code=404, detail="Worker not found")
@@ -58,6 +57,7 @@ def get_wages(
     start_date: date = Query(default=None, description="Awal periode (YYYY-MM-DD)"),
     end_date: date = Query(default=None, description="Akhir periode (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     if end_date is None:
         end_date = date.today()
@@ -76,6 +76,7 @@ def get_performance(
     worker_id: int,
     days: int = Query(default=7, ge=1, le=90, description="Jumlah hari histori"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     result = crud_worker.get_worker_performance(db, worker_id, days=days)
     if result is None:

@@ -19,7 +19,6 @@ export default defineNuxtConfig({
     '/login': { ssr: false },
     '/forgot-password': { ssr: false },
     '/admin/**': { ssr: false },
-    '/task-list/**': { ssr: false },
     '/tracking/**': { ssr: false }
   }
 });

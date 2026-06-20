@@ -10,13 +10,14 @@
           <div class="h-4 bg-gray-200 rounded w-1/3" />
         </div>
         <div class="bg-white rounded-2xl p-6 border border-gray-100">
-          <div class="flex justify-between mb-4">
-            <div v-for="i in 5" :key="i" class="flex flex-col items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-gray-200" />
-              <div class="h-3 w-12 bg-gray-200 rounded" />
-            </div>
+          <div class="h-4 bg-gray-200 rounded w-1/3 mb-4" />
+          <div class="h-3 bg-gray-200 rounded-full mb-3" />
+          <div class="flex justify-between">
+            <div v-for="i in 5" :key="i" class="h-2 w-12 bg-gray-200 rounded" />
           </div>
-          <div class="h-2 bg-gray-200 rounded-full" />
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100">
+          <div class="h-10 bg-gray-200 rounded" />
         </div>
       </div>
     </template>
@@ -53,21 +54,17 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-primary-100 text-xs font-medium">PENJAHIT YAN</p>
-              <p class="text-white font-bold text-lg">{{ order.receiptNumber }}</p>
+              <p class="text-white/80 font-medium text-sm">{{ order.receiptNumber }}</p>
             </div>
             <ui-app-badge :variant="paymentBadge.variant" class="!text-xs">{{ paymentBadge.label }}</ui-app-badge>
           </div>
         </div>
         <div class="p-6 space-y-4">
+          <div>
+            <p class="text-gray-400 text-xs mb-0.5">Nama Pelanggan</p>
+            <p class="text-xl font-bold text-gray-900">{{ order.customerName }}</p>
+          </div>
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p class="text-gray-400 text-xs mb-0.5">Nama Pelanggan</p>
-              <p class="font-semibold text-gray-900">{{ order.customerName }}</p>
-            </div>
-            <div>
-              <p class="text-gray-400 text-xs mb-0.5">Jenis Pakaian</p>
-              <p class="font-semibold text-gray-900">{{ order.garmentType }}</p>
-            </div>
             <div>
               <p class="text-gray-400 text-xs mb-0.5">Tanggal Masuk</p>
               <p class="font-semibold text-gray-900">{{ formatDate(order.createdAt) }}</p>
@@ -96,53 +93,64 @@
         </div>
       </div>
 
-      <!-- Progress Tracker -->
+      <!-- Progress Bar (aggregate from items) -->
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
-        <h2 class="font-semibold text-gray-900 mb-5">Status Pengerjaan</h2>
-        <div class="relative">
-          <!-- Progress line -->
-          <div class="absolute top-5 left-5 right-5 h-0.5 bg-gray-200 z-0" />
-          <div class="absolute top-5 left-5 h-0.5 bg-primary-500 z-0 transition-all duration-700"
-            :style="{ width: `${progressWidth}%` }" />
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-semibold text-gray-900">Status Pengerjaan</h2>
+          <span class="text-sm text-gray-500">{{ completedItems }} / {{ totalItems }} item selesai</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
+          <div class="h-3 bg-gradient-to-r from-primary-500 to-primary-400 rounded-full transition-all duration-700"
+            :style="{ width: `${itemProgressPercent}%` }" />
+        </div>
+      </div>
 
-          <!-- Steps -->
-          <div class="relative flex justify-between">
-            <div v-for="step in orderSteps" :key="step.key" class="flex flex-col items-center gap-2 z-10">
-              <div :class="[
-                'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300',
-                currentStepIndex >= step.index
-                  ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-200'
-                  : 'bg-white border-gray-200 text-gray-400'
-              ]">
-                <Icon v-if="currentStepIndex > step.index" name="heroicons:check" class="w-5 h-5" />
-                <Icon v-else :name="step.icon" class="w-4 h-4" />
-              </div>
-              <span class="text-xs font-medium text-center max-w-14 leading-tight"
-                :class="currentStepIndex >= step.index ? 'text-primary-600' : 'text-gray-400'">
-                {{ step.label }}
+      <!-- Item Cards -->
+      <div v-if="order.items?.length" class="space-y-3 mb-4">
+        <div v-for="item in order.items" :key="item.id"
+          class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
+            <Icon name="heroicons:cube" class="w-5 h-5 text-primary-500" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-gray-900">{{ item.garmentType?.name ?? 'Pakaian' }}</p>
+            <p v-if="item.quantity && item.quantity > 1" class="text-xs text-gray-500">x{{ item.quantity }}</p>
+            <div v-if="hasMeasurements(item.measurements)" class="flex flex-wrap gap-1 mt-1.5">
+              <span v-for="(val, key) in item.measurements" :key="key"
+                class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                {{ key }}: {{ val }}
               </span>
             </div>
+          </div>
+          <div class="flex-shrink-0">
+            <ui-app-badge :variant="statusBadge(item.status).variant" dot>
+              {{ statusBadge(item.status).label }}
+            </ui-app-badge>
           </div>
         </div>
       </div>
 
       <!-- Log Timeline -->
-      <div v-if="order.log?.length" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 class="font-semibold text-gray-900 mb-4">Riwayat Pengerjaan</h2>
-        <div class="relative space-y-4">
-          <div v-for="(log, i) in order.log" :key="log.id" class="flex gap-4">
-            <div class="flex flex-col items-center">
-              <div class="w-3 h-3 rounded-full bg-primary-400 mt-1 flex-shrink-0" />
-              <div v-if="i < order.log!.length - 1" class="w-px flex-1 bg-gray-200 my-1" />
-            </div>
-            <div class="pb-4 flex-1">
-              <p class="font-medium text-sm text-gray-900">{{ stepLabels[log.status] ?? log.status }}</p>
-              <p class="text-xs text-gray-500 mb-0.5">{{ log.note }}</p>
-              <p class="text-xs text-gray-400">{{ log.employeeName }} · {{ formatDateTime(log.createdAt) }}</p>
+      <template v-if="order.items?.length">
+        <div v-for="item in order.items" :key="item.id">
+          <div v-if="item.logs?.length" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
+            <h2 class="font-semibold text-gray-900 mb-4">Riwayat Pengerjaan — {{ item.garmentType?.name ?? 'Item' }}</h2>
+            <div class="relative space-y-4">
+              <div v-for="(log, i) in item.logs" :key="log.id" class="flex gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-3 h-3 rounded-full bg-primary-400 mt-1 flex-shrink-0" />
+                  <div v-if="i < item.logs!.length - 1" class="w-px flex-1 bg-gray-200 my-1" />
+                </div>
+                <div class="pb-4 flex-1">
+                  <p class="font-medium text-sm text-gray-900">{{ stepLabels[log.status] ?? log.status }}</p>
+                  <p class="text-xs text-gray-500 mb-0.5">{{ log.note }}</p>
+                  <p class="text-xs text-gray-400">{{ log.employeeName }} · {{ formatDateTime(log.createdAt) }}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
     </template>
   </div>
 </template>
@@ -160,30 +168,53 @@ useSeoMeta({
   description: 'Lacak status pesanan jahit Anda secara real-time.',
 })
 
-const orderSteps = [
-  { key: 'received', label: 'Diterima', icon: 'heroicons:inbox', index: 0 },
-  { key: 'cutting', label: 'Potong', icon: 'heroicons:scissors', index: 1 },
-  { key: 'sewing', label: 'Jahit', icon: 'heroicons:wrench-screwdriver', index: 2 },
-  { key: 'finishing', label: 'Finishing', icon: 'heroicons:sparkles', index: 3 },
-  { key: 'done', label: 'Selesai', icon: 'heroicons:check-circle', index: 4 },
-]
-
-const stepLabels: Record<string, string> = {
-  received: 'Diterima', cutting: 'Dipotong', sewing: 'Dijahit', finishing: 'Finishing', done: 'Selesai',
+const statusSteps: Record<string, number> = {
+  received: 0, cutting: 1, cutted: 2, sewing: 3, sewed: 4, finishing: 5, done: 6,
 }
 
-const currentStepIndex = computed(() => {
-  const idx = orderSteps.findIndex(s => s.key === order.value?.status)
-  return idx >= 0 ? idx : 0
+const totalItems = computed(() => order.value?.items?.length ?? 0)
+
+const completedItems = computed(() =>
+  order.value?.items?.filter(i => i.status === 'done').length ?? 0
+)
+
+const itemProgressPercent = computed(() => {
+  const items = order.value?.items
+  if (!items?.length) return 0
+  const maxSteps = 6
+  const total = items.reduce((sum, item) => {
+    const step = statusSteps[item.status]
+    return sum + (step ?? 0)
+  }, 0)
+  return (total / (items.length * maxSteps)) * 100
 })
 
-const progressWidth = computed(() => (currentStepIndex.value / (orderSteps.length - 1)) * 90)
+const stepLabels: Record<string, string> = {
+  received: 'Diterima', cutting: 'Dipotong', cutted: 'Terpotong',
+  sewing: 'Dijahit', sewed: 'Terjahit', finishing: 'Finishing', done: 'Selesai',
+}
 
-const paymentBadge = computed(() => ({
-  paid: { variant: 'success' as const, label: 'Lunas' },
-  unpaid: { variant: 'danger' as const, label: 'Belum Lunas' },
-  partial: { variant: 'warning' as const, label: 'DP' },
-})[order.value?.paymentStatus ?? 'unpaid'])
+const hasMeasurements = (m: Record<string, any> | null | undefined) =>
+  m && typeof m === 'object' && Object.keys(m).length > 0
+
+const statusBadge = (s: string) => ({
+  received: { variant: 'info' as const, label: 'Diterima' },
+  cutting: { variant: 'warning' as const, label: 'Potong' },
+  cutted: { variant: 'warning' as const, label: 'Terpotong' },
+  sewing: { variant: 'warning' as const, label: 'Jahit' },
+  sewed: { variant: 'warning' as const, label: 'Terjahit' },
+  finishing: { variant: 'warning' as const, label: 'Finishing' },
+  done: { variant: 'success' as const, label: 'Selesai' },
+}[s] ?? { variant: 'neutral' as const, label: s })
+
+const paymentBadge = computed(() => {
+  const badges: Record<string, { variant: string; label: string }> = {
+    paid: { variant: 'success', label: 'Lunas' },
+    unpaid: { variant: 'danger', label: 'Belum Lunas' },
+    partial: { variant: 'warning', label: 'DP' },
+  }
+  return badges[order.value?.paymentStatus ?? 'unpaid'] ?? { variant: 'neutral', label: '-' }
+})
 
 const isOverdue = computed(() => {
   if (!order.value?.deadline) return false

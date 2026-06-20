@@ -1,19 +1,19 @@
 """
-Modul prioritas pesanan untuk halaman Employee Tasks.
+Modul prioritas pesanan untuk Admin Kanban & sorting.
 
 Sort by priority menggunakan model XGBoost (jika tersedia).
 Fallback: ascending berdasarkan deadline (paling dekat = prioritas tertinggi).
-
-Feature days_to_deadline dihitung dari hari ini (bukan dari created_at)
-agar urutan prioritas mencerminkan urgensi aktual.
 """
 
 from datetime import date, datetime
 import os
 import pickle
+import logging
+import math
 import pandas as pd
 from typing import List, Dict, Any
-from collections import OrderedDict
+
+logger = logging.getLogger(__name__)
 
 # Coba import xgboost, kalau gagal fallback
 try:
@@ -22,7 +22,7 @@ except ImportError:
     xgb = None
 
 # Load Model XGBoost
-MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "xgboost", "xgboost_ranker_v5.pkl"))
+MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "xgboost", "xgboost_ranker_v7.pkl"))
 RANKER_MODEL = None
 EXPECTED_FEATURES = []
 
@@ -32,26 +32,12 @@ try:
             RANKER_MODEL = pickle.load(f)
         EXPECTED_FEATURES = getattr(RANKER_MODEL, "feature_names_in_", [])
 except Exception as e:
-    print(f"[Warning] Failed to load XGBoost model: {e}")
+    logger.warning("Failed to load XGBoost model: %s", e)
 
-
-# Stage mapping: query param → OrderStatus value
-STAGE_STATUS_MAP = {
-    "potong": "cutting",
-    "jahit": "sewing",
-    "finishing": "finishing",
-    "semua": None,  # Semua status non-done
+JENIS_MAPPING = {
+    'Dinas': 0, 'Rok': 1, 'Gamis': 2, 'Basiba': 3, 'Blouse': 4,
+    'Kebaya': 5, 'Blazer': 6, 'Kemeja': 7, 'Gaun': 8, 'Rompi': 9
 }
-
-# Urutan phase yang ditampilkan di frontend
-PHASE_ORDER = ["cutting", "sewing", "finishing"]
-
-PHASE_LABELS = {
-    "cutting": "Potong",
-    "sewing": "Jahit",
-    "finishing": "Finishing",
-}
-
 
 def _get_deadline(order) -> str:
     """Ambil deadline dari dict atau object."""
@@ -93,33 +79,48 @@ def sort_by_priority(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         row["days_to_deadline"] = days_to_deadline
 
+        # Hitung urgency_score (exponential decay, sama dengan training v7)
+        if days_to_deadline < 0:
+            urgency_score = 1.0
+        else:
+            urgency_score = math.exp(-0.1 * days_to_deadline)
+        row["urgency_score"] = urgency_score
+
         # 2. Parsing Features dari attributes
         attrs = order.get("attributes") or {}
-        
+        computed_feats = {"days_to_deadline", "complexity_score", "jenis_encoded", "urgency_score"}
+        active_count = 0
+
         for feat in EXPECTED_FEATURES:
-            if feat == "days_to_deadline":
+            if feat in computed_feats:
                 continue
-            
+
             val = 0
             if isinstance(attrs, dict):
-                # attributes mungkin dict { "Bordir": true, "Furing": false }
                 if attrs.get(feat):
                     val = 1
             elif isinstance(attrs, list):
-                # atau array of string
                 if feat in attrs:
                     val = 1
-            
+
             row[feat] = val
-        
+            if val:
+                active_count += 1
+
+        row["complexity_score"] = active_count
+        row["jenis_encoded"] = JENIS_MAPPING.get(order.get("garmentType", ""), -1)
+
         data_rows.append(row)
 
     try:
         df = pd.DataFrame(data_rows)
         X = df[EXPECTED_FEATURES]
 
-        # Prediksi skor AI
-        scores = RANKER_MODEL.predict(xgb.DMatrix(X))
+        # Prediksi skor AI — coba sklearn-style dulu, fallback ke DMatrix
+        try:
+            scores = RANKER_MODEL.predict(X)
+        except Exception:
+            scores = RANKER_MODEL.predict(xgb.DMatrix(X))
         df["model_score"] = scores
 
         # Urutkan descending (skor tertinggi = rank 1)
@@ -129,51 +130,12 @@ def sort_by_priority(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         for sorted_idx in df["_list_index"]:
             sorted_orders.append(orders[sorted_idx])
         
-        print("[Info] Model soring successfully")
+        logger.info("Model sorting successfully")
         return sorted_orders
         
     except Exception as e:
-        print(f"[Warning] XGBoost inference error: {e}")
+        logger.warning("XGBoost inference error: %s", e)
         return sorted(orders, key=deadline_key)
-
-
-def group_by_phase(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Kelompokkan task list berdasarkan phase (cutting → sewing → finishing),
-    masing-masing sudah diurutkan by priority (deadline ascending).
-
-    Returns:
-        [
-          {
-            "phase": "cutting",
-            "phase_label": "Potong",
-            "tasks": [ ... sorted tasks ... ]
-          },
-          ...
-        ]
-    """
-    buckets: Dict[str, list] = {phase: [] for phase in PHASE_ORDER}
-
-    for task in orders:
-        status = task.get("status", "")
-        if status in ("received", "cutting"):
-            buckets["cutting"].append(task)
-        elif status in ("cutted", "sewing"):
-            buckets["sewing"].append(task)
-        elif status in ("sewed", "finishing"):
-            buckets["finishing"].append(task)
-
-    result = []
-    for phase in PHASE_ORDER:
-        sorted_tasks = sort_by_priority(buckets[phase])
-        result.append({
-            "phase": phase,
-            "phase_label": PHASE_LABELS.get(phase, phase),
-            "count": len(sorted_tasks),
-            "tasks": sorted_tasks,
-        })
-
-    return result
 
 
 def get_urgency_label(deadline_str: str) -> str:
@@ -181,7 +143,10 @@ def get_urgency_label(deadline_str: str) -> str:
     Tentukan label warna berdasarkan jarak ke deadline.
     red = sudah lewat atau ≤ 1 hari, yellow = 2-3 hari, green = > 3 hari.
 
-    # TODO: Ganti dengan output probabilitas dari model ML.
+    Catatan: model XGBRanker output ranking score, bukan probabilitas.
+    Jika ingin label berbasis ML, mapping score ke 3 bucket via
+    percentile threshold (contoh: top 30% → red, 30-70% → yellow,
+    sisanya → green).
     """
     try:
         dl = date.fromisoformat(deadline_str)

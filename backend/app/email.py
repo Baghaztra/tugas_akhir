@@ -1,7 +1,10 @@
 import smtplib
 import os
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+logger = logging.getLogger(__name__)
 
 
 def send_otp_email(to_email: str, otp_code: str, user_name: str) -> bool:
@@ -41,5 +44,5 @@ def send_otp_email(to_email: str, otp_code: str, user_name: str) -> bool:
             server.send_message(msg)
         return True
     except Exception as e:
-        print(f"[Email] Gagal mengirim ke {to_email}: {e}")
+        logger.error("Gagal mengirim ke %s: %s", to_email, e)
         return False

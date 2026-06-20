@@ -19,7 +19,6 @@ numpy==2.4.4
 pandas==3.0.2
 passlib==1.7.4
 pyasn1==0.6.3
-pycle==1.2
 pycparser==3.0
 pydantic==2.12.5
 pydantic_core==2.41.5
