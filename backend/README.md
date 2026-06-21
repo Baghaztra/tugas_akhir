@@ -1,67 +1,26 @@
 # Backend — Sistem Manajemen Produksi
 
-Backend API untuk aplikasi manajemen produksi konveksi, dibangun dengan FastAPI + SQLAlchemy + Alembic.
+Backend API untuk aplikasi manajemen produksi konveksi, dibangun dengan **FastAPI + SQLAlchemy + Alembic**.
 
 ## Teknologi
 
-| Package | Versi | Fungsi |
-|---------|-------|--------|
-| FastAPI | 0.129.x | Web framework |
-| SQLAlchemy | 2.0.x | ORM database |
-| Alembic | 1.18.x | Database migration |
-| Pydantic | 2.12.x | Data validation |
-| mysql-connector-python | 9.6.x | MySQL driver |
-| XGBoost | 3.2.x | ML ranking model |
-| Pandas | 3.0.x | Data processing |
-| python-jose | 3.5.x | JWT token |
-| passlib + bcrypt | - | Password hashing |
-| Uvicorn | 0.40.x | ASGI server |
-
-## Struktur Project
-
-```
-backend/
-├── app/
-│   ├── main.py              # Entry point, register routers & middleware
-│   ├── database.py          # SQLAlchemy engine & session
-│   ├── auth.py              # JWT auth (login, token, hash)
-│   ├── email.py             # SMTP email (OTP reset password)
-│   ├── storage.py           # File upload storage
-│   ├── ranking_logic.py     # XGBoost ranking inference
-│   ├── models/              # SQLAlchemy models
-│   │   ├── user.py
-│   │   ├── worker.py
-│   │   ├── order.py         # Order, OrderItem, OrderLog, GarmentType
-│   │   ├── profile.py
-│   │   ├── portfolio.py
-│   │   ├── attributes.py
-│   │   └── password_reset_token.py
-│   ├── schemas/             # Pydantic schemas
-│   ├── crud/                # Database operations
-│   └── routers/             # API endpoints
-│       ├── auth.py          # /auth (login, logout, password)
-│       ├── orders.py        # /orders (CRUD, tracking, kanban)
-│       ├── workers.py       # /workers (CRUD, wages, performance)
-│       ├── profile.py       # /profile (public, update)
-│       ├── portfolio.py     # /portfolio (CRUD + image)
-│       ├── dashboard.py     # /dashboard (summary, trend, notifications)
-│       ├── analytics.py     # /reports (volume, trends, productivity)
-│       ├── garment_types.py # /garment-types (CRUD)
-│       └── attributes.py    # /attributes (CRUD)
-├── migrations/              # Alembic migration files
-├── seeds/                   # Database seeder & reset
-├── xgboost/                 # Model ML (.pkl)
-├── uploads/                 # Uploaded files
-├── manage.py                # CLI management
-├── alembic.ini
-├── requirements.txt
-└── .env
-```
+| Package                | Fungsi                 |
+| ---------------------- | ---------------------- |
+| FastAPI                | Web framework          |
+| SQLAlchemy 2.0         | ORM database           |
+| Alembic                | Database migration     |
+| Pydantic 2.0           | Data validation        |
+| mysql-connector-python | MySQL driver           |
+| XGBoost                | ML ranking model       |
+| Pandas                 | Data processing        |
+| python-jose            | JWT token              |
+| passlib + bcrypt       | Password hashing       |
+| Uvicorn                | ASGI server            |
 
 ## Prasyarat
 
 - Python 3.10+
-- MySQL 8.0
+- MySQL 8.0 (jalankan via Docker Compose di root project)
 
 ## Setup
 
@@ -89,7 +48,7 @@ pip install -r requirements.txt
 
 ### 4. Konfigurasi Environment
 
-Buat file `.env` di root `backend/`:
+File `.env` di root `backend/`:
 
 ```env
 APP_NAME="Backend Rumah Jahit App"
@@ -126,24 +85,88 @@ uvicorn app.main:app --reload
 
 Server berjalan di `http://localhost:8000`
 
-## CLI Management (manage.py)
+## CLI Management (`manage.py`)
 
-| Perintah | Deskripsi |
-|----------|-----------|
-| `python manage.py migrate` | Jalankan migration ke versi terbaru |
-| `python manage.py migrate:down` | Rollback migration terakhir |
-| `python manage.py migrate:reset` | Rollback semua migration |
-| `python manage.py migrate:status` | Cek revision saat ini |
-| `python manage.py migrate:history` | Riwayat semua migration |
-| `python manage.py seed` | Isi database dengan data dummy |
-| `python manage.py reset` | Kosongkan semua tabel |
-| `python manage.py fresh` | Reset + seed ulang |
-| `alembic revision --autogenerate -m "msg"` | Buat migration baru |
+| Perintah               | Deskripsi                       |
+| ---------------------- | ------------------------------- |
+| `python manage.py migrate`       | Jalankan migration ke versi terbaru |
+| `python manage.py migrate:down`  | Rollback migration terakhir     |
+| `python manage.py migrate:reset` | Rollback semua migration        |
+| `python manage.py migrate:status`| Cek revision saat ini           |
+| `python manage.py migrate:history`| Riwayat semua migration        |
+| `python manage.py seed`          | Isi database dengan data dummy  |
+| `python manage.py reset`         | Kosongkan semua tabel           |
+| `python manage.py fresh`         | Reset + seed ulang              |
+
+## Struktur Project
+
+```
+backend/
+├── app/
+│   ├── main.py                  # Entry point, register routers & middleware
+│   ├── database.py              # SQLAlchemy engine & session
+│   ├── auth.py                  # JWT auth (login, token, hash)
+│   ├── email.py                 # SMTP email (OTP reset password)
+│   ├── storage.py               # File upload storage
+│   ├── ranking_logic.py         # XGBoost ranking inference
+│   ├── models/                  # SQLAlchemy models
+│   │   ├── user.py              # User model
+│   │   ├── worker.py            # Worker model
+│   │   ├── order.py             # Order, OrderItem, OrderLog, GarmentType
+│   │   ├── profile.py           # Profile usaha
+│   │   ├── portfolio.py         # Portfolio produk
+│   │   ├── attributes.py        # Atribut pakaian
+│   │   └── password_reset_token.py
+│   ├── schemas/                 # Pydantic schemas (request/response)
+│   │   ├── user.py
+│   │   ├── worker.py
+│   │   ├── order.py
+│   │   ├── profile.py
+│   │   ├── portfolio.py
+│   │   ├── garment_type.py
+│   │   └── attributes.py
+│   ├── crud/                    # Database operations
+│   │   ├── user.py
+│   │   ├── worker.py
+│   │   ├── order.py
+│   │   ├── profile.py
+│   │   ├── portfolio.py
+│   │   ├── garment_type.py
+│   │   └── attributes.py
+│   └── routers/                 # API endpoints
+│       ├── auth.py              # /auth (login, logout, password)
+│       ├── orders.py            # /orders (CRUD, tracking, kanban)
+│       ├── workers.py           # /workers (CRUD, wages, performance)
+│       ├── profile.py           # /profile (public, update)
+│       ├── portfolio.py         # /portfolio (CRUD + image)
+│       ├── dashboard.py         # /dashboard (summary, trend, notifications)
+│       ├── analytics.py         # /reports (volume, trends, productivity)
+│       ├── garment_types.py     # /garment-types (CRUD)
+│       ├── attributes.py        # /attributes (CRUD)
+│       └── users.py             # /users (CRUD)
+├── migrations/                  # Alembic migration files
+│   ├── versions/                # Migration scripts
+│   └── env.py                   # Alembic env config
+├── seeds/                       # Database seeder & reset
+│   ├── seeder.py                # Seed data dummy
+│   └── reset.py                 # Reset semua tabel
+├── xgboost/                     # Model ML
+│   ├── xgboost_ranker_v7.pkl    # Model terbaru
+│   ├── training_model_v6.ipynb  # Training notebook
+│   └── data_processed_clean.csv # Dataset training
+├── uploads/                     # Uploaded files (sketch, portfolio)
+├── manage.py                    # CLI management
+├── alembic.ini                  # Alembic config
+├── requirements.txt
+└── .env
+```
 
 ## Dokumentasi API
 
-Swagger UI: `http://localhost:8000/docs`
-ReDoc: `http://localhost:8000/redoc`
+| URL                       | Deskripsi           |
+| ------------------------- | ------------------- |
+| `http://localhost:8000/docs`  | Swagger UI          |
+| `http://localhost:8000/redoc` | ReDoc               |
 
 Lihat [DOCUMENTATION.md](../DOCUMENTATION.md) untuk daftar lengkap semua API endpoints.
 
@@ -154,5 +177,5 @@ Lihat [DOCUMENTATION.md](../DOCUMENTATION.md) untuk daftar lengkap semua API end
 3. Buat CRUD function di `app/crud/`
 4. Buat router di `app/routers/`
 5. Register router di `app/main.py`
-6. Generate migration: `alembic revision --autogenerate -m "message"`
+6. Generate migration: `python manage.py generate`
 7. Apply migration: `python manage.py migrate`
