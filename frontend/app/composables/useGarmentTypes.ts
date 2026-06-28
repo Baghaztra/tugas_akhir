@@ -3,6 +3,7 @@ import type { GarmentType, GarmentTypeCreate, GarmentTypeUpdate } from '~/shared
 export const useGarmentTypes = () => {
   const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<GarmentType[]>(`${apiBase}/garment-types`, {
+    credentials: 'include',
     default: () => [] as GarmentType[],
   });
   return { garmentTypes: data, status, error, refresh };

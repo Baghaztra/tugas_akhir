@@ -5,6 +5,16 @@
 <script setup lang="ts">
 import { Bar } from "vue-chartjs";
 import type { ChartData, ChartOptions } from "chart.js";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const props = defineProps<{
   data: ChartData<"bar">;
