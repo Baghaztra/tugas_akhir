@@ -165,7 +165,21 @@ def generate_receipt(index: int) -> str:
     return f"ORD-{date_str}-{index:04d}"
 
 
-def build_item_logs(item: OrderItem, final_status: OrderStatus) -> list[OrderLog]:
+def _pick_worker_for_status(workers: list, status: OrderStatus):
+    role_map = {
+        OrderStatus.CUTTING: WorkerRole.POTONG,
+        OrderStatus.SEWING: WorkerRole.JAHIT,
+        OrderStatus.FINISHING: WorkerRole.FINISHING,
+    }
+    role = role_map.get(status)
+    if role:
+        eligible = [w for w in workers if w.role == role]
+        if eligible:
+            return random.choice(eligible)
+    return random.choice(workers)
+
+
+def build_item_logs(item: OrderItem, final_status: OrderStatus, workers: list) -> list[OrderLog]:
     logs = []
     notes_map = {
         OrderStatus.RECEIVED:  "Pesanan diterima.",
@@ -178,12 +192,15 @@ def build_item_logs(item: OrderItem, final_status: OrderStatus) -> list[OrderLog
     target_index = STATUSES_FLOW.index(final_status)
 
     for i, status in enumerate(STATUSES_FLOW[: target_index + 1]):
+        worker = _pick_worker_for_status(workers, status)
         logs.append(
             OrderLog(
                 order_item_id=item.id,
                 status=status.value,
                 note=notes_map[status],
-                employeeName=random.choice(WORKERS_DATA)["name"],
+                employeeName=worker.name,
+                worker_id=worker.id,
+                worker_name=worker.name,
                 createdAt=datetime.now() - timedelta(days=(target_index - i)),
             )
         )
@@ -242,6 +259,7 @@ def seed(db):
     if (ORDERS >=0):
         print("   → Generating data orders & logs...")
         status_weights = [0.1, 0.15, 0.25, 0.15, 0.35]
+        in_progress_assignments = []
         for i in range(1, (ORDERS + 1)):
             final_status = random.choices(STATUSES_FLOW, weights=status_weights, k=1)[0]
             payment = random.choices(
@@ -299,9 +317,21 @@ def seed(db):
                 db.flush()
 
                 # buat log per item
-                logs = build_item_logs(item, item_status)
+                logs = build_item_logs(item, item_status, workers)
                 for log in logs:
                     db.add(log)
+
+                # Track worker assignment for in-progress items
+                if item_status in (OrderStatus.CUTTING, OrderStatus.SEWING, OrderStatus.FINISHING):
+                    last_log = logs[-1]
+                    if last_log.worker_id:
+                        in_progress_assignments.append(last_log.worker_id)
+
+        # Update worker status: workers assigned to in-progress items → WORKING
+        for wid in set(in_progress_assignments):
+            worker = next((w for w in workers if w.id == wid), None)
+            if worker:
+                worker.status = WorkerStatus.WORKING
         
     # Business Profile
     print("   → Generating data business profile...")
