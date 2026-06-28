@@ -220,6 +220,23 @@ def update_item_status(
 
     return item
 
+@router.put("/items/{item_id}/undo")
+def undo_item_status(
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Membatalkan transisi status terakhir pada item.
+    - Jika item sedang dikerjakan (in_progress): batalkan penugasan, kembalikan ke antrian.
+    - Jika item sudah selesai di suatu tahap (ready / done): kembalikan ke tahap pengerjaan sebelumnya.
+    """
+    item = crud_order.undo_item_status(db, item_id=item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item tidak ditemukan atau tidak bisa di-undo")
+    return item
+
+
 @router.get("/{order_id}", response_model=Order)
 def read_order(
     order_id: int,

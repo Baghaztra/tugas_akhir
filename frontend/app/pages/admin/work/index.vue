@@ -86,6 +86,10 @@
                         :loading="actionLoading">
                         Selesai
                       </ui-app-button>
+                      <ui-app-button v-if="task.status !== 'received'" variant="secondary" size="sm"
+                        @click="handleUndo(task.item_id)" :loading="actionLoading">
+                        <Icon name="heroicons:arrow-uturn-left" class="w-4 h-4" />
+                      </ui-app-button>
                     </div>
                   </div>
                 </div>
@@ -124,6 +128,10 @@
                       </button>
                       <ui-app-button variant="secondary" size="sm" @click="openAssignModal(task.item_id, phase.phase)">
                         <Icon name="heroicons:user-plus" class="w-4 h-4 mr-1.5" /> Tugaskan
+                      </ui-app-button>
+                      <ui-app-button v-if="task.status !== 'received'" variant="secondary" size="sm"
+                        @click="handleUndo(task.item_id)" :loading="actionLoading">
+                        <Icon name="heroicons:arrow-uturn-left" class="w-4 h-4" />
                       </ui-app-button>
                     </div>
                   </div>
@@ -196,7 +204,7 @@ definePageMeta({ layout: 'admin' })
 useSeoMeta({ title: 'Papan Kerja — Penjahit Yan' })
 
 const { data, status, refresh: refreshWork } = useAdminWork()
-const { assignWorker, completeTask, loading: actionLoading } = useAdminTaskActions()
+const { assignWorker, completeTask, undoTask, loading: actionLoading } = useAdminTaskActions()
 const { employees } = useEmployees()
 
 const apiBase = useRuntimeConfig().public.apiBase
@@ -321,6 +329,35 @@ const handleComplete = (itemId: number) => {
           openConfirm({
             title: 'Gagal',
             message: 'Gagal memperbarui status. Silakan coba lagi.',
+            confirmText: 'Tutup',
+            variant: 'danger',
+            onConfirm: () => confirmModal.value.show = false
+          })
+        }
+      } finally {
+        confirmModal.value.loading = false
+      }
+    }
+  })
+}
+
+const handleUndo = (itemId: number) => {
+  openConfirm({
+    title: 'Urungkan Tindakan',
+    message: 'Kembalikan item ini ke status sebelumnya?',
+    confirmText: 'Ya, Urungkan',
+    icon: 'heroicons:arrow-uturn-left',
+    onConfirm: async () => {
+      confirmModal.value.loading = true
+      try {
+        const res = await undoTask(itemId)
+        if (res.success) {
+          refreshWork()
+          confirmModal.value.show = false
+        } else {
+          openConfirm({
+            title: 'Gagal',
+            message: 'Gagal mengurungkan tindakan. Silakan coba lagi.',
             confirmText: 'Tutup',
             variant: 'danger',
             onConfirm: () => confirmModal.value.show = false

@@ -254,3 +254,59 @@ def update_item_status_flow(
     db.commit()
     db.refresh(item)
     return item
+
+
+STATUS_REVERSE_MAP = {
+    OrderStatus.CUTTING: OrderStatus.RECEIVED,
+    OrderStatus.CUTTED: OrderStatus.CUTTING,
+    OrderStatus.SEWING: OrderStatus.CUTTED,
+    OrderStatus.SEWED: OrderStatus.SEWING,
+    OrderStatus.FINISHING: OrderStatus.SEWED,
+    OrderStatus.DONE: OrderStatus.FINISHING,
+}
+
+
+def undo_item_status(db: Session, item_id: int):
+    """
+    Reverse the last status transition for an order item.
+    - In_progress → ready (undo assign): worker → Idle
+    - Ready → in_progress / done → finishing (undo complete): worker → Working
+    """
+    item = db.query(OrderItem).filter(OrderItem.id == item_id).first()
+    if not item:
+        return None
+
+    if item.status not in STATUS_REVERSE_MAP:
+        return None
+
+    previous_status = STATUS_REVERSE_MAP[item.status]
+    logs = (
+        db.query(OrderLog)
+        .filter(OrderLog.order_item_id == item.id)
+        .order_by(OrderLog.id.desc())
+        .limit(2)
+        .all()
+    )
+
+    if item.status in (OrderStatus.CUTTING, OrderStatus.SEWING, OrderStatus.FINISHING):
+        # Undo assign: worker was set to WORKING, set back to IDLE
+        last_log = logs[0] if logs else None
+        if last_log and last_log.worker_id:
+            worker = db.query(Worker).filter(Worker.id == last_log.worker_id).first()
+            if worker:
+                worker.status = WorkerStatus.IDLE
+    else:
+        # Undo complete: worker was set to IDLE, set back to WORKING
+        if len(logs) >= 2:
+            prev_log = logs[1]
+            if prev_log and prev_log.worker_id:
+                worker = db.query(Worker).filter(Worker.id == prev_log.worker_id).first()
+                if worker:
+                    worker.status = WorkerStatus.WORKING
+
+    item.status = previous_status
+    _add_log(db, item.id, previous_status.value, f"Undo: kembali ke {previous_status.value}", "Admin")
+
+    db.commit()
+    db.refresh(item)
+    return item

@@ -77,5 +77,20 @@ export const useAdminTaskActions = () => {
     }
   };
 
-  return { assignWorker, completeTask, loading };
+  const undoTask = async (itemId: number) => {
+    loading.value = true;
+    try {
+      await $fetch(`${apiBase}/orders/items/${itemId}/undo`, {
+        method: "PUT",
+        credentials: 'include',
+      });
+      return { success: true };
+    } catch {
+      return { success: false };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  return { assignWorker, completeTask, undoTask, loading };
 };
