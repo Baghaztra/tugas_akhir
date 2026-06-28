@@ -9,6 +9,7 @@ export interface AdminPriorityTask {
   urgency_label: "red" | "yellow" | "green";
   assigned_worker_id?: number | null;
   assigned_worker_name?: string | null;
+  sketch?: string | null;
 }
 
 export interface AdminPhaseGroup {

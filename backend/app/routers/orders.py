@@ -154,6 +154,7 @@ def get_admin_work(
                 "attributes": item.attributes,
                 "assigned_worker_id": worker_log.worker_id if worker_log else None,
                 "assigned_worker_name": worker_log.worker_name if worker_log else None,
+                "sketch": item.sketch,
             })
 
     # Sort results

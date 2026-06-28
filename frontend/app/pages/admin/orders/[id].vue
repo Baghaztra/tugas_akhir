@@ -28,6 +28,11 @@
         <ui-app-badge :variant="paymentBadge(order.paymentStatus!).variant">
           {{ paymentBadge(order.paymentStatus!).label }}
         </ui-app-badge>
+        <a v-if="order.customerPhone" :href="buildWaUrl(order.customerPhone, order.receiptNumber)" target="_blank"
+          class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+          <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4" />
+          WhatsApp
+        </a>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -95,8 +100,16 @@
         <!-- Sidebar: Payment -->
         <div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 class="font-semibold text-gray-900 mb-4">Pembayaran</h3>
-            <div class="space-y-3">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-gray-900">Pembayaran</h3>
+              <button v-if="!editingPayment" @click="startEditPayment"
+                class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                <Icon name="heroicons:pencil" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Read-only view -->
+            <div v-if="!editingPayment" class="space-y-3">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Total</span>
                 <span class="font-bold text-gray-900">{{ formatCurrency(order.totalPrice!) }}</span>
@@ -120,6 +133,34 @@
                 {{ Math.round((order.paidAmount! / order.totalPrice!) * 100) }}% terbayar
               </p>
             </div>
+
+            <!-- Edit form -->
+            <div v-else class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Total Biaya (Rp)</label>
+                <input v-model.number="editForm.totalPrice" type="number" min="0"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Dibayar (Rp)</label>
+                <input v-model.number="editForm.paidAmount" type="number" min="0"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Status Pembayaran</label>
+                <select v-model="editForm.paymentStatus"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white">
+                  <option value="unpaid">Belum Lunas</option>
+                  <option value="partial">DP</option>
+                  <option value="paid">Lunas</option>
+                </select>
+              </div>
+              <div v-if="paymentError" class="text-xs text-red-600">{{ paymentError }}</div>
+              <div class="flex gap-2 pt-1">
+                <ui-app-button size="sm" variant="outline" @click="editingPayment = false" class="flex-1">Batal</ui-app-button>
+                <ui-app-button size="sm" @click="savePayment" :loading="paymentSaving" class="flex-1">Simpan</ui-app-button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -132,11 +173,35 @@ definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const orderId = route.params.id as string
-const { order, status } = useOrderDetail(orderId)
+const { order, status, refresh } = useOrderDetail(orderId)
+const { updateOrder, loading: paymentSaving, error: paymentError } = useUpdateOrder()
 
 useSeoMeta({ title: `Detail Pesanan ${orderId} — Penjahit Yan` })
 
 const backend = useRuntimeConfig().public.apiBase
+
+// Payment edit state
+const editingPayment = ref(false)
+const editForm = reactive({ totalPrice: 0, paidAmount: 0, paymentStatus: 'unpaid' as string })
+
+const startEditPayment = () => {
+  editForm.totalPrice = order.value?.totalPrice ?? 0
+  editForm.paidAmount = order.value?.paidAmount ?? 0
+  editForm.paymentStatus = order.value?.paymentStatus ?? 'unpaid'
+  editingPayment.value = true
+}
+
+const savePayment = async () => {
+  const res = await updateOrder(Number(orderId), {
+    totalPrice: editForm.totalPrice,
+    paidAmount: editForm.paidAmount,
+    paymentStatus: editForm.paymentStatus as any,
+  })
+  if (res.success) {
+    editingPayment.value = false
+    refresh()
+  }
+}
 
 const stepLabels: Record<string, string> = {
   received: 'Diterima', cutting: 'Potong', sewing: 'Jahit', finishing: 'Finishing', done: 'Selesai',

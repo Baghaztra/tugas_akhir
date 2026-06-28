@@ -77,11 +77,16 @@
                   </div>
                   <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
                     <p class="text-sm text-gray-500">Diambil {{ task.deadline }}</p>
-
-                    <ui-app-button variant="primary" size="sm" @click="handleComplete(task.item_id)"
-                      :loading="actionLoading">
-                      Selesai
-                    </ui-app-button>
+                    <div class="flex items-center gap-2">
+                      <button v-if="task.sketch" @click="sketchPreviewUrl = apiBase + task.sketch"
+                        class="text-xs text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors">
+                        <Icon name="heroicons:eye" class="w-3.5 h-3.5" /> Sketsa
+                      </button>
+                      <ui-app-button variant="primary" size="sm" @click="handleComplete(task.item_id)"
+                        :loading="actionLoading">
+                        Selesai
+                      </ui-app-button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -112,10 +117,15 @@
 
                   <div class="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
                     <p class="text-sm text-gray-500">Diambil {{ task.deadline }}</p>
-
-                    <ui-app-button variant="secondary" size="sm" @click="openAssignModal(task.item_id, phase.phase)">
-                      <Icon name="heroicons:user-plus" class="w-4 h-4 mr-1.5" /> Tugaskan
-                    </ui-app-button>
+                    <div class="flex items-center gap-2">
+                      <button v-if="task.sketch" @click="sketchPreviewUrl = apiBase + task.sketch"
+                        class="text-xs text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors">
+                        <Icon name="heroicons:eye" class="w-3.5 h-3.5" /> Sketsa
+                      </button>
+                      <ui-app-button variant="secondary" size="sm" @click="openAssignModal(task.item_id, phase.phase)">
+                        <Icon name="heroicons:user-plus" class="w-4 h-4 mr-1.5" /> Tugaskan
+                      </ui-app-button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -170,6 +180,13 @@
       :confirm-text="confirmModal.confirmText" :confirm-variant="confirmModal.confirmVariant" :icon="confirmModal.icon"
       :loading="confirmModal.loading" @confirm="confirmModal.onConfirm" @cancel="confirmModal.show = false" />
 
+    <!-- Sketch Preview Modal -->
+    <ui-app-modal :show="!!sketchPreviewUrl" title="Sketsa Item" size="xl" @close="sketchPreviewUrl = null">
+      <div class="p-4">
+        <img v-if="sketchPreviewUrl" :src="sketchPreviewUrl" alt="Sketsa" class="w-full h-auto rounded-xl" loading="lazy" />
+      </div>
+    </ui-app-modal>
+
   </div>
 </template>
 
@@ -181,6 +198,9 @@ useSeoMeta({ title: 'Papan Kerja — Penjahit Yan' })
 const { data, status, refresh: refreshWork } = useAdminWork()
 const { assignWorker, completeTask, loading: actionLoading } = useAdminTaskActions()
 const { employees } = useEmployees()
+
+const apiBase = useRuntimeConfig().public.apiBase
+const sketchPreviewUrl = ref<string | null>(null)
 
 const phaseIcons: Record<string, string> = {
   cutting: 'heroicons:scissors',

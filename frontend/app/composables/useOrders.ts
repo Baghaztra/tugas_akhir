@@ -1,4 +1,4 @@
-import type { CustomerHistoryItem, Order, OrderCreate, OrderTracking } from '~/shared/types'
+import type { CustomerHistoryItem, Order, OrderCreate, OrderTracking, OrderUpdate } from '~/shared/types'
 
 /**
  * Composable untuk API Pesanan/Orders
@@ -150,6 +150,45 @@ export const useCreateOrder = () => {
   };
 
   return { createOrder, loading, error };
+};
+
+// ─── Update pesanan (pembayaran, dll) ─────────────────────────────────────────
+export const useUpdateOrder = () => {
+  const { apiBase } = useRuntimeConfig().public;
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+
+  const updateOrder = async (orderId: number, payload: OrderUpdate) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const result = await $fetch<Order>(`${apiBase}/orders/${orderId}`, {
+        method: "PUT",
+        body: payload,
+        credentials: "include",
+      });
+      return { success: true, data: result };
+    } catch (e: any) {
+      error.value = e?.data?.detail ?? e.message ?? "Gagal memperbarui pesanan";
+      return { success: false };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  return { updateOrder, loading, error };
+};
+
+// ─── WhatsApp link builder ───────────────────────────────────────────────────
+export const buildWaUrl = (phone: string, receiptNumber: string): string => {
+  const cleaned = phone.replace(/[^0-9+]/g, "");
+  const digits = cleaned.startsWith("0")
+    ? "62" + cleaned.slice(1)
+    : cleaned.startsWith("+")
+      ? cleaned.slice(1)
+      : cleaned;
+  const text = `Kode pesanan Anda: ${receiptNumber}`;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 };
 
 // ─── Hapus pesanan ─────────────────────────────────────────────────────────────

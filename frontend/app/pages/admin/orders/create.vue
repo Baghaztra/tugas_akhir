@@ -349,8 +349,8 @@ const submit = async () => {
   }
   const result = await createOrder(payload)
   saving.value = false
-  if (result.success) {
-    router.push('/admin/orders')
+  if (result.success && result.data) {
+    router.push(`/admin/orders/${result.data.id}`)
   }
 }
 </script>

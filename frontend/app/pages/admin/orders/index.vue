@@ -65,9 +65,16 @@
                 }}</ui-app-badge>
               </td>
               <td class="px-5 py-3">
-                <NuxtLink :to="`/admin/orders/${order.id}`" class="text-primary-500 hover:text-primary-700 w-6 h-6 bg-primary-50">
-                  <Icon name="heroicons:chevron-right" class="w-5 h-5" />>
-                </NuxtLink>
+                <div class="flex items-center gap-1">
+                  <a v-if="order.customerPhone" :href="buildWaUrl(order.customerPhone, order.receiptNumber)" target="_blank"
+                    class="text-green-600 hover:text-green-800 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-green-50 transition-colors"
+                    title="Kirim WhatsApp">
+                    <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4" />
+                  </a>
+                  <NuxtLink :to="`/admin/orders/${order.id}`" class="text-primary-500 hover:text-primary-700 w-6 h-6 flex items-center justify-center">
+                    <Icon name="heroicons:chevron-right" class="w-5 h-5" />
+                  </NuxtLink>
+                </div>
               </td>
             </tr>
           </tbody>
