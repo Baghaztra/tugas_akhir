@@ -142,7 +142,6 @@ const navSections = computed(() => [
       { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
       { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
       { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
-      { to: '/admin/garment-types', icon: 'icon-park-outline:clothes-suit', label: 'Jenis Pakaian' },
     ],
   },
   {

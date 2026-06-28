@@ -259,3 +259,6 @@ Bisa dipakai spam OTP ke email sembarang.
 | L7 | alembic.ini url kosong | 🟢 LOW | Isi placeholder |
 | L9 | Inconsistent import | 🟢 LOW | Normalisasi ke relative |
 | L10 | No rate limiting | 🟢 LOW | Tambah throttle |
+
+bug di laporan, terkait pembayaran lunas/belum
+halaman pengaturan tambahkan ig

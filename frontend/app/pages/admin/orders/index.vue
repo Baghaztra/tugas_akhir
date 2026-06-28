@@ -15,6 +15,11 @@
         <option value="partial">DP</option>
         <option value="unpaid">Belum Lunas</option>
       </select>
+      <button @click="showGarmentTypes = true"
+        class="border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap bg-white shadow-sm">
+        <Icon name="heroicons:tag" class="w-4 h-4" />
+        Jenis Pakaian
+      </button>
       <NuxtLink to="/admin/orders/create">
         <ui-app-button icon="heroicons:plus">Tambah Pesanan</ui-app-button>
       </NuxtLink>
@@ -71,6 +76,11 @@
                     title="Kirim WhatsApp">
                     <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4" />
                   </a>
+                  <button v-if="order.paymentStatus !== 'paid'" @click="setLunas(order)"
+                    class="text-emerald-600 hover:text-emerald-800 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-emerald-50 transition-colors"
+                    title="Set Lunas">
+                    <Icon name="heroicons:check-circle" class="w-4 h-4" />
+                  </button>
                   <NuxtLink :to="`/admin/orders/${order.id}`" class="text-primary-500 hover:text-primary-700 w-6 h-6 flex items-center justify-center">
                     <Icon name="heroicons:chevron-right" class="w-5 h-5" />
                   </NuxtLink>
@@ -81,6 +91,21 @@
         </table>
       </div>
     </div>
+
+    <ui-app-confirm-modal
+      :show="showConfirm"
+      title="Konfirmasi Pembayaran"
+      :message="`Tandai pesanan ${confirmingOrderName} sebagai LUNAS?`"
+      confirm-text="Ya, Lunas"
+      cancel-text="Batal"
+      icon="heroicons:check-circle"
+      confirm-variant="primary"
+      :loading="updating"
+      @confirm="confirmSetLunas"
+      @cancel="showConfirm = false"
+    />
+
+    <garment-type-manager :show="showGarmentTypes" @close="showGarmentTypes = false" />
   </div>
 </template>
 
@@ -91,6 +116,12 @@ const search = ref('')
 const filterPayment = ref('')
 
 const { orders, status, refresh } = useOrders({ search })
+const { updateOrder, loading: updating } = useUpdateOrder()
+
+const showConfirm = ref(false)
+const confirmingOrderId = ref<number | null>(null)
+const confirmingOrderName = ref('')
+const showGarmentTypes = ref(false)
 
 const filteredOrders = computed(() => {
   let result = orders.value ?? []
@@ -105,6 +136,20 @@ const paymentBadge = (p: string) => ({
   unpaid: { variant: 'danger' as const, label: 'Belum Lunas' },
   partial: { variant: 'warning' as const, label: 'DP' },
 }[p] ?? { variant: 'neutral' as const, label: p })
+
+const setLunas = (order: Order) => {
+  confirmingOrderId.value = order.id
+  confirmingOrderName.value = order.customerName
+  showConfirm.value = true
+}
+
+const confirmSetLunas = async () => {
+  if (confirmingOrderId.value === null) return
+  await updateOrder(confirmingOrderId.value, { paymentStatus: 'paid' })
+  showConfirm.value = false
+  confirmingOrderId.value = null
+  refresh()
+}
 
 const isOverdue = (o: Order) => new Date(o.deadline) < new Date()
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
