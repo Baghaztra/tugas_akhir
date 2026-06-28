@@ -46,18 +46,11 @@
               </div>
             </div>
           </div>
-          <!-- Decorative badge row -->
-          <div class="hidden lg:flex flex-col gap-4 flex-shrink-0">
-            <div v-for="feat in features" :key="feat.label"
-              class="bg-white/10 border border-white/15 backdrop-blur-sm rounded-xl px-5 py-3 flex items-center gap-3">
-              <Icon :name="feat.icon" class="w-5 h-5 text-primary-200" />
-              <span class="text-sm font-medium text-white/90">{{ feat.label }}</span>
-            </div>
-            <a v-if="business?.instagram" :href="instagramUrl" target="_blank" rel="noopener noreferrer"
-              class="bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 border-0 backdrop-blur-sm rounded-xl px-5 py-3 flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <Icon name="ri:instagram-line" class="w-5 h-5 text-white" />
-              <span class="text-sm font-medium text-white">{{ business.instagram }}</span>
-            </a>
+          <!-- Decorative right side -->
+          <div class="hidden lg:block relative w-72 h-72 flex-shrink-0">
+            <div class="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/10 rounded-full blur-3xl" />
+            <Icon name="heroicons:scissors" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 text-white/10" />
           </div>
         </div>
       </div>
@@ -195,13 +188,6 @@ const instagramUrl = computed(() => {
   const handle = business.value.instagram.replace(/^@/, '')
   return `https://instagram.com/${handle}`
 })
-
-const features = [
-  { icon: 'heroicons:check-badge', label: 'Kualitas Terjamin' },
-  { icon: 'heroicons:clock', label: 'Tepat Waktu' },
-  { icon: 'heroicons:star', label: 'Pengalaman 10+ Tahun' },
-  { icon: 'heroicons:chat-bubble-left-ellipsis', label: 'Konsultasi Gratis' },
-]
 
 const goToTracking = () => {
   if (trackingInput.value.trim()) {
