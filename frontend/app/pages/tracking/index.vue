@@ -25,6 +25,12 @@
     <p class="text-center text-xs text-gray-400">
       Atau lihat contoh dengan nomor resi <button class="text-primary-500 underline" @click="receiptInput = 'RES-2024-001'; searchOrder()">RES-2024-001</button>
     </p>
+
+    <div class="text-center mt-8">
+      <NuxtLink to="/" class="text-sm text-primary-500 hover:text-primary-600 transition-colors font-medium">
+        ← Kembali ke Beranda
+      </NuxtLink>
+    </div>
   </div>
 </template>
 

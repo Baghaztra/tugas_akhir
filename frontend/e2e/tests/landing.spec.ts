@@ -14,12 +14,11 @@ test.describe('Landing Page', () => {
   test('navigate to tracking page from landing', async ({ page }) => {
     await page.goto('/')
 
-    const trackingLink = page.locator('a[href*="tracking"]').first()
-    if (await trackingLink.isVisible()) {
-      await trackingLink.click()
-      await page.waitForURL('**/tracking**')
-      expect(page.url()).toContain('/tracking')
-    }
+    const cekButton = page.locator('button', { hasText: 'Cek' })
+    await expect(cekButton).toBeVisible()
+    await cekButton.click()
+    await page.waitForURL('**/tracking')
+    expect(page.url()).toContain('/tracking')
   })
 
   test('landing page load under 5 seconds', async ({ page }) => {

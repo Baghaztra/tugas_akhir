@@ -28,10 +28,16 @@
         <Icon name="heroicons:face-frown" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
         <h2 class="text-xl font-semibold text-gray-700 mb-2">Pesanan Tidak Ditemukan</h2>
         <p class="text-gray-400 mb-6">Nomor resi <strong>{{ route.params.orderId }}</strong> tidak ditemukan.</p>
-        <NuxtLink to="/tracking"
-          class="bg-primary-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-primary-600 transition-colors text-sm">
-          Cari Lagi
-        </NuxtLink>
+        <div class="flex items-center justify-center gap-3">
+          <NuxtLink to="/tracking"
+            class="bg-primary-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-primary-600 transition-colors text-sm">
+            Cari Lagi
+          </NuxtLink>
+          <NuxtLink to="/"
+            class="text-gray-500 hover:text-gray-700 px-4 py-2.5 text-sm font-medium transition-colors">
+            ← Kembali ke Beranda
+          </NuxtLink>
+        </div>
       </div>
     </template>
 
@@ -151,6 +157,13 @@
           </div>
         </div>
       </template>
+
+      <!-- Back to Home -->
+      <div class="text-center mt-6">
+        <NuxtLink to="/" class="text-sm text-primary-500 hover:text-primary-600 transition-colors font-medium">
+          ← Kembali ke Beranda
+        </NuxtLink>
+      </div>
     </template>
   </div>
 </template>

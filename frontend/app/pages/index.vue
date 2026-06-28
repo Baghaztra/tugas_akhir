@@ -53,6 +53,11 @@
               <Icon :name="feat.icon" class="w-5 h-5 text-primary-200" />
               <span class="text-sm font-medium text-white/90">{{ feat.label }}</span>
             </div>
+            <a v-if="business?.instagram" :href="instagramUrl" target="_blank" rel="noopener noreferrer"
+              class="bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 border-0 backdrop-blur-sm rounded-xl px-5 py-3 flex items-center gap-3 hover:opacity-90 transition-opacity">
+              <Icon name="ri:instagram-line" class="w-5 h-5 text-white" />
+              <span class="text-sm font-medium text-white">{{ business.instagram }}</span>
+            </a>
           </div>
         </div>
       </div>
@@ -89,7 +94,12 @@
               </div>
               <h3 class="font-semibold text-primary-700 mb-1">Hubungi Kami</h3>
               <p class="text-gray-600 text-sm">📞 {{ business?.phone }}</p>
-              <p class="text-gray-600 text-sm">✉️ {{ business?.email }}</p>
+              <p v-if="business?.email" class="text-gray-600 text-sm">✉️ {{ business?.email }}</p>
+              <a v-if="business?.instagram" :href="instagramUrl" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 text-gray-600 text-sm hover:text-primary-600 transition-colors mt-0.5">
+                <Icon name="ri:instagram-line" class="w-4 h-4" />
+                {{ business.instagram }}
+              </a>
             </div>
             <div
               class="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-secondary-200">
@@ -179,6 +189,12 @@ const selectedItem = ref<PortfolioItemRead | null>(null)
 
 const { business, status: businessStatus } = useProfile()
 const { portfolio, status: portfolioStatus, error: portfolioError } = usePortfolio()
+
+const instagramUrl = computed(() => {
+  if (!business.value?.instagram) return '#'
+  const handle = business.value.instagram.replace(/^@/, '')
+  return `https://instagram.com/${handle}`
+})
 
 const features = [
   { icon: 'heroicons:check-badge', label: 'Kualitas Terjamin' },
