@@ -66,8 +66,9 @@ async function handleLogin() {
   loading.value = true
   errorMsg.value = ''
   try {
-    await auth.login(email.value, password.value)
-    router.replace('/admin/dashboard')
+    const user = await auth.login(email.value, password.value)
+    const target = user.is_owner ? '/admin/dashboard' : '/admin/work'
+    router.replace(target)
   } catch (e: any) {
     errorMsg.value = e?.data?.detail ?? e?.message ?? 'Login gagal'
   } finally {

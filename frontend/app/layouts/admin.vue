@@ -134,30 +134,33 @@ function handleLogout() {
   router.replace('/login')
 }
 
-const navSections = computed(() => [
-  {
-    label: 'Utama',
-    items: [
-      { to: '/admin/dashboard', icon: 'heroicons:chart-bar', label: 'Dashboard' },
-      { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
-      { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
-      { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
-    ],
-  },
-  {
-    label: 'Analitik',
-    items: [
-      { to: '/admin/reports', icon: 'heroicons:presentation-chart-line', label: 'Laporan' },
-    ],
-  },
-  {
-    label: 'Pengaturan',
-    items: [
-      ...(auth.user?.is_owner ? [{ to: '/admin/users', icon: 'heroicons:user-group', label: 'Kelola User' }] : []),
-      { to: '/admin/settings', icon: 'heroicons:cog-6-tooth', label: 'Pengaturan' },
-    ],
-  },
-])
+const navSections = computed(() => {
+  const isOwner = auth.user?.is_owner
+  return [
+    {
+      label: 'Utama',
+      items: [
+        ...(isOwner ? [{ to: '/admin/dashboard', icon: 'heroicons:chart-bar', label: 'Dashboard' }] : []),
+        { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
+        { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
+        { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
+      ],
+    },
+    ...(isOwner ? [{
+      label: 'Analitik',
+      items: [
+        { to: '/admin/reports', icon: 'heroicons:presentation-chart-line', label: 'Laporan' },
+      ],
+    }] : []),
+    {
+      label: 'Pengaturan',
+      items: [
+        ...(isOwner ? [{ to: '/admin/users', icon: 'heroicons:user-group', label: 'Kelola User' }] : []),
+        { to: '/admin/settings', icon: 'heroicons:cog-6-tooth', label: 'Pengaturan' },
+      ],
+    },
+  ]
+})
 
 // Flatten nav items for bottom bar (semua item dari semua section)
 const bottomNavItems = computed(() => navSections.value.flatMap(s => s.items))
