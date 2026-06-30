@@ -261,4 +261,4 @@ Bisa dipakai spam OTP ke email sembarang.
 | L10 | No rate limiting | 🟢 LOW | Tambah throttle |
 
 bug di laporan, terkait pembayaran lunas/belum
-halaman pengaturan tambahkan ig
+nomor, tabel pelanggan, edit order

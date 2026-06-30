@@ -180,7 +180,8 @@ export const buildWaUrl = (phone: string, receiptNumber: string): string => {
     : cleaned.startsWith("+")
       ? cleaned.slice(1)
       : cleaned;
-  const text = `Kode pesanan Anda: ${receiptNumber}`;
+  const baseURL = process.client ? window.location.origin : "";
+  const text = `Pelanggan yang terhormat, silakan cek status pesanan Anda melalui tautan berikut: ${baseURL}/tracking/${receiptNumber}`;
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 };
 

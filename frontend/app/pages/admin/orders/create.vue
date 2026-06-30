@@ -10,13 +10,6 @@
         <h1 class="text-xl font-semibold text-gray-900">Pesanan Baru</h1>
         <p class="text-xs text-gray-400">Isi data pelanggan dan item pesanan</p>
       </div>
-      <div class="ml-auto">
-        <button type="button" @click="showHistoryModal = true"
-          class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
-          <Icon name="heroicons:magnifying-glass" class="w-4 h-4" />
-          Cari dari Histori
-        </button>
-      </div>
     </div>
 
     <form @submit.prevent="submit" class="space-y-6">
@@ -122,7 +115,14 @@
 
           <!-- Ukuran -->
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-2">Ukuran</label>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-medium text-gray-600">Ukuran</label>
+              <button type="button" @click="historyItemIdx = idx; showHistoryModal = true"
+                class="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
+                <Icon name="heroicons:magnifying-glass" class="w-3.5 h-3.5" />
+                Cari dari Histori
+              </button>
+            </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div v-for="key in measurementKeys" :key="key">
                 <label class="block text-xs text-gray-400 mb-1">{{ key }}</label>
@@ -245,13 +245,14 @@ const { attributes } = useAttributes()
 const saving = ref(false)
 
 const showHistoryModal = ref(false)
+const historyItemIdx = ref(0)
 const activeSketchIdx = ref<number | null>(null)
 const openSketch = (idx: number) => activeSketchIdx.value = idx
 
 const fillMeasurements = (m: Record<string, string>) => {
-  const firstItem = form.items[0]
-  if (firstItem?.measurements) {
-    firstItem.measurements = { ...firstItem.measurements, ...m }
+  const item = form.items[historyItemIdx.value]
+  if (item?.measurements) {
+    item.measurements = { ...item.measurements, ...m }
   }
 }
 
