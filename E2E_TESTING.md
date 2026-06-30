@@ -24,27 +24,38 @@
 ```
 frontend/
 ├── e2e/
-│   ├── playwright.config.ts     # Playwright config
-│   ├── tests/                   # Test specs
-│   │   ├── landing.spec.ts      # Landing page
-│   │   ├── admin-dashboard.spec.ts
-│   │   ├── orders.spec.ts       # Order CRUD flows
-│   │   ├── workers.spec.ts      # Worker CRUD flows
-│   │   ├── tracking.spec.ts     # Public tracking page
-│   │   ├── kanban.spec.ts       # Kanban board
-│   │   └── api/                 # API contract tests
+│   ├── playwright.config.ts         # Playwright config
+│   ├── tests/                       # Test specs
+│   │   ├── landing.spec.ts          # Landing page
+│   │   ├── admin-dashboard.spec.ts  # Dashboard UI
+│   │   ├── orders.spec.ts           # Order CRUD flows
+│   │   ├── workers.spec.ts          # Worker CRUD flows
+│   │   ├── tracking.spec.ts         # Public tracking page
+│   │   ├── kanban.spec.ts           # Kanban board
+│   │   ├── login.spec.ts            # Login functional
+│   │   ├── orders-functional.spec.ts    # Tambah/edit pesanan + sketsa
+│   │   ├── workers-functional.spec.ts   # CRUD karyawan UI
+│   │   ├── reports-functional.spec.ts   # Cek & export laporan
+│   │   ├── users-functional.spec.ts     # Kelola user (owner-only)
+│   │   ├── settings-functional.spec.ts  # Ubah password & portofolio
+│   │   ├── authorization.spec.ts        # Staff access control
+│   │   └── api/                     # API contract tests
 │   │       ├── orders.api.spec.ts
 │   │       ├── workers.api.spec.ts
 │   │       └── dashboard.api.spec.ts
 │   ├── fixtures/
-│   │   └── test-data.ts         # Test data templates
+│   │   └── test-data.ts             # Test data templates
 │   └── utils/
-│       └── helpers.ts           # API helpers
+│       └── helpers.ts               # API & auth helpers
+├── app/
+│   ├── middleware/
+│   │   └── auth.global.ts           # Route guard (owner/staff)
+│   └── ...
 ├── package.json
 └── nuxt.config.ts
 backend/
 ├── app/
-│   ├── routers/                 # API endpoints tested
+│   ├── routers/                     # API endpoints tested
 │   └── ...
 ├── manage.py
 └── .env
@@ -70,6 +81,17 @@ npx playwright install chromium
 | **Workers** | List render, filter, CRUD via API | `workers.spec.ts` |
 | **Tracking** | Search form, valid/invalid receipt, sample click | `tracking.spec.ts` |
 | **Kanban** | Phase columns, labels, refresh | `kanban.spec.ts` |
+| **Login** | Form render, valid/invalid login, redirect, forgot password link | `login.spec.ts` |
+| **Tambah Pesanan** | Create order form fill & submit, navigate from list | `orders-functional.spec.ts` |
+| **Edit Pesanan** | Payment section, edit form, save/cancel | `orders-functional.spec.ts` |
+| **Gambar Sketsa** | Sketch modal, canvas, templates, close | `orders-functional.spec.ts` |
+| **CRUD Karyawan** | Add/edit/delete worker via UI & API, search | `workers-functional.spec.ts` |
+| **Cek Laporan** | Summary cards, daily table, garment/payment/productivity | `reports-functional.spec.ts` |
+| **Export Laporan** | Excel download button, API endpoint | `reports-functional.spec.ts` |
+| **Kelola User** | Add/edit/delete user via modal, table & search | `users-functional.spec.ts` |
+| **Ubah Password** | Password form, mismatch/short validation | `settings-functional.spec.ts` |
+| **Tambah Portofolio** | Portfolio form, upload button, API create, grid | `settings-functional.spec.ts` |
+| **Authorization** | Staff blocked from dashboard/reports/users, allowed routes, sidebar | `authorization.spec.ts` |
 | **API Orders** | GET/POST/PUT/DELETE order, tracking, admin-work | `api/orders.api.spec.ts` |
 | **API Workers** | GET/POST/PUT/DELETE worker, wages, performance | `api/workers.api.spec.ts` |
 | **API Dashboard** | Summary, trend, notifications, reports | `api/dashboard.api.spec.ts` |
@@ -77,10 +99,11 @@ npx playwright install chromium
 ### Principles
 
 1. **API tests** create own data and clean up after (`afterEach` hooks)
-2. **UI tests** read-only where possible (verify page renders with existing data)
-3. **No auth mocks** — app has no login system; tests navigate directly
+2. **UI tests** use `loginAdminUI()` or `loginStaffUI()` for authentication
+3. **Two user roles** — owner (full access) and staff (restricted); tests verify both
 4. **Isolated** — each test file independent, no shared state
 5. **Deterministic** — test data uses distinct names ("E2E Test ...") for easy identification
+6. **Authorization tests** verify route guards and sidebar visibility per role
 
 ## Running Tests
 
@@ -128,6 +151,18 @@ npx playwright test --config=e2e/playwright.config.ts e2e/tests/orders.spec.ts
 npx playwright test --config=e2e/playwright.config.ts e2e/tests/api/
 ```
 
+### Run functional tests only
+
+```bash
+npx playwright test --config=e2e/playwright.config.ts e2e/tests/login.spec.ts e2e/tests/orders-functional.spec.ts e2e/tests/workers-functional.spec.ts e2e/tests/reports-functional.spec.ts e2e/tests/users-functional.spec.ts e2e/tests/settings-functional.spec.ts e2e/tests/authorization.spec.ts
+```
+
+### Run authorization tests only
+
+```bash
+npx playwright test --config=e2e/playwright.config.ts e2e/tests/authorization.spec.ts
+```
+
 ### View HTML report
 
 ```bash
@@ -158,26 +193,63 @@ Key settings in `playwright.config.ts`:
 2. Import `{ test, expect }` from `@playwright/test`
 3. Use `test.describe` to group related tests
 4. Use `test.afterEach` for cleanup (delete created data)
-5. For API tests, use `helpers.ts` wrappers or raw `request.*`
-6. Add test data to `fixtures/test-data.ts` if reusable
+5. For UI tests, use `loginAdminUI(page)` or `loginStaffUI(page)` for auth
+6. For API tests, use `loginAdmin(request)` or helpers from `helpers.ts`
+7. Add test data to `fixtures/test-data.ts` if reusable
 
-### Example
+### Example — UI test with auth
 
 ```ts
 import { test, expect } from '@playwright/test'
+import { loginAdminUI, apiDelete } from '../utils/helpers'
 
 test.describe('My Feature', () => {
-  test('page renders correctly', async ({ page }) => {
-    await page.goto('/my-page')
-    await expect(page.locator('h1')).toBeVisible()
+  test.beforeEach(async ({ page }) => {
+    await loginAdminUI(page)
   })
 
-  test('API returns correct data', async ({ request }) => {
-    const data = await request.get('http://localhost:8000/my-endpoint')
-    expect(data.ok()).toBeTruthy()
+  test('page renders correctly', async ({ page }) => {
+    await page.goto('/admin/my-page')
+    await expect(page.locator('h1')).toBeVisible()
   })
 })
 ```
+
+### Example — Authorization test
+
+```ts
+import { test, expect } from '@playwright/test'
+import { loginStaffUI, ensureStaffUser, deleteStaffUser } from '../utils/helpers'
+
+test.describe('Staff Access Control', () => {
+  test.beforeAll(async ({ request }) => {
+    await ensureStaffUser(request)
+  })
+
+  test.afterAll(async ({ request }) => {
+    await deleteStaffUser(request)
+  })
+
+  test('staff cannot access dashboard', async ({ page }) => {
+    await loginStaffUI(page)
+    await page.goto('/admin/dashboard')
+    await page.waitForTimeout(2000)
+    expect(page.url()).not.toContain('/admin/dashboard')
+  })
+})
+```
+
+### Auth Helpers Reference
+
+| Function | Description |
+|----------|-------------|
+| `loginAdmin(request)` | Login as owner via API (sets cookie) |
+| `loginAdminUI(page)` | Login as owner via browser form |
+| `loginStaff(request)` | Login as staff via API (sets cookie) |
+| `loginStaffUI(page)` | Login as staff via browser form |
+| `ensureStaffUser(request)` | Create staff user if not exists (in `beforeAll`) |
+| `deleteStaffUser(request)` | Delete staff user (in `afterAll`) |
+| `apiGet/Post/Put/Delete` | API request wrappers with assertions |
 
 ## CI Integration
 
@@ -216,14 +288,16 @@ jobs:
 
 ## Best Practices
 
-- **Read-only UI tests** where possible — avoids data pollution
+- **Always authenticate** — use `loginAdminUI()` or `loginStaffUI()` in `beforeEach` for UI tests
 - **API tests create + clean up** — ensures repeatability
 - **Use `afterEach`** not `afterAll` — cleanup even if test fails
+- **Use `beforeAll`/`afterAll`** for shared resources (e.g., staff user in authorization tests)
 - **Distinct test data** — prefix with "E2E Test" to identify in DB
 - **Sequential workers** — DB is shared; parallel writes cause conflicts
 - **No hardcoded waits** — use `waitForLoadState('networkidle')` or `toBeVisible()`
 - **Screenshot on failure** — configured in playwright.config.ts
 - **Commit `playwright-report` to `.gitignore`** — add `.playwright-report/` and `test-results/`
+- **Verify redirects** — use `page.waitForURL()` and `expect(page.url())` for auth tests
 
 ## Troubleshooting
 

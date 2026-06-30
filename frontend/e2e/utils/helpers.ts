@@ -7,6 +7,12 @@ export const ADMIN_CREDENTIALS = {
   password: 'admin123',
 }
 
+export const STAFF_CREDENTIALS = {
+  email: 'staff.e2e@rumahjahit.id',
+  password: 'staff123',
+  name: 'E2E Test Staff',
+}
+
 export async function loginAdmin(request: APIRequestContext) {
   const res = await request.post(`${API_BASE}/auth/login`, {
     data: ADMIN_CREDENTIALS,
@@ -23,6 +29,54 @@ export async function loginAdminUI(page: Page) {
   await page.fill('input[type="password"]', ADMIN_CREDENTIALS.password)
   await page.locator('button[type="submit"]').click()
   await page.waitForURL('**/admin/**', { timeout: 10000 })
+}
+
+export async function loginStaff(request: APIRequestContext) {
+  const res = await request.post(`${API_BASE}/auth/login`, {
+    data: { email: STAFF_CREDENTIALS.email, password: STAFF_CREDENTIALS.password },
+    headers: { 'Content-Type': 'application/json' },
+  })
+  expect(res.ok()).toBeTruthy()
+  return res
+}
+
+export async function loginStaffUI(page: Page) {
+  await page.goto('/login')
+  await page.waitForLoadState('networkidle')
+  await page.fill('input[type="email"]', STAFF_CREDENTIALS.email)
+  await page.fill('input[type="password"]', STAFF_CREDENTIALS.password)
+  await page.locator('button[type="submit"]').click()
+  await page.waitForURL('**/admin/**', { timeout: 10000 })
+}
+
+export async function ensureStaffUser(request: APIRequestContext) {
+  await loginAdmin(request)
+  const res = await request.get(`${API_BASE}/users/`)
+  expect(res.ok()).toBeTruthy()
+  const users = await res.json()
+  const exists = users.some((u: any) => u.email === STAFF_CREDENTIALS.email)
+  if (!exists) {
+    const createRes = await request.post(`${API_BASE}/users/`, {
+      data: {
+        name: STAFF_CREDENTIALS.name,
+        email: STAFF_CREDENTIALS.email,
+        password: STAFF_CREDENTIALS.password,
+        is_owner: false,
+      },
+      headers: { 'Content-Type': 'application/json' },
+    })
+    expect(createRes.ok()).toBeTruthy()
+  }
+}
+
+export async function deleteStaffUser(request: APIRequestContext) {
+  await loginAdmin(request)
+  const res = await request.get(`${API_BASE}/users/`)
+  const users = await res.json()
+  const staff = users.find((u: any) => u.email === STAFF_CREDENTIALS.email)
+  if (staff) {
+    await request.delete(`${API_BASE}/users/${staff.id}`)
+  }
 }
 
 export async function apiGet(request: APIRequestContext, path: string) {

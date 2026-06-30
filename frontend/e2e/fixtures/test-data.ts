@@ -31,3 +31,19 @@ export const TEST_WORKER_UPDATED = {
 }
 
 export const TRACKING_SAMPLE_RECEIPT = 'RES-2024-001'
+
+export const TEST_PORTFOLIO = {
+  title: 'E2E Test Kemeja Batik',
+  category: 'Kemeja',
+  description: 'Portofolio E2E test - please ignore',
+}
+
+export const TEST_USER = {
+  name: 'E2E Test User',
+  email: 'e2e.testuser@rumahjahit.id',
+  password: 'testpass123',
+}
+
+export const TEST_USER_UPDATED = {
+  name: 'E2E Test User Updated',
+}
