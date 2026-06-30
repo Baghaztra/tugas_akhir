@@ -1,11 +1,3 @@
-import type { CustomerHistoryItem, Order, OrderCreate, OrderTracking, OrderUpdate } from '~/shared/types'
-
-/**
- * Composable untuk API Pesanan/Orders
- * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
- * environment variable NUXT_PUBLIC_API_BASE.
- */
-
 export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<string> }) => {
   const { apiBase } = useRuntimeConfig().public;
 
@@ -60,7 +52,8 @@ export const useCustomerHistory = () => {
     loading.value = true
     try {
       results.value = await $fetch<CustomerHistoryItem[]>(
-        `${apiBase}/orders/history?search=${encodeURIComponent(query)}`
+        `${apiBase}/orders/history?search=${encodeURIComponent(query)}`,
+        { credentials: 'include' }
       )
     } catch {
       results.value = []
@@ -116,7 +109,7 @@ export const useCreateOrder = () => {
       // Append file sketsa per item (index harus sama dengan urutan items).
       // Item tanpa sketsa diappend sebagai Blob kosong sebagai placeholder
       // supaya index tetap sinkron dengan array items di backend.
-      const sketchFiles = (payload.items ?? []).map((item) => {
+      const sketchFiles = (payload.items ?? []).map((item: OrderItemCreate) => {
         if (item.sketch?.startsWith("data:")) {
           return dataUrlToBlob(item.sketch); // ada sketsa → konversi
         }
@@ -125,7 +118,7 @@ export const useCreateOrder = () => {
 
       // Hanya kirim batch file bila minimal ada satu sketsa nyata
       if (sketchFiles.some(Boolean)) {
-        sketchFiles.forEach((blob, idx) => {
+        sketchFiles.forEach((blob: Blob | null, idx: number) => {
           if (blob) {
             fd.append("sketch_files", blob, `sketch_item_${idx}.png`);
           } else {
@@ -138,7 +131,7 @@ export const useCreateOrder = () => {
       const result = await $fetch<Order>(`${apiBase}/orders/`, {
         method: "POST",
         body: fd,
-        // Jangan set Content-Type — browser otomatis set boundary multipart
+        credentials: "include",
       });
       return { success: true, data: result };
     } catch (e: any) {

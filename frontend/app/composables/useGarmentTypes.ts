@@ -1,5 +1,3 @@
-import type { GarmentType, GarmentTypeCreate, GarmentTypeUpdate } from '~/shared/types'
-
 export const useGarmentTypes = () => {
   const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<GarmentType[]>(`${apiBase}/garment-types`, {

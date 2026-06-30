@@ -92,9 +92,9 @@
               <p class="font-semibold text-gray-900">{{ formatCurrency(order.paidAmount) }}</p>
             </div>
           </div>
-          <div v-if="order.description" class="bg-gray-50 rounded-lg p-3">
+          <div v-if="order.notes" class="bg-gray-50 rounded-lg p-3">
             <p class="text-xs text-gray-400 mb-1">Catatan</p>
-            <p class="text-sm text-gray-700">{{ order.description }}</p>
+            <p class="text-sm text-gray-700">{{ order.notes }}</p>
           </div>
         </div>
       </div>
@@ -221,17 +221,18 @@ const statusBadge = (s: string) => ({
 }[s] ?? { variant: 'neutral' as const, label: s })
 
 const paymentBadge = computed(() => {
-  const badges: Record<string, { variant: string; label: string }> = {
+  const badges: Record<string, { variant: 'success' | 'danger' | 'warning' | 'neutral'; label: string }> = {
     paid: { variant: 'success', label: 'Lunas' },
     unpaid: { variant: 'danger', label: 'Belum Lunas' },
     partial: { variant: 'warning', label: 'DP' },
   }
-  return badges[order.value?.paymentStatus ?? 'unpaid'] ?? { variant: 'neutral', label: '-' }
+  return badges[order.value?.paymentStatus ?? 'unpaid'] ?? { variant: 'neutral' as const, label: '-' }
 })
 
 const isOverdue = computed(() => {
   if (!order.value?.deadline) return false
-  return new Date(order.value.deadline) < new Date() && order.value.status !== 'done'
+  const allDone = order.value.items?.length > 0 && order.value.items.every(i => i.status === 'done')
+  return new Date(order.value.deadline) < new Date() && !allDone
 })
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })

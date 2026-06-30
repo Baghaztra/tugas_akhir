@@ -1,8 +1,3 @@
-/**
- * Composable untuk Dashboard & Reports
- * Endpoint: /dashboard/summary, /dashboard/trend, /dashboard/notifications
- */
-
 export interface PaymentBreakdown {
   paid: number;
   partial: number;

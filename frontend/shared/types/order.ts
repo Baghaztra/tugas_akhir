@@ -102,5 +102,6 @@ export interface OrderTracking {
   paidAmount: number;
   deadline: string;
   createdAt: string;
+  notes?: string | null;
   items: OrderItem[];
 }

@@ -4,6 +4,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+import sqlalchemy as sa
 
 from alembic import context
 
@@ -53,7 +54,10 @@ def run_migrations_online() -> None:
         )
 
         with context.begin_transaction():
+            # Disable FK checks so downgrade can drop tables in any order
+            connection.execute(sa.text("SET FOREIGN_KEY_CHECKS = 0"))
             context.run_migrations()
+            connection.execute(sa.text("SET FOREIGN_KEY_CHECKS = 1"))
 
 
 if context.is_offline_mode():

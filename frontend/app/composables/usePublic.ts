@@ -1,12 +1,3 @@
-import type { BusinessProfileRead, BusinessProfileUpdate, PortfolioItemCreate, PortfolioItemRead, PortfolioItemUpdate } from '~/shared/types'
-
-/**
- * Composable untuk API Profil Bisnis & Portofolio (Halaman Publik)
- * Base URL dikonfigurasi via nuxt.config runtimeConfig atau
- * environment variable NUXT_PUBLIC_API_BASE.
- */
-// ─── Public composables ────────────────────────────────────────────────────────
-
 export const useProfile = () => {
   const { apiBase } = useRuntimeConfig().public;
   const { data, status, error, refresh } = useFetch<BusinessProfileRead>(`${apiBase}/profile/public`);

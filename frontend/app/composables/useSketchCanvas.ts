@@ -1,5 +1,4 @@
 import { ref, onUnmounted } from "vue";
-import type { Group } from "fabric";
 
 export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
   const fabricCanvas = ref<any>(null);

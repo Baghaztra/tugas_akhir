@@ -46,7 +46,7 @@
             <label class="block text-xs font-medium text-gray-600 mb-1">Status Pembayaran</label>
             <select v-model="form.paymentStatus"
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white">
-              <option value="unpaid">Belum Lunas</option>
+              <option value="unpaid">Belum Dibayar</option>
               <option value="partial">DP</option>
               <option value="paid">Lunas</option>
             </select>
@@ -249,8 +249,9 @@ const activeSketchIdx = ref<number | null>(null)
 const openSketch = (idx: number) => activeSketchIdx.value = idx
 
 const fillMeasurements = (m: Record<string, string>) => {
-  if (form.items.length > 0 && form.items[0].measurements) {
-    form.items[0].measurements = { ...form.items[0].measurements, ...m }
+  const firstItem = form.items[0]
+  if (firstItem?.measurements) {
+    firstItem.measurements = { ...firstItem.measurements, ...m }
   }
 }
 

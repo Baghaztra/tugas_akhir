@@ -1,5 +1,3 @@
-import type { User, UserCreate, UserUpdate } from '~/shared/types/user'
-
 export const useUsers = () => {
   const { apiBase } = useRuntimeConfig().public
   const { data, status, error, refresh } = useFetch<User[]>(`${apiBase}/users`, {

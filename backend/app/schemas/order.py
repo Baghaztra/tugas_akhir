@@ -137,6 +137,7 @@ class OrderTracking(BaseModel):
     paidAmount: float
     deadline: str
     createdAt: datetime
+    notes: Optional[str] = None
     items: List[OrderItem] = []
 
     class Config:

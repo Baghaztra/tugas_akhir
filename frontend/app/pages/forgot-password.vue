@@ -52,7 +52,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Kode OTP</label>
               <input
                 v-model="otp" type="text" required maxlength="6"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-center text-lg font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                 placeholder="000000"
               />
             </div>

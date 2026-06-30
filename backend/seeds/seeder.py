@@ -13,6 +13,10 @@ import os
 from datetime import datetime, timedelta
 import random
 
+# Fix Windows console encoding
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.database import SessionLocal, engine, Base
@@ -220,9 +224,21 @@ def seed(db):
     if not existing_user:
         db.add(User(
             email="owner@rumahjahit.id",
-            password_hash=get_password_hash("admin123"),
+            password_hash=get_password_hash("111111"),
             name="Owner",
             is_owner=True,
+        ))
+        db.flush()
+    
+    # Staff admin user
+    print("   → Generating staff admin user...")
+    existing_staff = db.query(User).filter(User.email == "staff@rumahjahit.id").first()
+    if not existing_staff:
+        db.add(User(
+            email="staff@rumahjahit.id",
+            password_hash=get_password_hash("111111"),
+            name="Staff 1",
+            is_owner=False,
         ))
         db.flush()
 
@@ -282,7 +298,13 @@ def seed(db):
                 totalPrice=float(total),
                 paidAmount=float(paid),
                 deadline=random_deadline(),
-                notes="Harap dikerjakan dengan teliti." if random.random() > 0.6 else None,
+                notes=random.choice([
+                    "Harap dikerjakan dengan teliti.",
+                    "Pelanggan repeat order, kualitas dijaga.",
+                    "Tambahan: minta bordir di dada kiri.",
+                    "Warna harus sesuai sample.",
+                    None, None, None,
+                ]),
                 createdAt=datetime.now() - timedelta(days=random.randint(1, 60)),
             )
             db.add(order)
@@ -297,18 +319,36 @@ def seed(db):
                     k=1
                 )[0]
 
+                garment_name = random.choice(GARMENT_TYPES)
+                descriptions = {
+                    "Kemeja": ["Kemeja lengan panjang bahan katun", "Kemeja flannel motif kotak", "Kemeja putih formal"],
+                    "Dinas": ["Seragam dinas PNS", "Dinas warna khaki", "Dinas lengkap dengan emblem"],
+                    "Blouse": ["Blouse bahan sifon", "Blouse motif bunga", "Blouse lengan lonceng"],
+                    "Blazer": ["Blazer hitam formal", "Blazer kerja wanita", "Blazer slim fit"],
+                    "Gamis": ["Gamis bahan wolfis", "Gamis syar'i warna pastel", "Gamis brokat kombinasi"],
+                    "Kebaya": ["Kebaya modern kutu baru", "Kebaya brokat Bali", "Kebaya encim warna merah"],
+                    "Basiba": ["Basiba bahan tile", "Basiba warna emas", "Basiba dengan payet"],
+                    "Gaun": ["Gaun pesta panjang", "Gaun bridesmaid", "Gaun malam warna navy"],
+                    "Celana": ["Celana bahan formal", "Celana kulot wanita", "Celana pensil warna hitam"],
+                    "Rok": ["Rok span warna hitam", "Rok plisket panjang", "Rok A-line motif batik"],
+                }
                 item = OrderItem(
                     order_id=order.id,
-                    garmentTypeId=garment_map.get(random.choice(GARMENT_TYPES)),
-                    description="Item custom",
-                    quantity=random.randint(1, 5),
+                    garmentTypeId=garment_map.get(garment_name),
+                    description=random.choice(descriptions.get(garment_name, ["Item custom"])),
+                    quantity=random.randint(1, 3),
                     measurements={
-                        "lingkar_dada": random.randint(85, 110),
-                        "lingkar_pinggang": random.randint(65, 90),
+                        "Lingkar badan": str(random.randint(85, 110)),
+                        "Lingkar pinggang": str(random.randint(65, 90)),
+                        "Lingkar panggul": str(random.randint(90, 115)),
+                        "Panjang bahu": str(random.randint(38, 48)),
+                        "Panjang tgn": str(random.randint(50, 65)),
+                        "Panjang baju": str(random.randint(60, 80)),
+                        "Panjang rok": str(random.randint(55, 100)),
                     },
                     attributes={
-                        "bordir": random.choice([True, False]),
-                        "payet": random.choice([True, False]),
+                        random.choice(ATTRIBUTES): True,
+                        random.choice(ATTRIBUTES): True,
                     },
                     status=item_status,
                 )
@@ -346,7 +386,7 @@ def seed(db):
 
     db.commit()
     print("✅ Seeding selesai!")
-    print(f"   Users          : 1 (owner@rumahjahit.id)")
+    print(f"   Users          : 2")
     print(f"   Workers        : {len(WORKERS_DATA)}")
     print(f"   Orders         : {ORDERS}")
     print(f"   Portfolio Items: {len(PORTFOLIO_DATA)}")

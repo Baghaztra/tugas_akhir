@@ -2,10 +2,15 @@
   <div class="h-[calc(100vh-2rem)] flex flex-col">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between shrink-0">
-      <div class="flex gap-3">
+      <div class="flex gap-3 items-center">
         <ui-app-button variant="secondary" @click="refreshWork" :loading="status === 'pending'">
           <Icon name="heroicons:arrow-path" class="w-4 h-4 mr-2" /> Segarkan
         </ui-app-button>
+        <div class="relative">
+          <Icon name="heroicons:magnifying-glass" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input v-model="searchQuery" type="text" placeholder="Cari nama customer..."
+            class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64" />
+        </div>
         <ui-app-button variant="primary" @click="navigateTo('/admin/work/history')">
           <Icon name="heroicons:clock" class="w-4 h-4 mr-2" /> Riwayat
         </ui-app-button>
@@ -13,7 +18,7 @@
     </div>
 
     <!-- Kanban Board -->
-    <div v-if="status === 'pending' && !data?.phases?.length" class="flex-1 flex items-center justify-center">
+    <div v-if="status === 'pending' && !filteredData?.phases?.length" class="flex-1 flex items-center justify-center">
       <div class="flex flex-col items-center text-gray-400 animate-pulse">
         <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin mb-4" />
         <p>Memuat papan kerja...</p>
@@ -23,7 +28,7 @@
     <div v-else class="flex-1 overflow-x-auto pb-4">
       <div class="flex gap-6 h-full min-w-max">
         <!-- Phase Columns -->
-        <div v-for="phase in data?.phases" :key="phase.phase"
+        <div v-for="phase in filteredData?.phases" :key="phase.phase"
           class="w-[400px] flex flex-col h-full bg-gray-50/50 rounded-2xl border border-gray-100 shrink-0">
 
           <!-- Phase Header -->
@@ -200,6 +205,7 @@
 
 <script setup lang="ts">
 import { useAdminWork, useAdminTaskActions } from '~/composables/useTasks'
+import type { Worker as AppWorker } from '#shared/types/worker'
 definePageMeta({ layout: 'admin' })
 useSeoMeta({ title: 'Papan Kerja — Penjahit Yan' })
 
@@ -209,6 +215,27 @@ const { employees } = useEmployees()
 
 const apiBase = useRuntimeConfig().public.apiBase
 const sketchPreviewUrl = ref<string | null>(null)
+const searchQuery = ref('')
+
+const filteredData = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return data.value
+  if (!data.value?.phases) return data.value
+
+  return {
+    phases: data.value.phases.map(phase => {
+      const ready = phase.ready.filter(t => t.customerName.toLowerCase().includes(q))
+      const in_progress = phase.in_progress.filter(t => t.customerName.toLowerCase().includes(q))
+      return {
+        ...phase,
+        ready,
+        in_progress,
+        ready_count: ready.length,
+        in_progress_count: in_progress.length,
+      }
+    })
+  }
+})
 
 const phaseIcons: Record<string, string> = {
   cutting: 'heroicons:scissors',
@@ -289,7 +316,7 @@ const roleMap: Record<string, string> = {
 }
 
 const availableWorkers = computed(() => {
-  if (!employees.value) return []
+  if (!employees.value) return [] as AppWorker[]
   const targetRole = roleMap[currentModalPhase.value]
   return employees.value.filter(w => w.role === targetRole && w.status === 'Idle')
 })
