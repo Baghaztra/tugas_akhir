@@ -14,6 +14,7 @@ import uuid
 import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
+from urllib.parse import urlparse
 
 from fastapi import UploadFile
 
@@ -65,14 +66,22 @@ class LocalStorage(BaseStorage):
             shutil.copyfileobj(file.file, buffer)
 
         # URL publik — FastAPI StaticFiles mount di /uploads
-        return f"/uploads/{folder}/{filename}"
+        baseUrl = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
+        return f"{baseUrl}/uploads/{folder}/{filename}"
 
     def delete(self, url: str) -> None:
-        # url format: /uploads/portfolio/<filename>
-        relative = url.lstrip("/")          # uploads/portfolio/xxx.jpg
-        abs_path = UPLOAD_ROOT.parent / relative
-        if abs_path.exists():
-            abs_path.unlink()
+        path = urlparse(url).path
+
+        if not path.startswith("/uploads/"):
+            return
+
+        file_path = (UPLOAD_ROOT / path.removeprefix("/uploads/")).resolve()
+
+        if not str(file_path).startswith(str(UPLOAD_ROOT.resolve())):
+            return
+
+        if file_path.is_file():
+            file_path.unlink()
 
 
 # ─── Future: S3Storage (contoh kerangka) ──────────────────────────────────────

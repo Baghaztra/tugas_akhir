@@ -164,7 +164,7 @@
     <!-- Portfolio Modal -->
     <ui-app-modal :show="!!selectedItem" :title="selectedItem?.title" size="lg" @close="selectedItem = null">
       <div v-if="selectedItem" class="p-0">
-        <img :src="selectedItem.image?? 'https://coryn.club/images/PH-Light.png'" :alt="selectedItem.title" class="w-full h-72 object-cover" />
+        <img :src="selectedItem.image?? 'https://coryn.club/images/PH-Light.png'" :alt="selectedItem.title" class="w-full max-h-[70vh] object-contain cursor-zoom-in" @click="openLightbox" />
         <div class="p-6">
           <span class="inline-block px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-xs font-medium mb-3">{{
             selectedItem.category }}</span>
@@ -172,6 +172,13 @@
         </div>
       </div>
     </ui-app-modal>
+
+    <ui-app-image-lightbox
+      :visible="lightboxVisible"
+      :images="portfolioImages"
+      :initial-index="lightboxIndex"
+      @close="lightboxVisible = false"
+    />
   </div>
 </template>
 
@@ -179,9 +186,17 @@
 const router = useRouter()
 const trackingInput = ref('')
 const selectedItem = ref<PortfolioItemRead | null>(null)
+const lightboxVisible = ref(false)
+const lightboxIndex = ref(0)
 
 const { business, status: businessStatus } = useProfile()
 const { portfolio, status: portfolioStatus, error: portfolioError } = usePortfolio()
+
+const portfolioImages = computed(() =>
+  portfolio.value
+    .map((item) => item.image)
+    .filter((img): img is string => !!img)
+)
 
 const instagramUrl = computed(() => {
   if (!business.value?.instagram) return '#'
@@ -199,6 +214,13 @@ const goToTracking = () => {
 
 const openPortfolioModal = (item: PortfolioItemRead) => {
   selectedItem.value = item
+}
+
+const openLightbox = () => {
+  if (!selectedItem.value?.image) return
+  const idx = portfolioImages.value.indexOf(selectedItem.value.image)
+  lightboxIndex.value = idx >= 0 ? idx : 0
+  lightboxVisible.value = true
 }
 
 useSeoMeta({

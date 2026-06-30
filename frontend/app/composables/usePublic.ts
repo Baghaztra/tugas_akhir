@@ -33,6 +33,7 @@ export const usePortfolioAdmin = () => {
     const res = await $fetch<PortfolioItemRead>(`${apiBase}/portfolio`, {
       method: "POST",
       body: form,
+      credentials: 'include',
     });
     return res;
   };
@@ -44,6 +45,7 @@ export const usePortfolioAdmin = () => {
     return $fetch<PortfolioItemRead>(`${apiBase}/portfolio/${id}/image`, {
       method: "POST",
       body: form,
+      credentials: 'include',
     });
   };
 
@@ -55,12 +57,13 @@ export const usePortfolioAdmin = () => {
     return $fetch<PortfolioItemRead>(`${apiBase}/portfolio/${id}`, {
       method: "PUT",
       body: data,
+      credentials: 'include',
     });
   };
 
   /** Hapus item portofolio. */
   const deleteItem = async (id: number): Promise<void> => {
-    await $fetch(`${apiBase}/portfolio/${id}`, { method: "DELETE" });
+    await $fetch(`${apiBase}/portfolio/${id}`, { method: "DELETE", credentials: 'include' });
   };
 
   return { createItem, updateImage, updateItem, deleteItem };
@@ -75,6 +78,7 @@ export const useProfileAdmin = () => {
     return $fetch<BusinessProfileRead>(`${apiBase}/profile`, {
       method: "PUT",
       body: data,
+      credentials: 'include',
     });
   };
 
