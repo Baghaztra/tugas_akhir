@@ -26,6 +26,7 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     receiptNumber = Column(String(30), unique=True, index=True, nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     customerName = Column(String(150), nullable=False)
     customerPhone = Column(String(20), nullable=True)
 
@@ -39,6 +40,7 @@ class Order(Base):
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), onupdate=func.now())
 
+    customer = relationship("Customer", back_populates="orders")
     items = relationship(
         "OrderItem",
         back_populates="order",
