@@ -13,7 +13,44 @@
     </div>
 
     <form @submit.prevent="submit" class="space-y-6">
-      <!-- Data Pelanggan -->
+      <!-- Customer Search / Selection -->
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
+        <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <Icon name="heroicons:user" class="w-4 h-4 text-primary-500" />
+          Pelanggan
+        </h2>
+        <div class="relative">
+          <Icon name="heroicons:magnifying-glass"
+            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            v-model="customerSearch"
+            type="text"
+            placeholder="Cari pelanggan (nama atau nomor HP)..."
+            class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white"
+            @focus="doSearchCustomers" />
+        </div>
+        <div v-if="customerResults.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+          <div v-for="c in customerResults" :key="c.id"
+            @click="selectCustomer(c)"
+            class="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 border-b border-gray-50 last:border-0 transition-colors">
+            <div class="font-medium text-gray-900">{{ c.name }}</div>
+            <div class="text-xs text-gray-500">{{ c.phone || '—' }}</div>
+          </div>
+        </div>
+        <div v-if="selectedCustomer" class="bg-green-50 border border-green-100 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="font-medium text-green-800">{{ selectedCustomer.name }}</div>
+            <div class="text-xs text-green-600">{{ selectedCustomer.phone || '—' }}</div>
+          </div>
+          <button type="button" @click="clearCustomer"
+            class="text-xs text-red-600 hover:text-red-800 font-medium flex items-center gap-1">
+            <Icon name="heroicons:x-mark" class="w-3.5 h-3.5" />
+            Pelanggan Baru
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Pelanggan (auto-filled if customer selected) -->
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
         <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <Icon name="heroicons:user" class="w-4 h-4 text-primary-500" />
@@ -238,11 +275,46 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
 
+import type { CustomerBrief } from '~/shared/types/customer'
+
 const router = useRouter()
 const { createOrder, error } = useCreateOrder()
 const { garmentTypes } = useGarmentTypes()
 const { attributes } = useAttributes()
+const { searchCustomers } = useCustomers()
+
 const saving = ref(false)
+
+// Customer search
+const customerSearch = ref('')
+const customerResults = ref<CustomerBrief[]>([])
+const selectedCustomer = ref<CustomerBrief | null>(null)
+
+let searchTimeout: ReturnType<typeof setTimeout>
+function doSearchCustomers() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(async () => {
+    if (customerSearch.value.length < 2) { customerResults.value = []; return }
+    customerResults.value = await searchCustomers(customerSearch.value)
+  }, 300)
+}
+
+function selectCustomer(c: CustomerBrief) {
+  selectedCustomer.value = c
+  form.customerName = c.name
+  form.customerPhone = c.phone || ''
+  form.customer_id = c.id
+  customerResults.value = []
+  customerSearch.value = ''
+}
+
+function clearCustomer() {
+  selectedCustomer.value = null
+  form.customer_id = undefined
+  form.customerName = ''
+  form.customerPhone = ''
+  customerSearch.value = ''
+}
 
 const showHistoryModal = ref(false)
 const historyItemIdx = ref(0)

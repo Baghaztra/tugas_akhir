@@ -1,3 +1,5 @@
+import type { CustomerBrief } from './customer';
+
 export type OrderStatus =
   | "received"
   | "cutting"
@@ -50,6 +52,7 @@ export interface OrderItem {
 export interface OrderCreate {
   customerName: string;
   customerPhone?: string | null;
+  customer_id?: number | null;
   deadline: string;
   totalPrice?: number;
   paidAmount?: number;
@@ -61,6 +64,7 @@ export interface OrderCreate {
 export interface OrderUpdate {
   customerName?: string | null;
   customerPhone?: string | null;
+  customer_id?: number | null;
   deadline?: string | null;
   paymentStatus?: PaymentStatus | null;
   totalPrice?: number | null;
@@ -73,6 +77,8 @@ export interface Order {
   receiptNumber: string;
   customerName: string;
   customerPhone?: string | null;
+  customer_id?: number | null;
+  customer?: CustomerBrief | null;
   deadline: string;
   totalPrice?: number;
   paidAmount?: number;

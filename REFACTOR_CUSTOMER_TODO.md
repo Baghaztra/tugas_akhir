@@ -86,7 +86,7 @@ Add `customers` table as a template store for repeat customers. When creating an
 
 ### Phase 3: Frontend — Types & Composables
 
-- [ ] **3.1** Create `frontend/shared/types/customer.ts`
+- [x] **3.1** Create `frontend/shared/types/customer.ts`
   ```ts
   export interface Customer {
     id: number
@@ -134,10 +134,10 @@ Add `customers` table as a template store for repeat customers. When creating an
   }
   ```
 
-- [ ] **3.2** Update `frontend/shared/types/index.ts`
+- [x] **3.2** Update `frontend/shared/types/index.ts`
   - Export from `customer.ts`
 
-- [ ] **3.3** Create `frontend/app/composables/useCustomers.ts`
+- [x] **3.3** Create `frontend/app/composables/useCustomers.ts`
   - `useCustomers(search?)` — list customers with search
   - `useCustomerSearch(query)` — autocomplete search, returns `CustomerBrief[]`
   - `useCustomer(id)` — single customer detail
@@ -145,14 +145,14 @@ Add `customers` table as a template store for repeat customers. When creating an
   - `useUpdateCustomer()` — PUT
   - `useDeleteCustomer()` — DELETE
 
-- [ ] **3.4** Update `frontend/shared/types/order.ts`
+- [x] **3.4** Update `frontend/shared/types/order.ts`
   - Add `customer_id?: number | null` to `OrderCreate`
   - Add `customer_id?: number | null` to `OrderUpdate`
   - Add optional `customer?: CustomerBrief` to `Order` response
 
 ### Phase 4: Frontend — Customer Management Page
 
-- [ ] **4.1** Create `frontend/app/pages/admin/customers/index.vue`
+- [x] **4.1** Create `frontend/app/pages/admin/customers/index.vue`
   - Table: customer name, phone, measurements summary, actions (edit/delete)
   - Search bar (by name or phone)
   - Add customer button → modal with form (name, phone, 7 measurement fields)
@@ -160,12 +160,12 @@ Add `customers` table as a template store for repeat customers. When creating an
   - Delete confirmation modal
   - Pagination
 
-- [ ] **4.2** Update `frontend/app/layouts/admin.vue`
+- [x] **4.2** Update `frontend/app/layouts/admin.vue`
   - Add "Pelanggan" nav item in sidebar (with icon)
 
 ### Phase 5: Frontend — Order Form Customer Integration
 
-- [ ] **5.1** Modify `frontend/app/pages/admin/orders/create.vue`
+- [x] **5.1** Modify `frontend/app/pages/admin/orders/create.vue`
   - Add customer search/autocomplete section at top of form:
     - Text input that searches customers by name or phone (debounced)
     - Dropdown shows matching `CustomerBrief[]` results
@@ -178,7 +178,7 @@ Add `customers` table as a template store for repeat customers. When creating an
     - Form works exactly as before (name + phone are free text)
     - On submit, backend auto-creates customer from first item measurements
 
-- [ ] **5.2** Update or replace `HistoryMeasurementModal.vue`
+- [x] **5.2** Update or replace `HistoryMeasurementModal.vue`
   - Change from searching order history → searching customers table
   - Return customer measurements as template to fill items
 
