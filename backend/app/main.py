@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .database import engine, Base
-from .routers import workers, orders, profile, portfolio, dashboard, analytics, garment_types, attributes, users
+from .routers import workers, orders, profile, portfolio, dashboard, analytics, garment_types, attributes, users, customers
 from .routers import auth as auth_router
 from .auth import init_auth
 from dotenv import load_dotenv
@@ -45,6 +45,7 @@ app.include_router(portfolio.router)
 app.include_router(dashboard.router)
 app.include_router(analytics.router)
 app.include_router(users.router)
+app.include_router(customers.router)
 
 
 @app.get("/")

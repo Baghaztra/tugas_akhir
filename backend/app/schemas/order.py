@@ -3,6 +3,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 from .garment_type import GarmentTypeName
+from .customer import CustomerBrief
+from .customer import CustomerBrief
 
 
 class OrderStatus(str, Enum):
@@ -68,6 +70,7 @@ class OrderCreateFormData(BaseModel):
     Shape JSON yang dikirim sebagai string di field `data` pada form-data.
     Frontend mengirim:  data = JSON.stringify({ customerName, ..., items: [...] })
     """
+    customer_id: Optional[int] = None
     customerName: str
     customerPhone: Optional[str] = None
     deadline: str
@@ -101,6 +104,7 @@ class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
 
 class OrderUpdate(BaseModel):
+    customer_id: Optional[int] = None
     customerName: Optional[str] = None
     customerPhone: Optional[str] = None
     deadline: Optional[str] = None
@@ -114,6 +118,8 @@ class Order(OrderBase):
     receiptNumber: str
     createdAt: datetime
     updatedAt: Optional[datetime] = None
+    customer_id: Optional[int] = None
+    customer: Optional[CustomerBrief] = None
     items: List[OrderItem] = []
 
     class Config:

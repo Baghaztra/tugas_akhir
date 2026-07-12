@@ -10,7 +10,7 @@ Add `customers` table as a template store for repeat customers. When creating an
 
 ### Phase 1: Backend — Model, Schema, CRUD
 
-- [ ] **1.1** Create `backend/app/models/customers.py`
+- [x] **1.1** Create `backend/app/models/customers.py`
   - `Customer` model with fields:
     - `id` (PK, Integer, autoincrement)
     - `name` (String 150, not null, indexed)
@@ -25,27 +25,27 @@ Add `customers` table as a template store for repeat customers. When creating an
     - `createdAt`, `updatedAt` (DateTime)
   - Relationship: `orders = relationship("Order", back_populates="customer")`
 
-- [ ] **1.2** Modify `backend/app/models/order.py`
+- [x] **1.2** Modify `backend/app/models/order.py`
   - Add `customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)` to `Order`
   - Add `customer = relationship("Customer", back_populates="orders")` to `Order`
   - Keep existing `customerName`, `customerPhone` columns (backward compat)
 
-- [ ] **1.3** Update `backend/app/models/__init__.py`
+- [x] **1.3** Update `backend/app/models/__init__.py`
   - Export `Customer` from `customers.py`
 
-- [ ] **1.4** Create `backend/app/schemas/customer.py`
+- [x] **1.4** Create `backend/app/schemas/customer.py`
   - `CustomerBase` (name, phone, all 7 measurements optional)
   - `CustomerCreate(CustomerBase)`
   - `CustomerUpdate` (all fields optional)
   - `Customer(CustomerBase)` with `id`, `createdAt`, `updatedAt`, `from_attributes=True`
   - `CustomerBrief` (id, name, phone only — for dropdown/autocomplete)
 
-- [ ] **1.5** Update `backend/app/schemas/order.py`
+- [x] **1.5** Update `backend/app/schemas/order.py`
   - Add `customer_id: Optional[int] = None` to `OrderCreateFormData`
   - Add `customer_id: Optional[int] = None` to `OrderUpdate`
   - Add `customer: Optional[CustomerBrief] = None` to `Order` response schema
 
-- [ ] **1.6** Create `backend/app/crud/customer.py`
+- [x] **1.6** Create `backend/app/crud/customer.py`
   - `create_customer(db, customer: CustomerCreate) -> Customer`
   - `get_customer(db, customer_id: int) -> Customer`
   - `get_customers(db, skip, limit, search) -> List[Customer]`
@@ -55,13 +55,13 @@ Add `customers` table as a template store for repeat customers. When creating an
   - `search_customers(db, query: str, limit=10) -> List[CustomerBrief]`
     - For autocomplete: search name OR phone, return brief
 
-- [ ] **1.7** Update `backend/app/crud/order.py`
+- [x] **1.7** Update `backend/app/crud/order.py`
   - In `create_order()`:
     - If `customer_id` provided → link order to existing customer
     - If `customer_id` NOT provided → create new customer from `customerName`/`customerPhone` + first item's measurements, then link
     - Still populate `order.customerName` / `order.customerPhone` (denormalized, backward compat)
 
-- [ ] **1.8** Create `backend/app/routers/customers.py`
+- [x] **1.8** Create `backend/app/routers/customers.py`
   - `POST /` — create customer
   - `GET /` — list customers (paginated, search by name/phone)
   - `GET /search` — autocomplete search (returns `CustomerBrief[]`)
@@ -69,7 +69,7 @@ Add `customers` table as a template store for repeat customers. When creating an
   - `PUT /{id}` — update customer
   - `DELETE /{id}` — delete customer
 
-- [ ] **1.9** Register customer router in `backend/app/main.py`
+- [x] **1.9** Register customer router in `backend/app/main.py`
   - `from app.routers.customers import router as customers`
   - `app.include_router(customers)`
 

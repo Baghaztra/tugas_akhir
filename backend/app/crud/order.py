@@ -6,6 +6,7 @@ from fastapi import UploadFile
 
 from ..models.order import Order, OrderLog, OrderStatus, OrderItem, GarmentType
 from ..models.worker import Worker, WorkerStatus
+from ..models.customers import Customer
 from ..schemas.order import OrderCreate, OrderUpdate
 from ..storage import get_storage
 
@@ -97,8 +98,40 @@ async def create_order(
     receipt = _generate_receipt_number(db)
     storage = get_storage()
 
+    # Handle customer linking/creation
+    customer_id = order.customer_id
+    if customer_id is None and order.items:
+        # Create new customer from first item's measurements
+        first_item = order.items[0]
+        db_customer = Customer(
+            name=order.customerName,
+            phone=order.customerPhone,
+            lingkar_badan=first_item.measurements.get("lingkar_badan"),
+            lingkar_pinggang=first_item.measurements.get("lingkar_pinggang"),
+            lingkar_panggul=first_item.measurements.get("lingkar_panggul"),
+            panjang_bahu=first_item.measurements.get("panjang_bahu"),
+            panjang_tgn=first_item.measurements.get("panjang_tgn"),
+            panjang_baju=first_item.measurements.get("panjang_baju"),
+            panjang_rok=first_item.measurements.get("panjang_rok"),
+        )
+        db.add(db_customer)
+        db.commit()
+        db.refresh(db_customer)
+        customer_id = db_customer.id
+    elif customer_id is not None:
+        # Verify customer exists
+        db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
+        if not db_customer:
+            raise ValueError(f"Customer with id {customer_id} not found")
+        # Update customer name/phone from order (denormalized)
+        db_customer.name = order.customerName
+        db_customer.phone = order.customerPhone
+        db.add(db_customer)
+        db.commit()
+
     db_order = Order(
         receiptNumber=receipt,
+        customer_id=customer_id,
         customerName=order.customerName,
         customerPhone=order.customerPhone,
         deadline=order.deadline,
