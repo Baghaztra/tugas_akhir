@@ -3,6 +3,7 @@ Dummy Seeder – mengisi database dengan data contoh yang realistis.
 
 Tabel yang diisi:
   - workers
+  - customers
   - orders  (+ order_logs otomatis)
   - business_profiles (upsert id=1)
   - portfolio_items
@@ -22,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app.database import SessionLocal, engine, Base
 from app.models import * #noqa
 from app.auth import get_password_hash
+from app.crud.order import _generate_receipt_number
 
 Base.metadata.create_all(bind=engine)
 
@@ -164,11 +166,6 @@ def random_deadline(days_ahead_min=7, days_ahead_max=30) -> str:
     return (datetime.now() + timedelta(days=delta)).strftime("%Y-%m-%d")
 
 
-def generate_receipt(index: int) -> str:
-    date_str = datetime.now().strftime("%Y%m%d")
-    return f"ORD-{date_str}-{index:04d}"
-
-
 def _pick_worker_for_status(workers: list, status: OrderStatus):
     role_map = {
         OrderStatus.CUTTING: WorkerRole.POTONG,
@@ -257,6 +254,25 @@ def seed(db):
 
     worker_names = [w.name for w in workers]
 
+    # Customers
+    print("   → Generating data customers...")
+    customers = []
+    for name in CUSTOMER_NAMES:
+        customer = Customer(
+            name=name,
+            phone=random_phone(),
+            lingkar_badan=round(random.uniform(85, 110), 1),
+            lingkar_pinggang=round(random.uniform(65, 90), 1),
+            lingkar_panggul=round(random.uniform(90, 115), 1),
+            panjang_bahu=round(random.uniform(38, 48), 1),
+            panjang_tgn=round(random.uniform(50, 65), 1),
+            panjang_baju=round(random.uniform(60, 80), 1),
+            panjang_rok=round(random.uniform(55, 100), 1),
+        )
+        db.add(customer)
+        customers.append(customer)
+    db.flush()
+
     # Garment Types
     print("   → Generating data garment types...")
     garments = [GarmentType(name=gt) for gt in GARMENT_TYPES]
@@ -272,7 +288,7 @@ def seed(db):
     garment_map = {gt.name: gt.id for gt in garments}
     
     # Orders + OrderLogs
-    if (ORDERS >=0):
+    if (ORDERS >= 0):
         print("   → Generating data orders & logs...")
         status_weights = [0.1, 0.15, 0.25, 0.15, 0.35]
         in_progress_assignments = []
@@ -290,10 +306,14 @@ def seed(db):
             elif payment == PaymentStatus.PARTIAL:
                 paid = total // 2
 
+            # Pick a customer for this order
+            customer = random.choice(customers)
+
             order = Order(
-                receiptNumber=generate_receipt(i),
-                customerName=random.choice(CUSTOMER_NAMES),
-                customerPhone=random_phone(),
+                receiptNumber=_generate_receipt_number(db),
+                customer_id=customer.id,
+                customerName=customer.name,
+                customerPhone=customer.phone,
                 paymentStatus=payment,
                 totalPrice=float(total),
                 paidAmount=float(paid),
@@ -388,6 +408,7 @@ def seed(db):
     print("✅ Seeding selesai!")
     print(f"   Users          : 2")
     print(f"   Workers        : {len(WORKERS_DATA)}")
+    print(f"   Customers      : {len(CUSTOMER_NAMES)}")
     print(f"   Orders         : {ORDERS}")
     print(f"   Portfolio Items: {len(PORTFOLIO_DATA)}")
     print(f"   Business Profile: 1")

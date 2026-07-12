@@ -25,7 +25,7 @@ def reset(db, reseed: bool = False):
     # Nonaktifkan FK checks sementara (MySQL)
     db.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
 
-    tables = ["garment_types", "order_logs", "order_items", "orders", "workers", "portfolio_items", "business_profiles"]
+    tables = ["garment_types", "order_logs", "order_items", "orders", "customers", "workers", "portfolio_items", "business_profiles"]
     for table in tables:
         db.execute(text(f"TRUNCATE TABLE `{table}`"))
         print(f"   ✓ Tabel '{table}' dikosongkan")

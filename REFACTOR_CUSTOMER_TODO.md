@@ -75,13 +75,13 @@ Add `customers` table as a template store for repeat customers. When creating an
 
 ### Phase 2: Backend — Seeder Refactor
 
-- [ ] **2.1** Update `seeds/seeder.py`
+- [x] **2.1** Update `seeds/seeder.py`
   - Generate 20-30 customers with random names, phones, measurements
   - Link seeded orders to customers via `customer_id`
   - Use existing customer's `name`/`phone` for `order.customerName`/`order.customerPhone`
   - Ensure seeder creates customers BEFORE orders (FK dependency)
 
-- [ ] **2.2** Update `seeds/reset.py`
+- [x] **2.2** Update `seeds/reset.py`
   - Add `customers` to truncation list (before `orders` due to FK)
 
 ### Phase 3: Frontend — Types & Composables
