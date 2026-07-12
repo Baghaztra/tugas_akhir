@@ -179,7 +179,7 @@ def reset_password(
             detail="Kode OTP tidak valid",
         )
 
-    if token.expires_at < datetime.now(timezone.utc):
+    if token.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Kode OTP sudah kedaluwarsa",

@@ -43,9 +43,24 @@
         <!-- Step 2: Verify OTP + New Password -->
         <template v-else-if="step === 'reset'">
           <h2 class="text-lg font-semibold text-gray-900 mb-2">Masukkan Kode OTP</h2>
-          <p class="text-sm text-gray-500 mb-6">
+          <p class="text-sm text-gray-500 mb-2">
             Kode telah dikirim ke <strong>{{ email }}</strong>
           </p>
+          <div class="text-sm text-gray-500 mb-6">
+            <span v-if="resendCooldown > 0" class="text-primary-600">
+              Kirim ulang dalam {{ resendCooldown }}s
+            </span>
+            <button
+              v-else
+              type="button"
+              @click="handleResendOtp"
+              :disabled="resendLoading"
+              class="text-primary-600 hover:text-primary-700 underline"
+            >
+              <span v-if="resendLoading">Mengirim...</span>
+              <span v-else>Kirim ulang OTP</span>
+            </button>
+          </div>
 
           <form @submit.prevent="handleResetPassword" class="space-y-4">
             <div>
@@ -110,6 +125,9 @@ const confirmPassword = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+const resendLoading = ref(false)
+const resendCooldown = ref(0)
+const resendTimer = ref<ReturnType<typeof setInterval> | null>(null)
 
 async function handleSendOtp() {
   loading.value = true
@@ -119,6 +137,7 @@ async function handleSendOtp() {
     const res = await auth.requestPasswordReset(email.value)
     successMsg.value = res.message
     step.value = 'reset'
+    startResendCooldown()
   } catch (e: any) {
     errorMsg.value = e?.data?.detail ?? e?.message ?? 'Gagal mengirim OTP'
   } finally {
@@ -147,4 +166,35 @@ async function handleResetPassword() {
     loading.value = false
   }
 }
+
+function startResendCooldown() {
+  resendCooldown.value = 60
+  resendTimer.value = setInterval(() => {
+    resendCooldown.value--
+    if (resendCooldown.value <= 0 && resendTimer.value) {
+      clearInterval(resendTimer.value)
+      resendTimer.value = null
+    }
+  }, 1000)
+}
+
+async function handleResendOtp() {
+  if (resendCooldown.value > 0 || resendLoading.value) return
+  resendLoading.value = true
+  errorMsg.value = ''
+  successMsg.value = ''
+  try {
+    const res = await auth.requestPasswordReset(email.value)
+    successMsg.value = res.message
+    startResendCooldown()
+  } catch (e: any) {
+    errorMsg.value = e?.data?.detail ?? e?.message ?? 'Gagal kirim ulang OTP'
+  } finally {
+    resendLoading.value = false
+  }
+}
+
+onUnmounted(() => {
+  if (resendTimer.value) clearInterval(resendTimer.value)
+})
 </script>
