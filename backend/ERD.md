@@ -9,11 +9,27 @@ Table workers {
   date_joined DATETIME
 }
 
+Table customers {
+  id INTEGER [pk, increment]
+  name VARCHAR(150) [not null]
+  phone VARCHAR(20)
+  lingkar_badan FLOAT
+  lingkar_pinggang FLOAT
+  lingkar_panggul FLOAT
+  panjang_bahu FLOAT
+  panjang_tgn FLOAT
+  panjang_baju FLOAT
+  panjang_rok FLOAT
+  createdAt DATETIME
+  updatedAt DATETIME
+}
+
 Table orders {
   id INTEGER [pk, increment]
   receiptNumber VARCHAR(30) [unique, not null]
   customerName VARCHAR(150) [not null]
   customerPhone VARCHAR(20)
+  customer_id INTEGER [ref: > customers.id]
   paymentStatus ENUM('paid', 'unpaid', 'partial') [not null]
   totalPrice FLOAT
   paidAmount FLOAT
@@ -83,6 +99,7 @@ Ref: orders.id < order_items.order_id
 Ref: garment_types.id < order_items.garmentTypeId
 Ref: workers.id < order_logs.worker_id
 Ref: order_items.id < order_logs.order_item_id
+Ref: customers.id < orders.customer_id
 ```
 
 ## Notes
@@ -91,6 +108,7 @@ Ref: order_items.id < order_logs.order_item_id
 - **garment_types** → **order_items**: 1-to-many. Satu tipe garment bisa dipakai banyak item.
 - **workers** → **order_logs**: 1-to-many. Satu worker bisa tercatat di banyak log.
 - **order_items** → **order_logs**: 1-to-many. Satu item punya banyak log status (termasuk riwayat penugasan pekerja).
+- **customers** → **orders**: 1-to-many. Satu customer bisa punya banyak order (template ukuran).
 - **business_profiles**: Single-row table (selalu id=1) untuk profil bisnis.
 - **attributes**: Tabel referensi untuk attribute tags (soft-delete via `is_deleted`).
 - **garment_types**: Soft-delete via `is_deleted`.

@@ -200,7 +200,8 @@ project/
 │   │   │   ├── useAttributes.ts
 │   │   │   ├── usePublic.ts
 │   │   │   ├── useTasks.ts
-│   │   │   └── useSketchCanvas.ts
+│   │   │   ├── useSketchCanvas.ts
+│   │   │   └── useCustomers.ts
 │   │   ├── stores/             # Pinia stores
 │   │   │   └── auth.ts         # Auth state (login, logout, token)
 │   │   └── middleware/         # Route middleware
@@ -529,6 +530,7 @@ export const useAuthStore = defineStore('auth', () => {
 | `/admin/orders` | `pages/admin/orders/index.vue` | admin | Daftar pesanan (search, filter) |
 | `/admin/orders/create` | `pages/admin/orders/create.vue` | admin | Form buat pesanan baru |
 | `/admin/orders/[id]` | `pages/admin/orders/[id].vue` | admin | Detail/edit pesanan |
+| `/admin/customers` | `pages/admin/customers/index.vue` | admin | Manajemen pelanggan (CRUD, search, pagination) |
 | `/admin/workers` | `pages/admin/workers/index.vue` | admin | Daftar karyawan |
 | `/admin/workers/[id]` | `pages/admin/workers/[id].vue` | admin | Detail karyawan (upah, performa) |
 | `/admin/garment-types` | `pages/admin/garment-types/index.vue` | admin | Kelola jenis pakaian |
@@ -634,6 +636,17 @@ Base URL: `http://localhost:8000`
 | PUT | `/garment-types/{id}` | Yes | Update jenis |
 | DELETE | `/garment-types/{id}` | Yes | Hapus jenis (soft delete) |
 
+### Customers (`/customers`)
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| POST | `/customers/` | Yes | Tambah pelanggan |
+| GET | `/customers/` | Yes | List pelanggan (paginated, search by name/phone) |
+| GET | `/customers/search` | Yes | Autocomplete search (returns `CustomerBrief[]`) |
+| GET | `/customers/{id}` | Yes | Detail pelanggan dengan ukuran lengkap |
+| PUT | `/customers/{id}` | Yes | Update pelanggan |
+| DELETE | `/customers/{id}` | Yes | Hapus pelanggan |
+
 ### Attributes (`/attributes`)
 
 | Method | Endpoint | Auth | Deskripsi |
@@ -652,12 +665,12 @@ Base URL: `http://localhost:8000`
 ┌─────────────┐       ┌──────────────┐       ┌─────────────┐
 │  orders     │──1:N──│  order_items  │──1:N──│  order_logs │
 └─────────────┘       └──────────────┘       └─────────────┘
-                            │                      │
-                           N:1                    N:1
-                            │                      │
-                      ┌─────┴──────┐         ┌────┴────┐
-                      │garment_types│         │ workers │
-                      └────────────┘         └─────────┘
+      │                      │                      │
+     N:1                    N:1                    N:1
+      │                      │                      │
+┌─────┴──────┐        ┌─────┴──────┐         ┌────┴────┐
+│ customers  │        │garment_types│         │ workers │
+└────────────┘        └────────────┘         └─────────┘
 
 ┌──────────────────┐  ┌────────────────┐  ┌──────────┐  ┌───────────────┐
 │business_profiles │  │portfolio_items │  │attributes│  │     users     │
@@ -678,6 +691,7 @@ Base URL: `http://localhost:8000`
 | `portfolio_items` | Portofolio hasil jahit |
 | `users` | Akun admin |
 | `password_reset_tokens` | Token OTP reset password |
+| `customers` | Template pelanggan (nama, telepon, 7 ukuran tubuh untuk auto-fill order) |
 
 ### Status Flow Order Item
 

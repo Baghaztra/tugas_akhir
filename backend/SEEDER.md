@@ -155,6 +155,7 @@ python manage.py seed
 | `order_logs` | 30–150 | Log otomatis sesuai perjalanan status pesanan |
 | `business_profiles` | 1 | Profil bisnis (id=1, upsert) |
 | `portfolio_items` | 6 | Portofolio hasil jahit |
+| `customers` | 20–30 | Pelanggan dengan nama, telepon, 7 ukuran tubuh (template) |
 
 ### Detail Data Dummy
 
@@ -175,6 +176,13 @@ Hani Pratiwi    – Jahit,     Rp 18.000/pcs
 - **Payment distribusi**: ~40% Paid, 30% Unpaid, 30% Partial  
 - **Tipe garment**: Kemeja Formal, Batik, Celana, Rok, Blazer, Jas, Kebaya, dll  
 - **Format nomor resi**: `ORD-YYYYMMDD-XXXX`
+
+#### Customers
+- **Jumlah**: 20–30 pelanggan
+- **Nama**: Nama acak Indonesia (Budi, Siti, Ahmad, Dewi, dll)
+- **Telepon**: Nomor HP acak format Indonesia (08xx-xxxx-xxxx)
+- **Ukuran (7 field)**: Nilai acak realistis untuk lingkar_badan, lingkar_pinggang, lingkar_panggul, panjang_bahu, panjang_tgn, panjang_baju, panjang_rok
+- **Relasi**: Setiap order di-link ke customer via `customer_id` (FK), order.customerName & customerPhone diisi dari customer yang dipilih
 
 #### Business Profile
 ```
@@ -293,6 +301,23 @@ python -m seeds.reset --reseed
 | `image` | VARCHAR(500) | Path/URL gambar |
 | `description` | VARCHAR(1000) | Deskripsi item |
 | `createdAt` | DATETIME | Waktu ditambahkan |
+
+### `customers`
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | INT PK | Auto-increment |
+| `name` | VARCHAR(150) | Nama pelanggan |
+| `phone` | VARCHAR(20) | Nomor HP pelanggan |
+| `lingkar_badan` | FLOAT | Lingkar badan (cm) |
+| `lingkar_pinggang` | FLOAT | Lingkar pinggang (cm) |
+| `lingkar_panggul` | FLOAT | Lingkar panggul (cm) |
+| `panjang_bahu` | FLOAT | Panjang bahu (cm) |
+| `panjang_tgn` | FLOAT | Panjang tangan (cm) |
+| `panjang_baju` | FLOAT | Panjang baju (cm) |
+| `panjang_rok` | FLOAT | Panjang rok (cm) |
+| `createdAt` | DATETIME | Waktu dibuat |
+| `updatedAt` | DATETIME | Waktu diperbarui |
 
 ---
 

@@ -110,9 +110,11 @@ backend/
 │   ├── storage.py               # File upload storage
 │   ├── ranking_logic.py         # XGBoost ranking inference
 │   ├── models/                  # SQLAlchemy models
+│   │   ├── __init__.py          # Register semua model
 │   │   ├── user.py              # User model
 │   │   ├── worker.py            # Worker model
 │   │   ├── order.py             # Order, OrderItem, OrderLog, GarmentType
+│   │   ├── customer.py          # Customer model
 │   │   ├── profile.py           # Profile usaha
 │   │   ├── portfolio.py         # Portfolio produk
 │   │   ├── attributes.py        # Atribut pakaian
@@ -121,6 +123,7 @@ backend/
 │   │   ├── user.py
 │   │   ├── worker.py
 │   │   ├── order.py
+│   │   ├── customer.py
 │   │   ├── profile.py
 │   │   ├── portfolio.py
 │   │   ├── garment_type.py
@@ -129,6 +132,7 @@ backend/
 │   │   ├── user.py
 │   │   ├── worker.py
 │   │   ├── order.py
+│   │   ├── customer.py
 │   │   ├── profile.py
 │   │   ├── portfolio.py
 │   │   ├── garment_type.py
@@ -136,6 +140,7 @@ backend/
 │   └── routers/                 # API endpoints
 │       ├── auth.py              # /auth (login, logout, password)
 │       ├── orders.py            # /orders (CRUD, tracking, kanban)
+│       ├── customers.py         # /customers (CRUD, search autocomplete)
 │       ├── workers.py           # /workers (CRUD, wages, performance)
 │       ├── profile.py           # /profile (public, update)
 │       ├── portfolio.py         # /portfolio (CRUD + image)
