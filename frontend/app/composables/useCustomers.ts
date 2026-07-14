@@ -1,51 +1,91 @@
-import { $fetch } from 'ofetch'
-import { useAsyncData } from '#app'
-import { unref } from 'vue'
-import type { Customer, CustomerBrief, CustomerCreate, CustomerUpdate } from '~/shared/types/customer'
+// ponytail: button-triggered search — $fetch on demand, no auto-refetch
+export const useCustomers = (queryParams?: { search?: Ref<string> }) => {
+  const { apiBase } = useRuntimeConfig().public;
+  const customers = ref<Customer[]>([]) as Ref<Customer[]>;
+  const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle');
 
-const api = $fetch.create({ baseURL: '/api' })
+  const refresh = async () => {
+    status.value = 'pending';
+    try {
+      const params: Record<string, any> = {};
+      if (queryParams?.search?.value) params.search = queryParams.search.value;
+      customers.value = await $fetch<Customer[]>(`${apiBase}/customers/`, {
+        credentials: 'include',
+        params,
+      });
+      status.value = 'success';
+    } catch {
+      customers.value = [];
+      status.value = 'error';
+    }
+  };
 
-export function useCustomers(search?: string | Ref<string>) {
-  return useAsyncData('customers', () => 
-    api<Customer[]>('/customers', { 
-      params: { search: unref(search) || '' } 
-    })
-  )
-}
+  // ponytail: searchCustomers for autocomplete — manual $fetch, no reactive overhead
+  const searchCustomers = async (q: string, limit = 10): Promise<CustomerBrief[]> => {
+    if (!q || q.length < 2) return [];
+    return await $fetch<CustomerBrief[]>(`${apiBase}/customers/search`, {
+      credentials: 'include',
+      params: { query: q, limit },
+    });
+  };
 
-export function useCustomerSearch(query: string | Ref<string>, limit = 10) {
-  return useAsyncData('customer-search', () => 
-    api<CustomerBrief[]>('/customers/search', { 
-      params: { query: unref(query), limit } 
-    }),
-    { watch: [query], immediate: !!unref(query) }
-  )
-}
+  return { customers, status, refresh, searchCustomers };
+};
 
-export function useCustomer(id: number | Ref<number>) {
-  return useAsyncData(`customer-${id}`, () => 
-    api<Customer>(`/customers/${unref(id)}`)
-  )
-}
+export const getCustomer = async (id: number): Promise<Customer> => {
+  const { apiBase } = useRuntimeConfig().public;
+  return await $fetch<Customer>(`${apiBase}/customers/${id}`, { credentials: 'include' });
+};
 
-export async function getCustomer(id: number) {
-  return await api<Customer>(`/customers/${id}`)
-}
+export const useCreateCustomer = () => {
+  const { apiBase } = useRuntimeConfig().public;
+  const loading = ref(false);
+  const createCustomer = async (payload: CustomerCreate) => {
+    loading.value = true;
+    try {
+      return await $fetch<Customer>(`${apiBase}/customers/`, {
+        method: 'POST',
+        credentials: 'include',
+        body: payload,
+      });
+    } finally {
+      loading.value = false;
+    }
+  };
+  return { createCustomer, loading };
+};
 
-export function useCreateCustomer() {
-  return async (payload: CustomerCreate) => {
-    return await api<Customer>('/customers', { method: 'POST', body: payload })
-  }
-}
+export const useUpdateCustomer = () => {
+  const { apiBase } = useRuntimeConfig().public;
+  const loading = ref(false);
+  const updateCustomer = async (id: number, payload: CustomerUpdate) => {
+    loading.value = true;
+    try {
+      return await $fetch<Customer>(`${apiBase}/customers/${id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: payload,
+      });
+    } finally {
+      loading.value = false;
+    }
+  };
+  return { updateCustomer, loading };
+};
 
-export function useUpdateCustomer() {
-  return async (id: number, payload: CustomerUpdate) => {
-    return await api<Customer>(`/customers/${id}`, { method: 'PUT', body: payload })
-  }
-}
-
-export function useDeleteCustomer() {
-  return async (id: number) => {
-    return await api<Customer>(`/customers/${id}`, { method: 'DELETE' })
-  }
-}
+export const useDeleteCustomer = () => {
+  const { apiBase } = useRuntimeConfig().public;
+  const loading = ref(false);
+  const deleteCustomer = async (id: number) => {
+    loading.value = true;
+    try {
+      return await $fetch(`${apiBase}/customers/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+    } finally {
+      loading.value = false;
+    }
+  };
+  return { deleteCustomer, loading };
+};

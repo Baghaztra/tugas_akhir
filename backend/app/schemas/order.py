@@ -101,6 +101,7 @@ class OrderBase(BaseModel):
     notes: Optional[str] = None
 
 class OrderCreate(OrderBase):
+    customer_id: Optional[int] = None
     items: List[OrderItemCreate]
 
 class OrderUpdate(BaseModel):

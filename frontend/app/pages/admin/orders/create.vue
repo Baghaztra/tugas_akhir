@@ -275,8 +275,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
 
-import type { CustomerBrief } from '~/shared/types/customer'
-
 const router = useRouter()
 const { createOrder, error } = useCreateOrder()
 const { garmentTypes } = useGarmentTypes()

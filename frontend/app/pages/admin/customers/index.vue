@@ -5,9 +5,14 @@
       <div class="relative flex-1">
         <Icon name="heroicons:magnifying-glass"
           class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input v-model="search" type="text" placeholder="Cari nama atau telepon..."
+        <input v-model="search" type="text" placeholder="Cari nama atau telepon..." @keyup.enter="refresh"
           class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white" />
       </div>
+      <button @click="refresh"
+        class="border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap bg-white shadow-sm">
+        <Icon name="heroicons:magnifying-glass" class="w-4 h-4" />
+        Cari
+      </button>
       <NuxtLink to="/admin/customers/create">
         <ui-app-button icon="heroicons:plus">Tambah Pelanggan</ui-app-button>
       </NuxtLink>
@@ -20,7 +25,7 @@
           <div v-for="i in 6" :key="i" class="h-12 bg-gray-100 rounded-lg" />
         </div>
       </template>
-      <div v-else-if="customers.value.length === 0" class="py-16">
+      <div v-else-if="customers.length === 0" class="py-16">
         <ui-app-empty-state icon="heroicons:users" title="Belum ada pelanggan"
           description="Tambah pelanggan pertama untuk memulai" />
       </div>
@@ -38,7 +43,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="customer in filteredCustomers" :key="customer.id" class="hover:bg-gray-50 transition-colors">
+            <tr v-for="customer in customers" :key="customer.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-5 py-3">
                 <div class="font-medium text-gray-900">{{ customer.name }}</div>
               </td>
@@ -178,11 +183,11 @@ const { createCustomer, loading: creating } = useCreateCustomer()
 const { updateCustomer, loading: updating } = useUpdateCustomer()
 const { deleteCustomer, loading: deletingCustomerLoading } = useDeleteCustomer()
 
-const filteredCustomers = computed(() => customers.value ?? [])
+onMounted(() => refresh())
 
 const form = reactive<CustomerCreate>({
   name: '',
-  phone: '',
+  phone: null,
   lingkar_badan: null,
   lingkar_pinggang: null,
   lingkar_panggul: null,
@@ -194,7 +199,7 @@ const form = reactive<CustomerCreate>({
 
 function resetForm() {
   form.name = ''
-  form.phone = ''
+  form.phone = null
   form.lingkar_badan = null
   form.lingkar_pinggang = null
   form.lingkar_panggul = null
@@ -213,7 +218,7 @@ function openAdd() {
 function openEdit(customer: Customer) {
   editingCustomer.value = customer
   form.name = customer.name
-  form.phone = customer.phone ?? ''
+  form.phone = customer.phone ?? null
   form.lingkar_badan = customer.lingkar_badan ?? null
   form.lingkar_pinggang = customer.lingkar_pinggang ?? null
   form.lingkar_panggul = customer.lingkar_panggul ?? null
