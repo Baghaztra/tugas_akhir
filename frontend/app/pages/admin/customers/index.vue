@@ -1,76 +1,80 @@
 <template>
   <div>
-    <!-- Toolbar -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <div class="relative flex-1">
-        <Icon name="heroicons:magnifying-glass"
-          class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input v-model="search" type="text" placeholder="Cari nama atau telepon..." @keyup.enter="refresh"
-          class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white" />
+    <div class="flex flex-col sm:flex-row gap-3 mb-6 justify-between items-center">
+      <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-1">
+        <div class="relative flex-1 sm:max-w-xs">
+          <Icon name="heroicons:magnifying-glass"
+            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input v-model="search" type="text" placeholder="Cari nama atau telepon..."
+            class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white" />
+        </div>
+        <button @click="refresh"
+          class="border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap bg-white shadow-sm">
+          <Icon name="heroicons:magnifying-glass" class="w-4 h-4" />
+          Cari
+        </button>
       </div>
-      <button @click="refresh"
-        class="border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap bg-white shadow-sm">
-        <Icon name="heroicons:magnifying-glass" class="w-4 h-4" />
-        Cari
-      </button>
       <NuxtLink to="/admin/customers/create">
         <ui-app-button icon="heroicons:plus">Tambah Pelanggan</ui-app-button>
       </NuxtLink>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      <template v-if="status === 'pending'">
-        <div class="p-6 animate-pulse space-y-3">
-          <div v-for="i in 6" :key="i" class="h-12 bg-gray-100 rounded-lg" />
-        </div>
-      </template>
-      <div v-else-if="customers.length === 0" class="py-16">
-        <ui-app-empty-state icon="heroicons:users" title="Belum ada pelanggan"
-          description="Tambah pelanggan pertama untuk memulai" />
+    <template v-if="status === 'pending'">
+      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden p-6 animate-pulse space-y-4">
+        <div class="h-10 bg-gray-200 rounded w-full" />
+        <div class="h-10 bg-gray-200 rounded w-full" />
+        <div class="h-10 bg-gray-200 rounded w-full" />
+      </div>
+    </template>
+
+    <div v-else class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div v-if="customers.length === 0" class="p-8">
+        <ui-app-empty-state icon="heroicons:users" title="Tidak ada pelanggan"
+          description="Coba ubah pencarian atau tambah pelanggan baru" />
       </div>
       <div v-else class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-            <tr>
-              <th class="px-5 py-3 text-left">Nama</th>
-              <th class="px-5 py-3 text-left">Telepon</th>
-              <th class="px-5 py-3 text-left">Ukuran Badan</th>
-              <th class="px-5 py-3 text-left">Ukuran Atasan</th>
-              <th class="px-5 py-3 text-left">Ukuran Rok/Celana</th>
-              <th class="px-5 py-3 text-left">Dibuat</th>
-              <th class="px-5 py-3" />
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-primary-500 border-b border-gray-100 text-sm text-center text-white">
+              <th class="py-3 px-4 font-medium">Nama</th>
+              <th class="py-3 px-4 font-medium">Telepon</th>
+              <th class="py-3 px-4 font-medium">Total Pesanan</th>
+              <th class="py-3 px-4 font-medium">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="customer in customers" :key="customer.id" class="hover:bg-gray-50 transition-colors">
-              <td class="px-5 py-3">
-                <div class="font-medium text-gray-900">{{ customer.name }}</div>
+          <tbody class="divide-y divide-gray-50 text-sm text-gray-700">
+            <tr v-for="customer in customers" :key="customer.id"
+              class="hover:bg-secondary-200 transition-colors group">
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                    {{ customer.name.charAt(0) }}
+                  </div>
+                  <span class="font-medium text-gray-900">{{ customer.name }}</span>
+                </div>
               </td>
-              <td class="px-5 py-3 text-xs text-gray-400">{{ customer.phone ?? '—' }}</td>
-              <td class="px-5 py-3 text-xs text-gray-500">
-                <div>Badan: {{ customer.lingkar_badan ?? '—' }} cm</div>
-                <div>Pinggang: {{ customer.lingkar_pinggang ?? '—' }} cm</div>
-                <div>Panggul: {{ customer.lingkar_panggul ?? '—' }} cm</div>
+              <td class="py-3 px-4">{{ customer.phone ?? '—' }}</td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                  :class="customer.total_orders > 0 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'">
+                  {{ customer.total_orders }}
+                </span>
               </td>
-              <td class="px-5 py-3 text-xs text-gray-500">
-                <div>Bahu: {{ customer.panjang_bahu ?? '—' }} cm</div>
-                <div>Tgn: {{ customer.panjang_tgn ?? '—' }} cm</div>
-                <div>Baju: {{ customer.panjang_baju ?? '—' }} cm</div>
-              </td>
-              <td class="px-5 py-3 text-xs text-gray-500">
-                <div>Rok: {{ customer.panjang_rok ?? '—' }} cm</div>
-              </td>
-              <td class="px-5 py-3 text-xs text-gray-400">{{ formatDate(customer.createdAt!) }}</td>
-              <td class="px-5 py-3">
-                <div class="flex items-center gap-1">
+              <td class="py-3 px-4">
+                <div class="flex items-center justify-center gap-2">
+                  <NuxtLink :to="`/admin/customers/${customer.id}`"
+                    class="p-1.5 text-gray-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                    title="Detail">
+                    <Icon name="heroicons:eye" class="w-4 h-4" />
+                  </NuxtLink>
                   <button @click="openEdit(customer)"
-                    class="text-primary-500 hover:text-primary-700 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-primary-50 transition-colors"
+                    class="p-1.5 text-gray-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 transition-colors"
                     title="Edit">
-                    <Icon name="heroicons:pencil" class="w-4 h-4" />
+                    <Icon name="heroicons:pencil-square" class="w-4 h-4" />
                   </button>
                   <button @click="confirmDelete(customer)"
-                    class="text-red-500 hover:text-red-700 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
+                    class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                     title="Hapus">
                     <Icon name="heroicons:trash" class="w-4 h-4" />
                   </button>
@@ -82,7 +86,6 @@
       </div>
     </div>
 
-    <!-- Modal Add/Edit -->
     <ui-app-confirm-modal
       :show="showForm"
       :title="editingCustomer ? 'Edit Pelanggan' : 'Tambah Pelanggan'"
@@ -151,7 +154,6 @@
       </form>
     </ui-app-confirm-modal>
 
-    <!-- Delete Confirm Modal -->
     <ui-app-confirm-modal
       :show="showDeleteConfirm"
       title="Hapus Pelanggan"
@@ -183,8 +185,6 @@ const { createCustomer, loading: creating } = useCreateCustomer()
 const { updateCustomer, loading: updating } = useUpdateCustomer()
 const { deleteCustomer, loading: deletingCustomerLoading } = useDeleteCustomer()
 
-onMounted(() => refresh())
-
 const form = reactive<CustomerCreate>({
   name: '',
   phone: null,
@@ -207,12 +207,6 @@ function resetForm() {
   form.panjang_tgn = null
   form.panjang_baju = null
   form.panjang_rok = null
-}
-
-function openAdd() {
-  resetForm()
-  editingCustomer.value = null
-  showForm.value = true
 }
 
 function openEdit(customer: Customer) {
@@ -272,6 +266,4 @@ async function doDelete() {
     deleting.value = false
   }
 }
-
-const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 </script>

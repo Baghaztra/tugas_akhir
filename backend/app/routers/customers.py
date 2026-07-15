@@ -8,6 +8,7 @@ from ..schemas.customer import (
     CustomerBase as CustomerCreate,
     CustomerUpdate,
     CustomerBrief,
+    CustomerDetail,
 )
 from ..database import get_db
 from ..auth import get_current_user
@@ -60,6 +61,18 @@ def read_customer(
     if not db_customer:
         raise HTTPException(status_code=404, detail="Pelanggan tidak ditemukan")
     return db_customer
+
+
+@router.get("/{customer_id}/detail", response_model=CustomerDetail)
+def read_customer_detail(
+    customer_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = crud_customer.get_customer_detail(db, customer_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Pelanggan tidak ditemukan")
+    return result
 
 
 @router.put("/{customer_id}", response_model=Customer)

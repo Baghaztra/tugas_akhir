@@ -40,6 +40,23 @@ class Customer(CustomerBase):
     id: int
     createdAt: datetime
     updatedAt: Optional[datetime] = None
+    total_orders: int = 0
 
     class Config:
         from_attributes = True
+
+
+class CustomerOrderItem(BaseModel):
+    id: int
+    receipt_number: str
+    total_price: float
+    paid_amount: float
+    payment_status: str
+    status: str
+    created_at: datetime
+
+
+class CustomerDetail(BaseModel):
+    customer: Customer
+    orders: List[CustomerOrderItem] = []
+    total_bon: float = 0

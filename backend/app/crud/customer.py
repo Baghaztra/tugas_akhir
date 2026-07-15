@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 
 from ..models.customers import Customer
+from ..models.order import Order, OrderItem, GarmentType, PaymentStatus
 from ..schemas.customer import CustomerBase as CustomerCreate, CustomerUpdate, CustomerBrief
 
 
@@ -22,8 +24,11 @@ def get_customers(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = None
-) -> List[Customer]:
-    query = db.query(Customer)
+) -> List[dict]:
+    query = db.query(
+        Customer,
+        func.count(Order.id).label("total_orders")
+    ).outerjoin(Order, Customer.id == Order.customer_id)
 
     if search:
         query = query.filter(
@@ -31,7 +36,19 @@ def get_customers(
             Customer.phone.ilike(f"%{search}%")
         )
 
-    return query.offset(skip).limit(limit).all()
+    results = query.group_by(Customer.id).offset(skip).limit(limit).all()
+
+    customers = []
+    for c, total in results:
+        d = {k: getattr(c, k) for k in (
+            "id", "name", "phone",
+            "lingkar_badan", "lingkar_pinggang", "lingkar_panggul",
+            "panjang_bahu", "panjang_tgn", "panjang_baju", "panjang_rok",
+            "createdAt", "updatedAt"
+        )}
+        d["total_orders"] = total
+        customers.append(d)
+    return customers
 
 
 def update_customer(
@@ -80,3 +97,47 @@ def search_customers(
         CustomerBrief(id=c.id, name=c.name, phone=c.phone)
         for c in customers
     ]
+
+
+def get_customer_detail(db: Session, customer_id: int) -> Optional[dict]:
+    customer = get_customer(db, customer_id)
+    if not customer:
+        return None
+
+    orders = (
+        db.query(Order)
+        .filter(Order.customer_id == customer_id)
+        .order_by(Order.createdAt.desc())
+        .all()
+    )
+
+    order_items = []
+    total_bon = 0.0
+    for o in orders:
+        unpaid = o.totalPrice - o.paidAmount
+        if o.paymentStatus != PaymentStatus.PAID and unpaid > 0:
+            total_bon += unpaid
+        order_items.append({
+            "id": o.id,
+            "receipt_number": o.receiptNumber,
+            "total_price": o.totalPrice,
+            "paid_amount": o.paidAmount,
+            "payment_status": o.paymentStatus.value,
+            "status": "",
+            "created_at": o.createdAt,
+        })
+
+    c = customer
+    customer_dict = {k: getattr(c, k) for k in (
+        "id", "name", "phone",
+        "lingkar_badan", "lingkar_pinggang", "lingkar_panggul",
+        "panjang_bahu", "panjang_tgn", "panjang_baju", "panjang_rok",
+        "createdAt", "updatedAt"
+    )}
+    customer_dict["total_orders"] = len(orders)
+
+    return {
+        "customer": customer_dict,
+        "orders": order_items,
+        "total_bon": total_bon,
+    }

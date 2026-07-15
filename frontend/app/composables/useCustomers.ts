@@ -37,6 +37,15 @@ export const getCustomer = async (id: number): Promise<Customer> => {
   return await $fetch<Customer>(`${apiBase}/customers/${id}`, { credentials: 'include' });
 };
 
+export const useCustomerDetail = (id: number) => {
+  const { apiBase } = useRuntimeConfig().public;
+  const { data, status, error } = useFetch<CustomerDetail>(
+    `${apiBase}/customers/${id}/detail`,
+    { credentials: 'include' },
+  );
+  return { detail: data, status, error };
+};
+
 export const useCreateCustomer = () => {
   const { apiBase } = useRuntimeConfig().public;
   const loading = ref(false);
