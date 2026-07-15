@@ -27,7 +27,7 @@
             type="text"
             placeholder="Cari pelanggan (nama atau nomor HP)..."
             class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white"
-            @focus="doSearchCustomers" />
+            @focus="doSearchCustomers" @input="doSearchCustomers" />
         </div>
         <div v-if="customerResults.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto">
           <div v-for="c in customerResults" :key="c.id"
@@ -86,9 +86,9 @@
             <input v-model.number="form.totalPrice" type="number" min="0" placeholder="0"
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
           </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">DP / Uang Muka (Rp)</label>
-            <input v-model.number="form.paidAmount" type="number" min="0" placeholder="0"
+          <div v-if="form.paymentStatus === 'partial'">
+            <label class="block text-xs font-medium text-gray-600 mb-1">DP / Uang Muka (Rp) *</label>
+            <input v-model.number="form.paidAmount" type="number" min="1" placeholder="0" required
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
           </div>
         </div>
@@ -279,7 +279,7 @@ const router = useRouter()
 const { createOrder, error } = useCreateOrder()
 const { garmentTypes } = useGarmentTypes()
 const { attributes } = useAttributes()
-const { searchCustomers } = useCustomers()
+const { searchCustomers, getCustomer } = useCustomers()
 
 const saving = ref(false)
 
@@ -287,6 +287,7 @@ const saving = ref(false)
 const customerSearch = ref('')
 const customerResults = ref<CustomerBrief[]>([])
 const selectedCustomer = ref<CustomerBrief | null>(null)
+const selectedCustomerData = ref<Customer | null>(null)
 
 let searchTimeout: ReturnType<typeof setTimeout>
 function doSearchCustomers() {
@@ -297,17 +298,19 @@ function doSearchCustomers() {
   }, 300)
 }
 
-function selectCustomer(c: CustomerBrief) {
+async function selectCustomer(c: CustomerBrief) {
   selectedCustomer.value = c
   form.customerName = c.name
   form.customerPhone = c.phone || ''
   form.customer_id = c.id
   customerResults.value = []
   customerSearch.value = ''
+  selectedCustomerData.value = await getCustomer(c.id)
 }
 
 function clearCustomer() {
   selectedCustomer.value = null
+  selectedCustomerData.value = null
   form.customer_id = undefined
   form.customerName = ''
   form.customerPhone = ''
@@ -375,14 +378,33 @@ const onAttrBlur = (idx: number) => {
   setTimeout(() => { if (attrOpen.value[idx] !== undefined) attrOpen.value[idx] = false }, 150)
 }
 
-const makeItem = (): OrderItemCreate => ({
-  garmentTypeId: null,
-  description: '',
-  sketch: undefined,
-  quantity: 1,
-  measurements: Object.fromEntries(measurementKeys.map(k => [k, ''])),
-  attributes: {}
-})
+// ponytail: customer field → measurement key mapping
+const customerMeasurementMap: Record<string, keyof Customer> = {
+  'Lingkar badan': 'lingkar_badan',
+  'Lingkar pinggang': 'lingkar_pinggang',
+  'Lingkar panggul': 'lingkar_panggul',
+  'Panjang bahu': 'panjang_bahu',
+  'Panjang tgn': 'panjang_tgn',
+  'Panjang baju': 'panjang_baju',
+  'Panjang rok': 'panjang_rok',
+}
+
+const makeItem = (): OrderItemCreate => {
+  const measurements: Record<string, string> = {}
+  for (const key of measurementKeys) {
+    const field = customerMeasurementMap[key]
+    const val = selectedCustomerData.value?.[field]
+    measurements[key] = val != null ? String(val) : ''
+  }
+  return {
+    garmentTypeId: null,
+    description: '',
+    sketch: undefined,
+    quantity: 1,
+    measurements,
+    attributes: {}
+  }
+}
 
 const form = reactive<OrderCreate>({
   customerName: '',
