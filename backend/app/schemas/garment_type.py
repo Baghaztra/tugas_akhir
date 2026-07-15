@@ -4,19 +4,6 @@ from typing import Optional
 class GarmentTypeBase(BaseModel):
     name: str
 
-class GarmentTypeCreate(GarmentTypeBase):
-    """
-    # Contoh validasi
-
-    name: str
-    @field_validator("name")
-    def name_required(cls, v):
-        if not v:
-            raise ValueError("Nama wajib diisi")
-        return v
-    """
-    pass
-
 class GarmentTypeUpdate(BaseModel):
     name: Optional[str] = None
 

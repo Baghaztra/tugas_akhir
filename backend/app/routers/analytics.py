@@ -9,7 +9,6 @@ from ..database import get_db
 from ..models.order import Order, OrderItem, OrderLog, OrderStatus, GarmentType
 from ..models.worker import Worker
 from ..auth import get_current_user
-from ..models.user import User
 
 router = APIRouter(
     prefix="/reports",

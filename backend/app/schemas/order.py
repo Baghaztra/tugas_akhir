@@ -4,7 +4,6 @@ from datetime import datetime
 from enum import Enum
 from .garment_type import GarmentTypeName
 from .customer import CustomerBrief
-from .customer import CustomerBrief
 
 
 class OrderStatus(str, Enum):
@@ -30,9 +29,6 @@ class OrderLogBase(BaseModel):
     employeeName: Optional[str] = "Admin"
     worker_id: Optional[int] = None
     worker_name: Optional[str] = None
-
-class OrderLogCreate(OrderLogBase):
-    pass
 
 class OrderLog(OrderLogBase):
     id: int

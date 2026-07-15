@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from ..models.order import GarmentType, OrderItem
-from ..schemas.garment_type import GarmentTypeCreate, GarmentTypeUpdate
+from ..schemas.garment_type import GarmentTypeBase as GarmentTypeCreate, GarmentTypeUpdate
 
 
 def get_garment_type(db: Session, garment_type_id: int):

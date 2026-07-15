@@ -8,7 +8,7 @@ from ..models.order import Order, OrderLog, OrderStatus, OrderItem, GarmentType
 from ..models.worker import Worker, WorkerStatus
 from ..models.customers import Customer
 from ..schemas.order import OrderCreate, OrderUpdate
-from ..storage import get_storage
+from ..storage import save_file_async
 
 
 def _generate_receipt_number(db: Session) -> str:
@@ -96,7 +96,6 @@ async def create_order(
                   Elemen boleh None bila item tidak punya sketsa.
     """
     receipt = _generate_receipt_number(db)
-    storage = get_storage()
 
     # Handle customer linking/creation
     customer_id = order.customer_id
@@ -152,7 +151,7 @@ async def create_order(
         if sketch_files and idx < len(sketch_files):
             f = sketch_files[idx]
             if f is not None and f.size and f.size > 0:
-                sketch_url = await storage.save_async(f, folder="sketches")
+                sketch_url = await save_file_async(f, folder="sketches")
 
         db_item = OrderItem(
             order_id=db_order.id,

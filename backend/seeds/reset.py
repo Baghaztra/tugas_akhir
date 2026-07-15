@@ -7,8 +7,6 @@ Urutan penghapusan memperhatikan foreign-key constraints.
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from app.database import SessionLocal, engine
 from app.models import * #noqa
 from sqlalchemy import text
@@ -41,19 +39,9 @@ def reset(db, reseed: bool = False):
 
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Reset database tables")
-    parser.add_argument(
-        "--reseed",
-        action="store_true",
-        help="Jalankan seeder setelah reset",
-    )
-    args = parser.parse_args()
-
     db = SessionLocal()
     try:
-        reset(db, reseed=args.reseed)
+        reset(db)
     except Exception as e:
         db.rollback()
         print(f"❌ Reset gagal: {e}")

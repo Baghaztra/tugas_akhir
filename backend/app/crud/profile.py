@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from ..models.profile import BusinessProfile
-from ..schemas.profile import BusinessProfileUpdate
+from ..schemas.profile import BusinessProfileBase as BusinessProfileUpdate
 
 
 # Default values when no profile exists yet

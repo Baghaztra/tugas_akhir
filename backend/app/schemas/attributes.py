@@ -4,9 +4,6 @@ from typing import Optional
 class AttributeBase(BaseModel):
     name: str
 
-class AttributeCreate(AttributeBase):
-    pass
-
 class Attribute(AttributeBase):
     id: int
     is_deleted: bool = False

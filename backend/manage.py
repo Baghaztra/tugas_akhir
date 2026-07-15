@@ -80,7 +80,8 @@ def main():
         if confirm != "y":
             print("Dibatalkan.")
             sys.exit(0)
-        run([sys.executable, "-m", "seeds.reset", "--reseed"])
+        run([sys.executable, "-m", "seeds.reset"])
+        run([sys.executable, "-m", "seeds.seeder"])
 
     else:
         print(f"[X] Perintah tidak dikenal: '{command}'")

@@ -8,7 +8,6 @@ from ..database import get_db
 from ..models.order import Order, OrderItem, OrderLog, OrderStatus, PaymentStatus, GarmentType
 from ..models.worker import Worker, WorkerStatus
 from ..auth import get_current_user
-from ..models.user import User
 
 router = APIRouter(
     prefix="/dashboard",

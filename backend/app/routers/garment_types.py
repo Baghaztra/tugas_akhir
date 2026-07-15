@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import date, timedelta
 
 from ..crud import garment_type as crud_garment_type
 from ..schemas import garment_type as schema_garment_type
 from ..database import get_db
 from ..auth import get_current_user
-from ..models.user import User
 
 router = APIRouter(
     prefix="/garment-types",
@@ -18,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("/", response_model=schema_garment_type.GarmentType)
-def create_garment_type(garment_type: schema_garment_type.GarmentTypeCreate, db: Session = Depends(get_db)):
+def create_garment_type(garment_type: schema_garment_type.GarmentTypeBase, db: Session = Depends(get_db)):
     return crud_garment_type.create_garment_type(db=db, garment_type=garment_type)
 
 

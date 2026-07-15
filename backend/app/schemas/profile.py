@@ -13,11 +13,6 @@ class BusinessProfileBase(BaseModel):
     logo: Optional[str] = None
 
 
-class BusinessProfileUpdate(BusinessProfileBase):
-    """Semua field optional — partial update."""
-    pass
-
-
 class BusinessProfileRead(BaseModel):
     id: int
     name: str

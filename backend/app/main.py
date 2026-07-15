@@ -18,7 +18,7 @@ init_auth(
     expire_minutes=int(os.getenv("JWT_EXPIRE_MINUTES", "1440")),
 )
 
-app = FastAPI(title=os.getenv("APP_NAME"), version=os.getenv("APP_VERSION"))
+app = FastAPI(title=os.getenv("APP_NAME", "Backend Rumah Jahit App"), version=os.getenv("APP_VERSION", "0.0.0"))
 
 # CORS
 app.add_middleware(

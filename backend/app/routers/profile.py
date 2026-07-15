@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..crud import profile as crud_profile
-from ..schemas.profile import BusinessProfileRead, BusinessProfileUpdate
+from ..schemas.profile import BusinessProfileRead, BusinessProfileBase as BusinessProfileUpdate
 from ..database import get_db
 from ..auth import get_current_user
 from ..models.user import User

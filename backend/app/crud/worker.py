@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from collections import defaultdict
 from ..models.worker import Worker
 from ..models.order import OrderLog, Order, OrderStatus
-from ..schemas.worker import WorkerCreate, WorkerUpdate
+from ..schemas.worker import WorkerBase as WorkerCreate, WorkerUpdate
 
 
 def get_worker(db: Session, worker_id: int):

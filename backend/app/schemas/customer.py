@@ -15,10 +15,6 @@ class CustomerBase(BaseModel):
     panjang_rok: Optional[float] = None
 
 
-class CustomerCreate(CustomerBase):
-    pass
-
-
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None

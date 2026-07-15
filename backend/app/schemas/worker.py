@@ -22,10 +22,6 @@ class WorkerBase(BaseModel):
     role: WorkerRole
     status: Optional[WorkerStatus] = WorkerStatus.IDLE
 
-class WorkerCreate(WorkerBase):
-    pass
-
-
 class WorkerUpdate(BaseModel):
     name: Optional[str] = None
     role: Optional[WorkerRole] = None

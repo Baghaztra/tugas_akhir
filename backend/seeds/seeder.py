@@ -18,14 +18,10 @@ import random
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from app.database import SessionLocal, engine, Base
+from app.database import SessionLocal
 from app.models import * #noqa
 from app.auth import get_password_hash
 from app.crud.order import _generate_receipt_number
-
-Base.metadata.create_all(bind=engine)
 
 
 # DATA DUMMY

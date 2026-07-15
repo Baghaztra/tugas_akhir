@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 @router.post("/", response_model=schema_worker.Worker)
-def create_worker(worker: schema_worker.WorkerCreate, db: Session = Depends(get_db)):
+def create_worker(worker: schema_worker.WorkerBase, db: Session = Depends(get_db)):
     return crud_worker.create_worker(db=db, worker=worker)
 
 

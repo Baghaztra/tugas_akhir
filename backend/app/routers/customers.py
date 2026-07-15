@@ -5,7 +5,7 @@ from typing import List, Optional
 from ..crud import customer as crud_customer
 from ..schemas.customer import (
     Customer,
-    CustomerCreate,
+    CustomerBase as CustomerCreate,
     CustomerUpdate,
     CustomerBrief,
 )

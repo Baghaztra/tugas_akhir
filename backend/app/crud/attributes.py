@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from ..models.attributes import Attribute
-from ..schemas.attributes import AttributeCreate
+from ..schemas.attributes import AttributeBase as AttributeCreate
 
 def get_attributes(db: Session, skip: int = 0, limit: int = 100):
     return (

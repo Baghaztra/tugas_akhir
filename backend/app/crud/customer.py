@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ..models.customers import Customer
-from ..schemas.customer import CustomerCreate, CustomerUpdate, CustomerBrief
+from ..schemas.customer import CustomerBase as CustomerCreate, CustomerUpdate, CustomerBrief
 
 
 def create_customer(db: Session, customer: CustomerCreate) -> Customer:

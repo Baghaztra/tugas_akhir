@@ -41,45 +41,10 @@ export const useOrderDetail = (orderId: string) => {
   return { order: data, status, error, refresh };
 };
 
-// ─── Cari histori pelanggan ────────────────────────────────────────────────────
-export const useCustomerHistory = () => {
-  const { apiBase } = useRuntimeConfig().public
-  const results = ref<CustomerHistoryItem[]>([])
-  const loading = ref(false)
-
-  const search = async (query: string) => {
-    if (!query || query.length < 1) { results.value = []; return }
-    loading.value = true
-    try {
-      results.value = await $fetch<CustomerHistoryItem[]>(
-        `${apiBase}/orders/history?search=${encodeURIComponent(query)}`,
-        { credentials: 'include' }
-      )
-    } catch {
-      results.value = []
-    } finally {
-      loading.value = false
-    }
-  }
-
-  return { results, loading, search }
-}
-
 // ─── Buat pesanan baru ─────────────────────────────────────────────────────────
 
-/**
- * Konversi data URL (canvas/SketchModal) → Blob, lalu beri nama file.
- * Return null jika dataUrl kosong / tidak valid.
- */
-function dataUrlToBlob(dataUrl: string): Blob | null {
-  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if (!match) return null;
-  const [, mime, b64] = match as [string, string, string];
-  const bytes = atob(b64);
-  const buf = new Uint8Array(bytes.length);
-  for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
-  return new Blob([buf], { type: mime });
-}
+const dataUrlToBlob = (dataUrl: string): Promise<Blob | null> =>
+  fetch(dataUrl).then(r => r.blob()).catch(() => null);
 
 export const useCreateOrder = () => {
   const { apiBase } = useRuntimeConfig().public;
@@ -106,25 +71,18 @@ export const useCreateOrder = () => {
       const dataStr = JSON.stringify({ ...payload, items });
       fd.append("data", dataStr);
 
-      // Append file sketsa per item (index harus sama dengan urutan items).
-      // Item tanpa sketsa diappend sebagai Blob kosong sebagai placeholder
-      // supaya index tetap sinkron dengan array items di backend.
-      const sketchFiles = (payload.items ?? []).map((item: OrderItemCreate) => {
-        if (item.sketch?.startsWith("data:")) {
-          return dataUrlToBlob(item.sketch); // ada sketsa → konversi
-        }
-        return null; // tidak ada sketsa
-      });
-
-      // Hanya kirim batch file bila minimal ada satu sketsa nyata
-      if (sketchFiles.some(Boolean)) {
-        sketchFiles.forEach((blob: Blob | null, idx: number) => {
-          if (blob) {
-            fd.append("sketch_files", blob, `sketch_item_${idx}.png`);
-          } else {
-            // Placeholder 0-byte: backend cek size > 0 sebelum simpan
-            fd.append("sketch_files", new Blob([]), `sketch_item_${idx}.empty`);
+      const sketchBlobs = await Promise.all(
+        (payload.items ?? []).map(async (item: OrderItemCreate) => {
+          if (item.sketch?.startsWith("data:")) {
+            return dataUrlToBlob(item.sketch);
           }
+          return null;
+        })
+      );
+
+      if (sketchBlobs.some(Boolean)) {
+        sketchBlobs.forEach((blob: Blob | null, idx: number) => {
+          fd.append("sketch_files", blob ?? new Blob([]), blob ? `sketch_item_${idx}.png` : `sketch_item_${idx}.empty`);
         });
       }
 
@@ -185,25 +143,4 @@ export const buildWaUrl = (phone: string, receiptNumber: string): string => {
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 };
 
-// ─── Hapus pesanan ─────────────────────────────────────────────────────────────
-export const useDeleteOrder = () => {
-  const { apiBase } = useRuntimeConfig().public;
-  const loading = ref(false);
 
-  const deleteOrder = async (orderId: string) => {
-    loading.value = true;
-    try {
-      await $fetch(`${apiBase}/orders/${orderId}`, { 
-        credentials: 'include',
-        method: "DELETE" 
-      });
-      return { success: true };
-    } catch {
-      return { success: false };
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  return { deleteOrder, loading };
-};

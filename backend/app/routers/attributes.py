@@ -5,7 +5,6 @@ from ..crud import attributes as crud_attributes
 from ..schemas import attributes as schema_attributes
 from ..database import get_db
 from ..auth import get_current_user
-from ..models.user import User
 
 router = APIRouter(
     prefix="/attributes",
@@ -15,7 +14,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schema_attributes.Attribute)
-def create_attribute(attribute: schema_attributes.AttributeCreate, db: Session = Depends(get_db)):
+def create_attribute(attribute: schema_attributes.AttributeBase, db: Session = Depends(get_db)):
     return crud_attributes.create_attribute(db=db, attribute=attribute)
 
 @router.get("/", response_model=List[schema_attributes.Attribute])
