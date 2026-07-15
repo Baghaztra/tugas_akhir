@@ -25,15 +25,6 @@ export interface Worker {
   date_joined: string; // ISO DateTime string
 }
 
-// -- Wages & Performance --
-export interface WorkerWage {
-  worker_id: number;
-  worker_name: string;
-  period: string;
-  total_finished: number;
-  wage: number;
-}
-
 export interface DailyPerf {
   date: string;
   count: number;
@@ -45,4 +36,14 @@ export interface WorkerPerformance {
   performance_score: number;
   total_finished: number;
   daily: DailyPerf[];
+}
+
+export interface WorkerTask {
+  log_id: number;
+  order_item_id: number;
+  receipt_number: string;
+  customer_name: string;
+  garment_type: string;
+  status: string;
+  completed_at: string;
 }

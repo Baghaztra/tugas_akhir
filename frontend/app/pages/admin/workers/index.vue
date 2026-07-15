@@ -68,7 +68,7 @@
               </td>
               <td class="py-3 px-4">
                 <div class="flex items-center justify-center gap-2">
-                  <NuxtLink :to="`/admin/employees/${emp.id}`"
+                  <NuxtLink :to="`/admin/workers/${emp.id}`"
                     class="p-1.5 text-gray-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
                     title="Detail">
                     <Icon name="heroicons:eye" class="w-4 h-4" />

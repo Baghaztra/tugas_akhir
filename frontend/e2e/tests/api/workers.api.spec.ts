@@ -36,19 +36,6 @@ test.describe('Workers API', () => {
     expect(get.status()).toBe(404)
   })
 
-  test('GET /workers/{id}/wages return wage structure', async ({ request }) => {
-    const workers = await apiGet(request, '/workers/')
-    if (workers.length === 0) {
-      test.skip()
-      return
-    }
-
-    const wages = await apiGet(request, `/workers/${workers[0].id}/wages`)
-    expect(wages).toHaveProperty('worker_id')
-    expect(wages).toHaveProperty('wage')
-    expect(wages).toHaveProperty('total_finished')
-  })
-
   test('GET /workers/{id}/performance return performance', async ({ request }) => {
     const workers = await apiGet(request, '/workers/')
     if (workers.length === 0) {

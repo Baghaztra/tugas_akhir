@@ -34,15 +34,6 @@ class Worker(WorkerBase):
     class Config:
         from_attributes = True
 
-# Wages
-class WorkerWage(BaseModel):
-    worker_id: int
-    worker_name: str
-    period: str
-    total_finished: int
-    wage: float
-
-
 # Performance
 class DailyPerf(BaseModel):
     date: str
@@ -55,3 +46,14 @@ class WorkerPerformance(BaseModel):
     performance_score: float
     total_finished: int
     daily: List[DailyPerf] = []
+
+
+# Tasks
+class WorkerTask(BaseModel):
+    log_id: int
+    order_item_id: int
+    receipt_number: str
+    customer_name: str
+    garment_type: str
+    status: str
+    completed_at: str

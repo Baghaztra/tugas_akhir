@@ -262,3 +262,5 @@ Bisa dipakai spam OTP ke email sembarang.
 
 bug di laporan, terkait pembayaran lunas/belum
 nomor, tabel pelanggan, edit order
+
+tabel pelanggan, tampilkan hutang

@@ -8,6 +8,7 @@ from ..schemas import worker as schema_worker
 from ..database import get_db
 from ..auth import get_current_user
 from ..models.user import User
+from typing import List
 
 router = APIRouter(
     prefix="/workers",
@@ -50,26 +51,6 @@ def delete_worker(worker_id: int, db: Session = Depends(get_db), current_user: U
     return db_worker
 
 
-# Wages
-@router.get("/{worker_id}/wages", response_model=schema_worker.WorkerWage)
-def get_wages(
-    worker_id: int,
-    start_date: date = Query(default=None, description="Awal periode (YYYY-MM-DD)"),
-    end_date: date = Query(default=None, description="Akhir periode (YYYY-MM-DD)"),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    if end_date is None:
-        end_date = date.today()
-    if start_date is None:
-        start_date = end_date - timedelta(days=6)
-
-    result = crud_worker.get_worker_wages(db, worker_id, start_date, end_date)
-    if result is None:
-        raise HTTPException(status_code=404, detail="Worker not found")
-    return result
-
-
 # Performance
 @router.get("/{worker_id}/performance", response_model=schema_worker.WorkerPerformance)
 def get_performance(
@@ -79,6 +60,20 @@ def get_performance(
     current_user: User = Depends(get_current_user),
 ):
     result = crud_worker.get_worker_performance(db, worker_id, days=days)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Worker not found")
+    return result
+
+
+# Tasks
+@router.get("/{worker_id}/tasks", response_model=List[schema_worker.WorkerTask])
+def get_tasks(
+    worker_id: int,
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = crud_worker.get_worker_tasks(db, worker_id, limit=limit)
     if result is None:
         raise HTTPException(status_code=404, detail="Worker not found")
     return result

@@ -1,7 +1,6 @@
 import type {
   Worker as AppWorker,
   WorkerPerformance as AppWorkerPerformance,
-  WorkerWage as AppWorkerWage,
 } from '#shared/types/worker'
 
 export const useEmployees = () => {
@@ -32,18 +31,6 @@ export const useEmployeePerformance = (id: number) => {
     },
   );
   return { performance: data, status, error };
-};
-
-export const useEmployeeWages = (id: number) => {
-  const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error } = useFetch<AppWorkerWage>(
-    `${apiBase}/workers/${id}/wages`,
-    {
-      credentials: 'include',
-      default: () => ({ worker_id: id, worker_name: "", period: "", total_finished: 0, wage: 0 }),
-    },
-  );
-  return { wages: data, status, error };
 };
 
 export const useCreateWorker = () => {

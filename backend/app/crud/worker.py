@@ -3,7 +3,7 @@ from sqlalchemy import func, cast, Date
 from datetime import date, timedelta
 from collections import defaultdict
 from ..models.worker import Worker
-from ..models.order import OrderLog, Order, OrderStatus
+from ..models.order import OrderLog, Order, OrderItem, GarmentType, OrderStatus
 from ..schemas.worker import WorkerBase as WorkerCreate, WorkerUpdate
 
 
@@ -45,41 +45,6 @@ def delete_worker(db: Session, worker_id: int):
     return db_worker
 
 
-# TODO: Sesuaikan berdasarkan jenis pesanan yang sempat dikerjakan
-def get_worker_wages(db: Session, worker_id: int, start_date: date, end_date: date):
-
-    worker = get_worker(db, worker_id)
-    if not worker:
-        return None
-
-    if start_date and end_date:
-        start = start_date
-        end = end_date
-    else:
-        end = date.today()
-        start = end - timedelta(days=end.weekday())
-    
-    completed = (
-        db.query(func.count(OrderLog.id))
-        .join(Order, OrderLog.order_id == Order.id)
-        .filter(
-            OrderLog.employeeName == worker.name,
-            OrderLog.status == "done",
-            cast(OrderLog.createdAt, Date) >= start,
-            cast(OrderLog.createdAt, Date) <= end,
-        )
-        .scalar()
-    ) or 0
-
-    period_str = f"{start.isoformat()} - {end.isoformat()}"
-    return {
-        "worker_id": worker_id,
-        "worker_name": worker.name,
-        "period": period_str,
-        "completed_items": completed,
-        # "total_wage": completed * worker.wagePerPiece,
-    }
-
 def get_worker_performance(db: Session, worker_id: int, days: int = 7):
     worker = get_worker(db, worker_id)
     if not worker:
@@ -120,3 +85,40 @@ def get_worker_performance(db: Session, worker_id: int, days: int = 7):
         "total_finished": total,
         "daily": daily,
     }
+
+def get_worker_tasks(db: Session, worker_id: int, limit: int = 20):
+    worker = get_worker(db, worker_id)
+    if not worker:
+        return None
+
+    rows = (
+        db.query(
+            OrderLog.id.label("log_id"),
+            OrderLog.order_item_id,
+            OrderLog.status,
+            OrderLog.createdAt,
+            Order.receiptNumber,
+            Order.customerName,
+            GarmentType.name.label("garment_name"),
+        )
+        .join(OrderItem, OrderLog.order_item_id == OrderItem.id)
+        .join(Order, OrderItem.order_id == Order.id)
+        .outerjoin(GarmentType, OrderItem.garmentTypeId == GarmentType.id)
+        .filter(OrderLog.worker_id == worker_id)
+        .order_by(OrderLog.createdAt.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        {
+            "log_id": r.log_id,
+            "order_item_id": r.order_item_id,
+            "receipt_number": r.receiptNumber,
+            "customer_name": r.customerName,
+            "garment_type": r.garment_name or "",
+            "status": r.status,
+            "completed_at": r.createdAt.isoformat() if r.createdAt else "",
+        }
+        for r in rows
+    ]
