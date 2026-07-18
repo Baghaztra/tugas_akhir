@@ -74,7 +74,7 @@
               <p class="text-xs text-gray-400 mb-2">Ukuran</p>
               <div class="flex flex-wrap gap-2">
                 <div v-for="(val, key) in item.measurements" :key="key" class="bg-gray-50 rounded-xl px-3 py-2 text-sm">
-                  <p class="text-xs text-gray-400">{{ key }}</p>
+                  <p class="text-xs text-gray-400">{{ measurementLabel[key] ?? key }}</p>
                   <p class="font-semibold text-gray-900">{{ val }}</p>
                 </div>
               </div>
@@ -229,4 +229,14 @@ const isOverdue = computed(() =>
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
+
+const measurementLabel: Record<string, string> = {
+  lingkar_badan: 'Lingkar badan',
+  lingkar_pinggang: 'Lingkar pinggang',
+  lingkar_panggul: 'Lingkar panggul',
+  panjang_bahu: 'Panjang bahu',
+  panjang_tgn: 'Panjang tgn',
+  panjang_baju: 'Panjang baju',
+  panjang_rok: 'Panjang rok',
+}
 </script>

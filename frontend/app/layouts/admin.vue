@@ -143,7 +143,7 @@ const navSections = computed(() => {
         ...(isOwner ? [{ to: '/admin/dashboard', icon: 'heroicons:chart-bar', label: 'Dashboard' }] : []),
         { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
         { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
-        { to: '/admin/customers', icon: 'heroicons:users', label: 'Pelanggan' },
+        { to: '/admin/customers', icon: 'heroicons:user-group', label: 'Pelanggan' },
         { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
       ],
     },
