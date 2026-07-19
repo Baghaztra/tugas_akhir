@@ -206,13 +206,17 @@ def get_weekly_recap(
     # DP revenue: orders created this week (regardless of status)
     dp_revenue = sum(o.paidAmount or 0 for o in orders_in_week)
     # Remaining revenue: orders PAID this week but created before this week
-    remaining_revenue = sum(
-        (o.totalPrice or 0) - (o.paidAmount or 0)
-        for o in orders_in_week
-        if o.paymentStatus == PaymentStatus.PAID
-        and o.updatedAt and o.updatedAt.date() >= start
-        and o.createdAt and o.createdAt.date() < start
+    remaining_orders = (
+        db.query(Order)
+        .filter(
+            Order.paymentStatus == PaymentStatus.PAID,
+            cast(Order.updatedAt, Date) >= start,
+            cast(Order.updatedAt, Date) <= end,
+            cast(Order.createdAt, Date) < start,
+        )
+        .all()
     )
+    remaining_revenue = sum((o.totalPrice or 0) - (o.paidAmount or 0) for o in remaining_orders)
     total_revenue = dp_revenue + remaining_revenue
 
     # Orders completed this week (updatedAt dalam minggu & semua item DONE)

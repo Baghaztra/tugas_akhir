@@ -62,7 +62,9 @@
                 <div class="text-xs text-gray-400">{{ order.customerPhone }}</div>
               </td>
               <td class="px-5 py-3">
-                <span class="text-gray-400 text-xs">—</span>
+                <ui-app-badge :variant="orderProgressBadge(order).variant">{{
+                  orderProgressBadge(order).label
+                }}</ui-app-badge>
               </td>
               <td class="px-5 py-3 text-xs" :class="isOverdue(order) ? 'text-red-600 font-medium' : 'text-gray-500'">
                 {{ formatDate(order.deadline) }}
@@ -161,6 +163,14 @@ const confirmSetLunas = async () => {
     confirmingOrderId.value = null
     refresh()
   }
+}
+
+const orderProgressBadge = (order: Order) => {
+  const items = order.items ?? []
+  if (items.length === 0) return { variant: 'neutral' as const, label: '—' }
+  if (items.every(i => i.status === 'done')) return { variant: 'success' as const, label: 'Selesai' }
+  if (items.some(i => i.status !== 'received')) return { variant: 'warning' as const, label: 'On Progress' }
+  return { variant: 'neutral' as const, label: 'Belum Dikerjakan' }
 }
 
 const isOverdue = (o: Order) => new Date(o.deadline) < new Date()
