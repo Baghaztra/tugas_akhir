@@ -7,7 +7,7 @@ from fastapi import UploadFile
 from ..models.order import Order, OrderLog, OrderStatus, OrderItem, GarmentType
 from ..models.worker import Worker, WorkerStatus
 from ..models.customers import Customer
-from ..schemas.order import OrderCreate, OrderUpdate
+from ..schemas.order import OrderCreate, OrderUpdate, PaymentStatus
 from ..storage import save_file_async
 
 
@@ -187,8 +187,33 @@ def update_order(db: Session, order_id: int, order: OrderUpdate):
 
     update_data = order.model_dump(exclude_unset=True)
 
+    # Apply non-financial fields directly
     for key, value in update_data.items():
-        setattr(db_order, key, value)
+        if key not in ('totalPrice', 'paidAmount', 'paymentStatus'):
+            setattr(db_order, key, value)
+
+    # If paymentStatus explicitly provided (e.g. "Set Lunas"), respect it
+    if 'paymentStatus' in update_data:
+        db_order.paymentStatus = update_data['paymentStatus']
+        if 'totalPrice' in update_data:
+            db_order.totalPrice = update_data['totalPrice'] or 0
+        if 'paidAmount' in update_data:
+            db_order.paidAmount = update_data['paidAmount'] or 0
+    else:
+        # Derive financial state from current + new values
+        tp = update_data.get('totalPrice', db_order.totalPrice) or 0
+        pa = update_data.get('paidAmount', db_order.paidAmount) or 0
+        if pa < 0 or tp < 0:
+            raise ValueError('Data pembayaran tidak valid')
+        if pa > tp and tp > 0:
+            raise ValueError('paidAmount tidak boleh melebihi totalPrice')
+        db_order.totalPrice = tp
+        db_order.paidAmount = pa
+        db_order.paymentStatus = (
+            PaymentStatus.PAID if pa >= tp and tp > 0
+            else PaymentStatus.PARTIAL if pa > 0
+            else PaymentStatus.UNPAID
+        )
 
     db.add(db_order)
     db.commit()

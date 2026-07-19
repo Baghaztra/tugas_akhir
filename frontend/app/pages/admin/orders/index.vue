@@ -20,6 +20,11 @@
         <Icon name="heroicons:tag" class="w-4 h-4" />
         Jenis Pakaian
       </button>
+      <NuxtLink to="/admin/customers"
+        class="border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap bg-white shadow-sm">
+        <Icon name="heroicons:user-group" class="w-4 h-4" />
+        Pelanggan
+      </NuxtLink>
       <NuxtLink to="/admin/orders/create">
         <ui-app-button icon="heroicons:plus">Tambah Pesanan</ui-app-button>
       </NuxtLink>
@@ -145,10 +150,17 @@ const setLunas = (order: Order) => {
 
 const confirmSetLunas = async () => {
   if (confirmingOrderId.value === null) return
-  await updateOrder(confirmingOrderId.value, { paymentStatus: 'paid' })
-  showConfirm.value = false
-  confirmingOrderId.value = null
-  refresh()
+  const target = orders.value?.find(o => o.id === confirmingOrderId.value)
+  const res = await updateOrder(confirmingOrderId.value, {
+    paymentStatus: 'paid',
+    totalPrice: target?.totalPrice ?? 0,
+    paidAmount: target?.totalPrice ?? 0,
+  })
+  if (res.success) {
+    showConfirm.value = false
+    confirmingOrderId.value = null
+    refresh()
+  }
 }
 
 const isOverdue = (o: Order) => new Date(o.deadline) < new Date()

@@ -256,7 +256,10 @@ def update_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    db_order = crud_order.update_order(db, order_id=order_id, order=order)
+    try:
+        db_order = crud_order.update_order(db, order_id=order_id, order=order)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if db_order is None:
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
     return db_order

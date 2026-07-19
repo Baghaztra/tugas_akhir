@@ -1,6 +1,11 @@
 <template>
   <div>
-    <div class="flex flex-col sm:flex-row gap-3 mb-6 justify-between items-center">
+    <div class="flex items-center gap-3 mb-6">
+      <NuxtLink to="/admin/orders"
+        class="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-gray-500">
+        <Icon name="heroicons:arrow-left" class="w-4 h-4" />
+      </NuxtLink>
+      <div class="flex-1 flex flex-col sm:flex-row gap-3 justify-between items-center">
       <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-1">
         <div class="relative flex-1 sm:max-w-xs">
           <Icon name="heroicons:magnifying-glass"
@@ -17,6 +22,7 @@
       <NuxtLink to="/admin/customers/create">
         <ui-app-button icon="heroicons:plus">Tambah Pelanggan</ui-app-button>
       </NuxtLink>
+      </div>
     </div>
 
     <template v-if="status === 'pending'">

@@ -102,9 +102,9 @@
                 <input v-model.number="form.totalPrice" type="number" min="0" placeholder="0"
                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
-              <div v-if="form.paymentStatus === 'partial'">
-                <label class="block text-xs font-medium text-gray-600 mb-1">DP / Uang Muka (Rp) *</label>
-                <input v-model.number="form.paidAmount" type="number" min="1" placeholder="0" required
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Dibayar (Rp)</label>
+                <input v-model.number="form.paidAmount" type="number" min="0" placeholder="0"
                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
             </div>
@@ -449,6 +449,12 @@ const form = reactive<OrderCreate>({
   paymentStatus: 'unpaid',
   notes: '',
   items: [makeItem()]
+})
+
+// Auto-set paidAmount when paymentStatus changes
+watch(() => form.paymentStatus, (val) => {
+  if (val === 'paid') form.paidAmount = form.totalPrice
+  else if (val === 'unpaid') form.paidAmount = 0
 })
 
 const addItem = () => {

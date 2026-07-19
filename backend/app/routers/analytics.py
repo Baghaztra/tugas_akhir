@@ -6,7 +6,7 @@ from datetime import date, timedelta, datetime, timezone
 from io import BytesIO
 
 from ..database import get_db
-from ..models.order import Order, OrderItem, OrderLog, OrderStatus, GarmentType
+from ..models.order import Order, OrderItem, OrderLog, OrderStatus, PaymentStatus, GarmentType
 from ..models.worker import Worker
 from ..auth import get_current_user
 
@@ -203,7 +203,17 @@ def get_weekly_recap(
     order_ids = [o.id for o in orders_in_week]
 
     total_orders = len(orders_in_week)
-    total_revenue = sum(o.paidAmount or 0 for o in orders_in_week)
+    # DP revenue: orders created this week (regardless of status)
+    dp_revenue = sum(o.paidAmount or 0 for o in orders_in_week)
+    # Remaining revenue: orders PAID this week but created before this week
+    remaining_revenue = sum(
+        (o.totalPrice or 0) - (o.paidAmount or 0)
+        for o in orders_in_week
+        if o.paymentStatus == PaymentStatus.PAID
+        and o.updatedAt and o.updatedAt.date() >= start
+        and o.createdAt and o.createdAt.date() < start
+    )
+    total_revenue = dp_revenue + remaining_revenue
 
     # Orders completed this week (updatedAt dalam minggu & semua item DONE)
     completed_orders = (

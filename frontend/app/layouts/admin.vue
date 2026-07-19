@@ -32,11 +32,6 @@
 
       <!-- Bottom: Back to public & toggle -->
       <div class="border-t border-primary-700/50 p-3 space-y-1">
-        <NuxtLink to="/"
-          class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary-300 hover:text-white hover:bg-primary-700/60 text-sm transition-colors">
-          <Icon name="heroicons:arrow-left" class="w-4 h-4 flex-shrink-0" />
-          <span v-show="sidebarOpen" class="whitespace-nowrap">Halaman Publik</span>
-        </NuxtLink>
         <button @click="sidebarOpen = !sidebarOpen"
           class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-primary-300 hover:text-white hover:bg-primary-700/60 text-sm transition-colors">
           <Icon :name="sidebarOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'"
@@ -104,15 +99,6 @@
         </div>
         <!-- <span>{{ item.label }}</span> -->
       </NuxtLink>
-
-      <!-- Halaman Publik -->
-      <NuxtLink to="/"
-        class="flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium text-primary-400 transition-colors">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center">
-          <Icon name="heroicons:arrow-left" class="w-5 h-5" />
-        </div>
-        <span>Publik</span>
-      </NuxtLink>
     </nav>
   </div>
 </template>
@@ -143,7 +129,6 @@ const navSections = computed(() => {
         ...(isOwner ? [{ to: '/admin/dashboard', icon: 'heroicons:chart-bar', label: 'Dashboard' }] : []),
         { to: '/admin/work', icon: 'heroicons:cog-solid', label: 'Papan Kerja' },
         { to: '/admin/orders', icon: 'heroicons:clipboard-document-list', label: 'Pesanan' },
-        { to: '/admin/customers', icon: 'heroicons:user-group', label: 'Pelanggan' },
         { to: '/admin/workers', icon: 'heroicons:users', label: 'Karyawan' },
       ],
     },
@@ -170,8 +155,6 @@ const pageMeta: Record<string, { title: string; desc: string }> = {
   '/admin/dashboard': { title: 'Dashboard', desc: 'Ringkasan aktivitas bisnis' },
   '/admin/work': { title: 'Papan Kerja', desc: 'Papan pekerjaan' },
   '/admin/orders': { title: 'Manajemen Pesanan', desc: 'Kelola seluruh pesanan jahit' },
-  '/admin/customers': { title: 'Manajemen Pelanggan', desc: 'Kelola data pelanggan dan template ukuran' },
-  '/admin/garmen-types': { title: 'Jenis Pakaian', desc: 'Kelola jenis pesanan tersedia' },
   '/admin/workers': { title: 'Manajemen Karyawan', desc: 'Kelola data dan performa karyawan' },
   '/admin/users': { title: 'Kelola User', desc: 'Manajemen akun pengguna sistem' },
   '/admin/reports': { title: 'Laporan & Analitik', desc: 'Data statistik dan performa bisnis' },

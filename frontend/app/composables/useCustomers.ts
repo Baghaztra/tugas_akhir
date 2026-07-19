@@ -20,6 +20,9 @@ export const useCustomers = (queryParams?: { search?: Ref<string> }) => {
     }
   };
 
+  // ponytail: fetch on mount
+  refresh();
+
   // ponytail: searchCustomers for autocomplete — manual $fetch, no reactive overhead
   const searchCustomers = async (q: string, limit = 10): Promise<CustomerBrief[]> => {
     if (!q || q.length < 2) return [];

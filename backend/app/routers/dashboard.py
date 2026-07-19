@@ -35,13 +35,28 @@ def get_summary(db: Session = Depends(get_db)):
         .scalar()
     ) or 0
 
-    # Pendapatan minggu ini: jumlah paidAmount pesanan yang createdAt dalam 7 hari
+    # Pendapatan minggu ini: DP dari pesanan masuk minggu ini + sisa bayar dari pesanan yang dilunasi minggu ini
     week_start = date.today() - timedelta(days=6)
-    weekly_revenue = (
+
+    # DP revenue: orders created this week (regardless of status)
+    dp_revenue = (
         db.query(func.coalesce(func.sum(Order.paidAmount), 0))
         .filter(cast(Order.createdAt, Date) >= week_start)
         .scalar()
     ) or 0
+
+    # Remaining revenue: orders PAID this week but created before this week
+    remaining_revenue = (
+        db.query(func.coalesce(func.sum(Order.totalPrice - Order.paidAmount), 0))
+        .filter(
+            Order.paymentStatus == PaymentStatus.PAID,
+            cast(Order.updatedAt, Date) >= week_start,
+            cast(Order.createdAt, Date) < week_start,
+        )
+        .scalar()
+    ) or 0
+
+    weekly_revenue = dp_revenue + remaining_revenue
 
     # Pesanan selesai hari ini: updatedAt hari ini & semua item DONE
     today_done = (

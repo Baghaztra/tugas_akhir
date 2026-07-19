@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, Request, Response, status
 from fastapi.params import Depends
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -42,6 +42,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 async def get_current_user(
     request: Request,
+    response: Response,
     db: Session = Depends(get_db),
 ) -> User:
     token = None
@@ -82,4 +83,16 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",
         )
+
+    # ponytail: sliding session — refresh cookie on every authenticated request
+    new_token = create_access_token(data={"sub": str(user_id)})
+    response.set_cookie(
+        key="access_token",
+        value=new_token,
+        httponly=True,
+        samesite="lax",
+        max_age=86400,
+        path="/",
+    )
+
     return user

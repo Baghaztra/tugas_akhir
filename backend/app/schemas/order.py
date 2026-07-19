@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -76,6 +76,25 @@ class OrderCreateFormData(BaseModel):
     notes: Optional[str] = None
     items: List[OrderItemCreate] = []
 
+    @model_validator(mode='after')
+    def _validate_and_derive_payment(self):
+        tp = self.totalPrice or 0
+        pa = self.paidAmount or 0
+        if tp < 0:
+            raise ValueError('totalPrice tidak boleh negatif')
+        if pa < 0:
+            raise ValueError('paidAmount tidak boleh negatif')
+        if pa > tp and tp > 0:
+            raise ValueError('paidAmount tidak boleh melebihi totalPrice')
+        # Derive paymentStatus from actual values
+        if pa <= 0 or tp <= 0:
+            self.paymentStatus = PaymentStatus.UNPAID
+        elif pa >= tp:
+            self.paymentStatus = PaymentStatus.PAID
+        else:
+            self.paymentStatus = PaymentStatus.PARTIAL
+        return self
+
 class OrderItem(OrderItemBase):
     id: int
     status: OrderStatus
@@ -95,6 +114,24 @@ class OrderBase(BaseModel):
     paidAmount: Optional[float] = 0
     paymentStatus: Optional[PaymentStatus] = PaymentStatus.UNPAID
     notes: Optional[str] = None
+
+    @model_validator(mode='after')
+    def _validate_and_derive_payment(self):
+        tp = self.totalPrice or 0
+        pa = self.paidAmount or 0
+        if tp < 0:
+            raise ValueError('totalPrice tidak boleh negatif')
+        if pa < 0:
+            raise ValueError('paidAmount tidak boleh negatif')
+        if pa > tp and tp > 0:
+            raise ValueError('paidAmount tidak boleh melebihi totalPrice')
+        if pa <= 0 or tp <= 0:
+            self.paymentStatus = PaymentStatus.UNPAID
+        elif pa >= tp:
+            self.paymentStatus = PaymentStatus.PAID
+        else:
+            self.paymentStatus = PaymentStatus.PARTIAL
+        return self
 
 class OrderCreate(OrderBase):
     customer_id: Optional[int] = None

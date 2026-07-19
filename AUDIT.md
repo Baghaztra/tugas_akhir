@@ -1,8 +1,8 @@
 # Project Audit — Sistem Manajemen Produksi Penjahit Yan
 
-**Tanggal:** 12 Juni 2026  
-**Update Terakhir:** 20 Juni 2026  
-**Status:** ~95% rampung
+**Tanggal:** 12 Juni 2026
+**Update Terakhir:** 19 Juli 2026
+**Status:** ~97% rampung
 
 ---
 
@@ -10,10 +10,10 @@
 
 | Severitas | Total | ✅ Fixed | ❌ Open |
 |-----------|-------|----------|---------|
-| 🔴 HIGH | 7 | 6 | 1 |
-| 🟡 MEDIUM | 7 | 6 | 1 |
-| 🟢 LOW | 10 | 5 | 5 |
-| **Total** | **24** | **17** | **7** |
+| 🔴 HIGH | 8 | 7 | 1 |
+| 🟡 MEDIUM | 6 | 6 | 0 |
+| 🟢 LOW | 8 | 6 | 2 |
+| **Total** | **22** | **19** | **3** |
 
 ---
 
@@ -40,18 +40,7 @@
 
 ---
 
-### H3. SMTP Credentials di .env ❌ OPEN
-
-| Lokasi | Detail |
-|--------|--------|
-| `backend/.env:13-14` | `SMTP_USER=rumahjahityan@gmail.com` + App Password nyata |
-
-**Risiko:** Jika `.env` ter-commit (force push, gitignore gagal), kredensial bocor.  
-**Action:** Rotate credentials setelah project selesai.
-
----
-
-### H4. Pydantic v2 — `.dict()` harus diganti `.model_dump()` ✅ FIXED
+### H3. Pydantic v2 — `.dict()` harus diganti `.model_dump()` ✅ FIXED
 
 | File | Status |
 |------|--------|
@@ -62,7 +51,7 @@
 
 ---
 
-### H5. `takeTask()` kirim query params, backend expect body ✅ FIXED
+### H4. `takeTask()` kirim query params, backend expect body ✅ FIXED
 
 | Lokasi | Detail |
 |--------|--------|
@@ -72,19 +61,41 @@
 
 ---
 
-### H6. Employee task page non-functional ✅ FIXED
+### H5. Employee task page non-functional ✅ FIXED
 
 Halaman `task-list/index.vue` dihapus. Flow employee tasks diganti melalui admin-work Kanban.
 
 ---
 
-### H7. Auth global di workers router ✅ FIXED
+### H6. Auth global di workers router ✅ FIXED
 
 | Lokasi | Detail |
 |--------|--------|
 | `backend/app/routers/workers.py` | Global dependency dihapus |
 
 **Fix:** `dependencies=[Depends(get_current_user)]` dihapus dari router. Auth ditambahkan per-endpoint (kecuali `POST /workers/` untuk mengatasi bootstrap problem).
+
+---
+
+### H7. Tombol "Set Lunas" tidak update status pembayaran ✅ FIXED
+
+| Lokasi | Detail |
+|--------|--------|
+| `frontend/app/pages/admin/orders/index.vue:151-157` | `confirmSetLunas()` sekarang kirim `totalPrice` + `paidAmount` dari order + cek `res.success` |
+| `backend/app/crud/order.py:196-199` | `or 0` hanya diterapkan pada field yang benar-benar dikirim |
+
+**Fix:** Frontend kirim `{ paymentStatus: 'paid', totalPrice, paidAmount }` (lunas = bayar full). Backend tidak lagi reset field yang tidak dikirim.
+
+---
+
+### H8. Papan kerja belum terurut ❌ OPEN
+
+| Lokasi | Detail |
+|--------|--------|
+| `frontend/app/pages/admin/work/index.vue` | Task dalam kolom Kanban tidak punya sorting |
+
+**Risiko:** Task muncul dalam urutan acak (default DB), admin sulit tentukan prioritas visual.
+**Action:** Tambah sorting logic urgency (red > yellow > green).
 
 ---
 
@@ -142,18 +153,6 @@ Dihapus dari `requirements.txt` dan `requirements_2.txt`.
 
 ---
 
-### M7. Branching migration tree ❌ OPEN
-
-| File | Parent |
-|------|--------|
-| `20260429_848d4f698e2d_add_table_garment_type.py` | `3941786eb9c3` |
-| `20260429_ec37e9a4f2e0_add_garment_type.py` | `3941786eb9c3` |
-
-Dua migration dari parent sama — branching. `alembic upgrade head` mungkin cuma apply satu branch.  
-**Action:** Merge atau squash migration tree.
-
----
-
 ## 🟢 LOW
 
 ### L1. Typo "soring" ✅ FIXED
@@ -177,33 +176,13 @@ Dua migration dari parent sama — branching. `alembic upgrade head` mungkin cum
 
 ---
 
-### L4. Stale progress docs ❌ OPEN
+### L4. Stale progress docs ✅ FIXED
 
-| File |
-|------|
-| `progress-0103.md` |
-| `progress-0104.md` |
-| `progress-0105.md` |
-| `progress-0106.md` |
-| `progress-0107.md` |
-
-**Action:** Hapus atau arsipkan file-file ini.
+File `progress-*.md` sudah dihapus dari project root.
 
 ---
 
-### L5. Hardcoded `localhost` di E2E tests ❌ OPEN
-
-| File | Baris |
-|------|-------|
-| `frontend/e2e/playwright.config.ts` | 14 |
-| `frontend/e2e/utils/helpers.ts` | 3 |
-| Multiple `.spec.ts` files | — |
-
-**Action:** Pindah ke env variable.
-
----
-
-### L6. Placeholder di order list ✅ FIXED
+### L5. Placeholder di order list ✅ FIXED
 
 | Lokasi | Detail |
 |--------|--------|
@@ -211,23 +190,13 @@ Dua migration dari parent sama — branching. `alembic upgrade head` mungkin cum
 
 ---
 
-### L7. `alembic.ini` `sqlalchemy.url` kosong ❌ OPEN
-
-| Lokasi | Detail |
-|--------|--------|
-| `backend/alembic.ini:40` | `sqlalchemy.url=` — blank (di-override env.py, tapi misleading) |
-
-**Action:** Isi dengan placeholder atau comment.
-
----
-
-### L8. `.pkl` tidak di-gitignore ✅ FIXED
+### L6. `.pkl` tidak di-gitignore ✅ FIXED
 
 `backend/.gitignore` sekarang exclude `*.pkl`.
 
 ---
 
-### L9. Inconsistent import style ❌ OPEN
+### L7. Inconsistent import style ❌ OPEN
 
 | File | Detail |
 |------|--------|
@@ -238,29 +207,20 @@ Semua model lain pake `from ..database import Base` (relative).
 
 ---
 
-### L10. No rate limiting forgot-password ❌ OPEN
+### L8. No rate limiting forgot-password ❌ OPEN
 
 | Lokasi | Detail |
 |--------|--------|
-| `backend/app/routers/auth.py` | `POST /auth/forgot-password` tanpa rate limit |
+| `backend/app/routers/auth.py:115` | `POST /auth/forgot-password` tanpa rate limit |
 
 Bisa dipakai spam OTP ke email sembarang.
 
 ---
 
-## Issues Masih Terbuka (7)
+## Issues Masih Terbuka (3)
 
 | # | Issue | Severitas | Action |
 |---|-------|-----------|--------|
-| H3 | SMTP credentials di .env | 🔴 HIGH | Rotate credentials |
-| M7 | Branching migration tree | 🟡 MEDIUM | Squash migrations |
-| L4 | Stale progress docs | 🟢 LOW | Hapus file |
-| L5 | Hardcoded localhost E2E | 🟢 LOW | Pakai env var |
-| L7 | alembic.ini url kosong | 🟢 LOW | Isi placeholder |
-| L9 | Inconsistent import | 🟢 LOW | Normalisasi ke relative |
-| L10 | No rate limiting | 🟢 LOW | Tambah throttle |
-
-bug di laporan, terkait pembayaran lunas/belum
-nomor, tabel pelanggan, edit order
-
-tabel pelanggan, tampilkan hutang
+| H8 | Papan kerja belum terurut | 🔴 HIGH | Tambah sorting logic urgency |
+| L7 | Inconsistent import style | 🟢 LOW | Normalisasi ke relative import |
+| L8 | No rate limiting forgot-password | 🟢 LOW | Tambah throttle |
