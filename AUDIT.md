@@ -1,7 +1,7 @@
 # Project Audit — Sistem Manajemen Produksi Penjahit Yan
 
 **Tanggal:** 12 Juni 2026
-**Update Terakhir:** 19 Juli 2026
+**Update Terakhir:** 20 Juli 2026
 **Status:** ~97% rampung
 
 ---
@@ -10,10 +10,10 @@
 
 | Severitas | Total | ✅ Fixed | ❌ Open |
 |-----------|-------|----------|---------|
-| 🔴 HIGH | 8 | 7 | 1 |
+| 🔴 HIGH | 9 | 7 | 2 |
 | 🟡 MEDIUM | 6 | 6 | 0 |
 | 🟢 LOW | 8 | 6 | 2 |
-| **Total** | **22** | **19** | **3** |
+| **Total** | **23** | **19** | **4** |
 
 ---
 
@@ -96,6 +96,19 @@ Halaman `task-list/index.vue` dihapus. Flow employee tasks diganti melalui admin
 
 **Risiko:** Task muncul dalam urutan acak (default DB), admin sulit tentukan prioritas visual.
 **Action:** Tambah sorting logic urgency (red > yellow > green).
+
+---
+
+### H9. Hapus karyawan merusak data histori pesanan ❌ OPEN
+
+| Lokasi | Detail |
+|--------|--------|
+| `backend/app/crud/worker.py` | Delete hard-delete (row dihapus permanen) |
+| `backend/app/models/order.py:103` | `order_logs.worker_id` FK ke `workers.id` |
+
+**Risiko:** Menghapus pekerja yang sudah punya riwayat di `order_logs` akan menyebabkan foreign key constraint error atau data histori hilang (worker_name null, referensi terputus). Data audit trail pesanan jadi tidak lengkap.
+
+**Idea:** Implementasi soft delete pada tabel `workers` — tambah kolom `is_deleted` (boolean, default false), hapus endpoint `DELETE` jadi update `is_deleted=true`. Query workers yang aktif filter `is_deleted=false`. Data histori tetap utuh karena FK tetap valid.
 
 ---
 
@@ -217,10 +230,11 @@ Bisa dipakai spam OTP ke email sembarang.
 
 ---
 
-## Issues Masih Terbuka (3)
+## Issues Masih Terbuka (4)
 
 | # | Issue | Severitas | Action |
 |---|-------|-----------|--------|
 | H8 | Papan kerja belum terurut | 🔴 HIGH | Tambah sorting logic urgency |
+| H9 | Hapus karyawan merusak data histori | 🔴 HIGH | Implementasi soft delete (is_deleted) |
 | L7 | Inconsistent import style | 🟢 LOW | Normalisasi ke relative import |
 | L8 | No rate limiting forgot-password | 🟢 LOW | Tambah throttle |

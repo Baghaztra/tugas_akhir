@@ -16,11 +16,7 @@ router = APIRouter(
 
 
 def check_owner(current_user: User = Depends(get_current_user)):
-    if not current_user.is_owner:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Owner access required",
-        )
+    # ponytail: all users have equal access, is_owner check removed
     return current_user
 
 
