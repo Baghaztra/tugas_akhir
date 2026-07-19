@@ -83,7 +83,6 @@ project/
 
 ## Dokumentasi
 
-- [DOCUMENTATION.md](DOCUMENTATION.md) — Dokumentasi teknis lengkap (API, DB schema, coding style)
+- [docs/](docs/) — Dokumentasi teknis (per topik, terpisah)
+  - [Arsitektur](docs/architecture.md) | [Setup](docs/setup.md) | [API](docs/api.md) | [Database](docs/database.md) | [Auth](docs/auth.md) | [ML](docs/ml.md) | [Testing](docs/testing.md) | [Coding Style](docs/coding-conventions.md) | [Pages](docs/pages.md) | [Deploy](docs/deployment.md) | [Troubleshooting](docs/troubleshooting.md)
 - [E2E_TESTING.md](E2E_TESTING.md) — Panduan E2E testing dengan Playwright
-- [frontend/README.md](frontend/README.md) — Setup & struktur frontend
-- [backend/README.md](backend/README.md) — Setup & struktur backend
