@@ -89,7 +89,7 @@
             </div>
             <div>
               <p class="text-gray-400 text-xs mb-0.5">Sudah Dibayar</p>
-              <p class="font-semibold text-gray-900">{{ formatCurrency(order.paidAmount) }}</p>
+              <p class="font-semibold text-gray-900">{{ formatCurrency(paidDisplay) }}</p>
             </div>
           </div>
           <div v-if="order.notes" class="bg-gray-50 rounded-lg p-3">
@@ -186,6 +186,10 @@ const statusSteps: Record<string, number> = {
 }
 
 const totalItems = computed(() => order.value?.items?.length ?? 0)
+
+const paidDisplay = computed(() =>
+  order.value?.paymentStatus === 'paid' ? (order.value.totalPrice ?? 0) : (order.value?.dpAmount ?? 0)
+)
 
 const completedItems = computed(() =>
   order.value?.items?.filter(i => i.status === 'done').length ?? 0

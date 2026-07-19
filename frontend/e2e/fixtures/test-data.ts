@@ -3,7 +3,7 @@ export const TEST_ORDER = {
   customerPhone: '081234567890',
   deadline: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
   totalPrice: 250000,
-  paidAmount: 100000,
+  dpAmount: 100000,
   paymentStatus: 'partial' as const,
   notes: 'E2E test order - please ignore',
   items: [

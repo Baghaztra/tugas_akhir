@@ -50,7 +50,7 @@ class CustomerOrderItem(BaseModel):
     id: int
     receipt_number: str
     total_price: float
-    paid_amount: float
+    dp_amount: float
     payment_status: str
     status: str
     created_at: datetime

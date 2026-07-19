@@ -104,7 +104,7 @@
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Dibayar (Rp)</label>
-                <input v-model.number="form.paidAmount" type="number" min="0" placeholder="0"
+                <input v-model.number="form.dpAmount" type="number" min="0" placeholder="0"
                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
             </div>
@@ -445,16 +445,16 @@ const form = reactive<OrderCreate>({
   customerPhone: '',
   deadline: '',
   totalPrice: 0,
-  paidAmount: 0,
+  dpAmount: 0,
   paymentStatus: 'unpaid',
   notes: '',
   items: [makeItem()]
 })
 
-// Auto-set paidAmount when paymentStatus changes
+// Auto-set dpAmount when paymentStatus changes
 watch(() => form.paymentStatus, (val) => {
-  if (val === 'paid') form.paidAmount = form.totalPrice
-  else if (val === 'unpaid') form.paidAmount = 0
+  if (val === 'paid') form.dpAmount = form.totalPrice
+  else if (val === 'unpaid') form.dpAmount = 0
 })
 
 const addItem = () => {

@@ -48,7 +48,7 @@ export interface CustomerOrderItem {
   id: number
   receipt_number: string
   total_price: number
-  paid_amount: number
+  dp_amount: number
   payment_status: string
   status: string
   created_at: string

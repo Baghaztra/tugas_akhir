@@ -99,12 +99,11 @@ test.describe('Orders API - Payment Update', () => {
 
     const updated = await apiPut(request, `/orders/${created.id}`, {
       totalPrice: 500000,
-      paidAmount: 500000,
       paymentStatus: 'paid',
     })
 
     expect(updated.totalPrice).toBe(500000)
-    expect(updated.paidAmount).toBe(500000)
+    expect(updated.dpAmount).toBe(500000)
     expect(updated.paymentStatus).toBe('paid')
 
     await apiDelete(request, `/orders/${created.id}`)

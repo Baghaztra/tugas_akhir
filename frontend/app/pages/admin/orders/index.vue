@@ -156,7 +156,6 @@ const confirmSetLunas = async () => {
   const res = await updateOrder(confirmingOrderId.value, {
     paymentStatus: 'paid',
     totalPrice: target?.totalPrice ?? 0,
-    paidAmount: target?.totalPrice ?? 0,
   })
   if (res.success) {
     showConfirm.value = false

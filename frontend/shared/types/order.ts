@@ -55,7 +55,7 @@ export interface OrderCreate {
   customer_id?: number | null;
   deadline: string;
   totalPrice?: number;
-  paidAmount?: number;
+  dpAmount?: number;
   paymentStatus?: PaymentStatus;
   notes?: string | null;
   items: OrderItemCreate[];
@@ -68,7 +68,7 @@ export interface OrderUpdate {
   deadline?: string | null;
   paymentStatus?: PaymentStatus | null;
   totalPrice?: number | null;
-  paidAmount?: number | null;
+  dpAmount?: number | null;
   notes?: string | null;
 }
 
@@ -81,7 +81,7 @@ export interface Order {
   customer?: CustomerBrief | null;
   deadline: string;
   totalPrice?: number;
-  paidAmount?: number;
+  dpAmount?: number;
   paymentStatus?: PaymentStatus;
   notes?: string | null;
   createdAt: string;
@@ -105,7 +105,7 @@ export interface OrderTracking {
   customerName: string;
   paymentStatus: PaymentStatus;
   totalPrice: number;
-  paidAmount: number;
+  dpAmount: number;
   deadline: string;
   createdAt: string;
   notes?: string | null;

@@ -312,7 +312,7 @@ def seed(db):
                 customerPhone=customer.phone,
                 paymentStatus=payment,
                 totalPrice=float(total),
-                paidAmount=float(paid),
+                dpAmount=float(paid),
                 deadline=random_deadline(),
                 notes=random.choice([
                     "Harap dikerjakan dengan teliti.",

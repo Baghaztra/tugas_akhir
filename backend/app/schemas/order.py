@@ -71,7 +71,7 @@ class OrderCreateFormData(BaseModel):
     customerPhone: Optional[str] = None
     deadline: str
     totalPrice: Optional[float] = 0
-    paidAmount: Optional[float] = 0
+    dpAmount: Optional[float] = 0
     paymentStatus: Optional[PaymentStatus] = PaymentStatus.UNPAID
     notes: Optional[str] = None
     items: List[OrderItemCreate] = []
@@ -79,17 +79,17 @@ class OrderCreateFormData(BaseModel):
     @model_validator(mode='after')
     def _validate_and_derive_payment(self):
         tp = self.totalPrice or 0
-        pa = self.paidAmount or 0
+        dp = self.dpAmount or 0
         if tp < 0:
             raise ValueError('totalPrice tidak boleh negatif')
-        if pa < 0:
-            raise ValueError('paidAmount tidak boleh negatif')
-        if pa > tp and tp > 0:
-            raise ValueError('paidAmount tidak boleh melebihi totalPrice')
+        if dp < 0:
+            raise ValueError('dpAmount tidak boleh negatif')
+        if dp > tp and tp > 0:
+            raise ValueError('dpAmount tidak boleh melebihi totalPrice')
         # Derive paymentStatus from actual values
-        if pa <= 0 or tp <= 0:
+        if dp <= 0 or tp <= 0:
             self.paymentStatus = PaymentStatus.UNPAID
-        elif pa >= tp:
+        elif dp >= tp:
             self.paymentStatus = PaymentStatus.PAID
         else:
             self.paymentStatus = PaymentStatus.PARTIAL
@@ -111,23 +111,23 @@ class OrderBase(BaseModel):
     customerPhone: Optional[str] = None
     deadline: str
     totalPrice: Optional[float] = 0
-    paidAmount: Optional[float] = 0
+    dpAmount: Optional[float] = 0
     paymentStatus: Optional[PaymentStatus] = PaymentStatus.UNPAID
     notes: Optional[str] = None
 
     @model_validator(mode='after')
     def _validate_and_derive_payment(self):
         tp = self.totalPrice or 0
-        pa = self.paidAmount or 0
+        dp = self.dpAmount or 0
         if tp < 0:
             raise ValueError('totalPrice tidak boleh negatif')
-        if pa < 0:
-            raise ValueError('paidAmount tidak boleh negatif')
-        if pa > tp and tp > 0:
-            raise ValueError('paidAmount tidak boleh melebihi totalPrice')
-        if pa <= 0 or tp <= 0:
+        if dp < 0:
+            raise ValueError('dpAmount tidak boleh negatif')
+        if dp > tp and tp > 0:
+            raise ValueError('dpAmount tidak boleh melebihi totalPrice')
+        if dp <= 0 or tp <= 0:
             self.paymentStatus = PaymentStatus.UNPAID
-        elif pa >= tp:
+        elif dp >= tp:
             self.paymentStatus = PaymentStatus.PAID
         else:
             self.paymentStatus = PaymentStatus.PARTIAL
@@ -144,7 +144,6 @@ class OrderUpdate(BaseModel):
     deadline: Optional[str] = None
     paymentStatus: Optional[PaymentStatus] = None
     totalPrice: Optional[float] = None
-    paidAmount: Optional[float] = None
     notes: Optional[str] = None
 
 class Order(OrderBase):
@@ -174,7 +173,7 @@ class OrderTracking(BaseModel):
     customerName: str
     paymentStatus: PaymentStatus
     totalPrice: float
-    paidAmount: float
+    dpAmount: float
     deadline: str
     createdAt: datetime
     notes: Optional[str] = None

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, cast, Date
+from sqlalchemy import func, cast, Date, case
 from datetime import date, timedelta, datetime, timezone
 from io import BytesIO
 
@@ -203,8 +203,11 @@ def get_weekly_recap(
     order_ids = [o.id for o in orders_in_week]
 
     total_orders = len(orders_in_week)
-    # DP revenue: orders created this week (regardless of status)
-    dp_revenue = sum(o.paidAmount or 0 for o in orders_in_week)
+    # DP revenue: orders created this week (paid → full price, else → dpAmount)
+    dp_revenue = sum(
+        (o.totalPrice or 0) if o.paymentStatus == PaymentStatus.PAID else (o.dpAmount or 0)
+        for o in orders_in_week
+    )
     # Remaining revenue: orders PAID this week but created before this week
     remaining_orders = (
         db.query(Order)
@@ -216,7 +219,7 @@ def get_weekly_recap(
         )
         .all()
     )
-    remaining_revenue = sum((o.totalPrice or 0) - (o.paidAmount or 0) for o in remaining_orders)
+    remaining_revenue = sum((o.totalPrice or 0) - (o.dpAmount or 0) for o in remaining_orders)
     total_revenue = dp_revenue + remaining_revenue
 
     # Orders completed this week (updatedAt dalam minggu & semua item DONE)

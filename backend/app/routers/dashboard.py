@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func, cast, Date
+from sqlalchemy import func, cast, Date, case
 from datetime import date, timedelta
 from collections import defaultdict
 
@@ -8,6 +8,7 @@ from ..database import get_db
 from ..models.order import Order, OrderItem, OrderLog, OrderStatus, PaymentStatus, GarmentType
 from ..models.worker import Worker, WorkerStatus
 from ..auth import get_current_user
+from .analytics import _get_week_range
 
 router = APIRouter(
     prefix="/dashboard",
@@ -21,7 +22,7 @@ def get_summary(db: Session = Depends(get_db)):
     """
     Ringkasan dashboard admin:
     - Total pesanan aktif (memiliki item belum DONE)
-    - Pendapatan minggu ini (paidAmount pada pesanan yang dibuat minggu ini)
+    - Pendapatan minggu ini (dpAmount pada pesanan yang dibuat minggu ini)
     - Pesanan selesai hari ini (updatedAt hari ini & semua item DONE)
     - Karyawan aktif (status Working)
     - Pesanan mendekati/deadline lewat (deadline < hari ini & ada item belum DONE)
@@ -36,22 +37,28 @@ def get_summary(db: Session = Depends(get_db)):
     ) or 0
 
     # Pendapatan minggu ini: DP dari pesanan masuk minggu ini + sisa bayar dari pesanan yang dilunasi minggu ini
-    week_start = date.today() - timedelta(days=6)
+    start, end = _get_week_range(None)
 
-    # DP revenue: orders created this week (regardless of status)
+    # DP revenue: orders created this week (paid → full price, else → dpAmount)
     dp_revenue = (
-        db.query(func.coalesce(func.sum(Order.paidAmount), 0))
-        .filter(cast(Order.createdAt, Date) >= week_start)
+        db.query(func.coalesce(func.sum(
+            case(
+                (Order.paymentStatus == PaymentStatus.PAID, Order.totalPrice),
+                else_=Order.dpAmount
+            )
+        ), 0))
+        .filter(cast(Order.createdAt, Date) >= start, cast(Order.createdAt, Date) <= end)
         .scalar()
     ) or 0
 
     # Remaining revenue: orders PAID this week but created before this week
     remaining_revenue = (
-        db.query(func.coalesce(func.sum(Order.totalPrice - Order.paidAmount), 0))
+        db.query(func.coalesce(func.sum(Order.totalPrice - Order.dpAmount), 0))
         .filter(
             Order.paymentStatus == PaymentStatus.PAID,
-            cast(Order.updatedAt, Date) >= week_start,
-            cast(Order.createdAt, Date) < week_start,
+            cast(Order.updatedAt, Date) >= start,
+            cast(Order.updatedAt, Date) <= end,
+            cast(Order.createdAt, Date) < start,
         )
         .scalar()
     ) or 0

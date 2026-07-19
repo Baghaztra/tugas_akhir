@@ -146,8 +146,8 @@
                     </div>
                     <div class="flex items-center gap-2 mt-0.5">
                       <span class="text-xs text-gray-400">{{ formatDate(order.created_at) }}</span>
-                      <span v-if="order.paid_amount > 0" class="text-xs text-gray-400">
-                        · Dibayar {{ formatCurrency(order.paid_amount) }}
+                      <span v-if="order.dp_amount > 0" class="text-xs text-gray-400">
+                        · Dibayar {{ formatCurrency(order.dp_amount) }}
                       </span>
                     </div>
                   </div>

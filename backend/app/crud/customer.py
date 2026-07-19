@@ -114,14 +114,14 @@ def get_customer_detail(db: Session, customer_id: int) -> Optional[dict]:
     order_items = []
     total_bon = 0.0
     for o in orders:
-        unpaid = (o.totalPrice or 0) - (o.paidAmount or 0)
+        unpaid = 0 if o.paymentStatus == PaymentStatus.PAID else (o.totalPrice or 0) - (o.dpAmount or 0)
         if o.paymentStatus != PaymentStatus.PAID and unpaid > 0:
             total_bon += unpaid
         order_items.append({
             "id": o.id,
             "receipt_number": o.receiptNumber,
             "total_price": o.totalPrice,
-            "paid_amount": o.paidAmount,
+            "dp_amount": o.dpAmount,
             "payment_status": o.paymentStatus.value,
             "status": "",
             "created_at": o.createdAt,

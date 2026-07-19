@@ -116,21 +116,21 @@
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Dibayar</span>
-                <span class="font-medium text-emerald-600">{{ formatCurrency(order.paidAmount!) }}</span>
+                <span class="font-medium text-emerald-600">{{ formatCurrency(paidDisplay) }}</span>
               </div>
               <hr class="border-gray-100" />
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Sisa</span>
-                <span class="font-bold" :class="order.totalPrice! - order.paidAmount! > 0 ? 'text-red-600' : 'text-emerald-600'">
-                  {{ formatCurrency(order.totalPrice! - order.paidAmount!) }}
+                <span class="font-bold" :class="remaining > 0 ? 'text-red-600' : 'text-emerald-600'">
+                  {{ formatCurrency(remaining) }}
                 </span>
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
                 <div class="bg-emerald-500 h-2 rounded-full transition-all"
-                  :style="{ width: `${Math.min(100, (order.paidAmount! / order.totalPrice!) * 100)}%` }" />
+                  :style="{ width: `${Math.min(100, paidPercent)}%` }" />
               </div>
               <p class="text-xs text-gray-400 text-right">
-                {{ Math.round((order.paidAmount! / order.totalPrice!) * 100) }}% terbayar
+                {{ Math.round(paidPercent) }}% terbayar
               </p>
             </div>
 
@@ -142,8 +142,8 @@
                   class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Dibayar (Rp)</label>
-                <input v-model.number="editForm.paidAmount" type="number" min="0"
+                <label class="block text-xs font-medium text-gray-600 mb-1">DP (Rp)</label>
+                <input v-model.number="editForm.dpAmount" type="number" min="0"
                   class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
               <div>
@@ -180,13 +180,25 @@ useSeoMeta({ title: `Detail Pesanan ${orderId} — Penjahit Yan` })
 
 const backend = useRuntimeConfig().public.apiBase
 
+// Payment display
+const paidDisplay = computed(() =>
+  order.value?.paymentStatus === 'paid' ? (order.value.totalPrice ?? 0) : (order.value?.dpAmount ?? 0)
+)
+const remaining = computed(() =>
+  order.value?.paymentStatus === 'paid' ? 0 : (order.value?.totalPrice ?? 0) - (order.value?.dpAmount ?? 0)
+)
+const paidPercent = computed(() => {
+  const tp = order.value?.totalPrice ?? 0
+  return tp > 0 ? (paidDisplay.value / tp) * 100 : 0
+})
+
 // Payment edit state
 const editingPayment = ref(false)
-const editForm = reactive({ totalPrice: 0, paidAmount: 0, paymentStatus: 'unpaid' as string })
+const editForm = reactive({ totalPrice: 0, dpAmount: 0, paymentStatus: 'unpaid' as string })
 
 const startEditPayment = () => {
   editForm.totalPrice = order.value?.totalPrice ?? 0
-  editForm.paidAmount = order.value?.paidAmount ?? 0
+  editForm.dpAmount = order.value?.dpAmount ?? 0
   editForm.paymentStatus = order.value?.paymentStatus ?? 'unpaid'
   editingPayment.value = true
 }
@@ -194,7 +206,6 @@ const startEditPayment = () => {
 const savePayment = async () => {
   const res = await updateOrder(Number(orderId), {
     totalPrice: editForm.totalPrice,
-    paidAmount: editForm.paidAmount,
     paymentStatus: editForm.paymentStatus as any,
   })
   if (res.success) {

@@ -32,7 +32,7 @@ class Order(Base):
 
     paymentStatus = Column(Enum(PaymentStatus), default=PaymentStatus.UNPAID, nullable=False)
     totalPrice = Column(Float, default=0)
-    paidAmount = Column(Float, default=0)
+    dpAmount = Column(Float, default=0)
 
     deadline = Column(String(20), nullable=False)
     notes = Column(String(500), nullable=True)
