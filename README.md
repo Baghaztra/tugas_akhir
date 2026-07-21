@@ -64,8 +64,7 @@ npm run dev
 ```
 project/
 ├── docker-compose.yml        # MySQL + phpMyAdmin
-├── DOCUMENTATION.md          # Dokumentasi teknis lengkap
-├── E2E_TESTING.md            # Panduan E2E testing
+├── docs/                     # Dokumentasi teknis
 ├── backend/                  # FastAPI + SQLAlchemy + XGBoost
 │   ├── app/                  # Source code (models, schemas, crud, routers)
 │   ├── migrations/           # Alembic migration
@@ -84,5 +83,12 @@ project/
 ## Dokumentasi
 
 - [docs/](docs/) — Dokumentasi teknis (per topik, terpisah)
-  - [Arsitektur](docs/architecture.md) | [Setup](docs/setup.md) | [API](docs/api.md) | [Database](docs/database.md) | [Auth](docs/auth.md) | [ML](docs/ml.md) | [Testing](docs/testing.md) | [Coding Style](docs/coding-conventions.md) | [Pages](docs/pages.md) | [Deploy](docs/deployment.md) | [Troubleshooting](docs/troubleshooting.md)
-- [E2E_TESTING.md](E2E_TESTING.md) — Panduan E2E testing dengan Playwright
+  - [Arsitektur](docs/architecture.md) | [Setup](docs/setup.md) | [API](docs/api.md) | [Database](docs/database.md) | [Auth](docs/auth.md) | [ML](docs/ml.md) | [Testing](docs/testing.md) | [E2E Testing](docs/testing-e2e.md) | [Coding Style](docs/coding-conventions.md) | [Pages](docs/pages.md) | [Deploy](docs/deployment.md) | [Troubleshooting](docs/troubleshooting.md)
+
+## Saran Pengembangan Lanjutan
+
+1. **Role-Based Access Control (RBAC)** Saat ini semua user (Owner & Staff) memiliki akses penuh ke seluruh halaman admin. RBAC bisa ditambahkan untuk membatasi akses staff pada modul tertentu.
+2. **Automatic Retrain** Saat ini model bersifat static, dilatih dengan data awal lalu disimpan dalam file pickel untuk diload dalam backend. Data historis terbaru dari database bisa digunakan untuk retrain model agar model terus dilatih diharapkan main baik dalam mengurutkan pesanan.
+3. **Akun Pelanggan** Saat ini pelanggan melihat pesanan berdasarkan kode pesanannya. Jika pelanggan dapat login, pelanggan bisa melihat histori pesanan, hingga pembayaran via apliaksi.
+4. **Layanan Permak** Aplikasi saat ini belum menyediakan fitur untuk permak secara terpisah, dimana jika ada pelanggan yang ingin memberbaiki pakaian, mungkin hanya sebagian fitur, aplikasi belum menyediakan fiturnya.
+

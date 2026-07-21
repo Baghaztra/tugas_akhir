@@ -32,10 +32,8 @@ test.describe('Login Functional', () => {
     await page.fill('input[placeholder="Password"]', 'wrongpassword')
     await page.locator('button[type="submit"]').click()
 
-    await page.waitForTimeout(2000)
-    const bodyText = await page.locator('body').innerText()
-    const hasError = bodyText.toLowerCase().includes('gagal') || bodyText.toLowerCase().includes('salah') || bodyText.toLowerCase().includes('invalid') || bodyText.toLowerCase().includes('incorrect')
-    expect(hasError).toBeTruthy()
+    const errorMsg = page.locator('.text-red-500, [class*="error"], [class*="alert"]')
+    await expect(errorMsg.first()).toBeVisible({ timeout: 10000 })
   })
 
   test('login page has forgot password link', async ({ page }) => {

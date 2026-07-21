@@ -29,10 +29,10 @@ frontend/
 │   │   ├── landing.spec.ts          # Landing page
 │   │   ├── admin-dashboard.spec.ts  # Dashboard UI
 │   │   ├── orders.spec.ts           # Order CRUD flows
-│   │   ├── workers.spec.ts          # Worker CRUD flows
 │   │   ├── tracking.spec.ts         # Public tracking page
 │   │   ├── kanban.spec.ts           # Kanban board
 │   │   ├── login.spec.ts            # Login functional
+│   │   ├── forgot-password.spec.ts  # Forgot password flow
 │   │   ├── orders-functional.spec.ts    # Tambah/edit pesanan + sketsa
 │   │   ├── workers-functional.spec.ts   # CRUD karyawan UI
 │   │   ├── reports-functional.spec.ts   # Cek & export laporan
@@ -41,7 +41,6 @@ frontend/
 │   │   ├── authorization.spec.ts        # Staff access control
 │   │   └── api/                     # API contract tests
 │   │       ├── orders.api.spec.ts
-│   │       ├── workers.api.spec.ts
 │   │       └── dashboard.api.spec.ts
 │   ├── fixtures/
 │   │   └── test-data.ts             # Test data templates
@@ -78,10 +77,10 @@ npx playwright install chromium
 | **Landing** | Page render, navigation, load time | `landing.spec.ts` |
 | **Dashboard** | Stat cards, chart, notifications | `admin-dashboard.spec.ts` |
 | **Orders** | List render, filter, create via API, navigate to create | `orders.spec.ts` |
-| **Workers** | List render, filter, CRUD via API | `workers.spec.ts` |
 | **Tracking** | Search form, valid/invalid receipt, sample click | `tracking.spec.ts` |
 | **Kanban** | Phase columns, labels, refresh | `kanban.spec.ts` |
 | **Login** | Form render, valid/invalid login, redirect, forgot password link | `login.spec.ts` |
+| **Forgot Password** | UI navigation, API forgot/reset password, happy path | `forgot-password.spec.ts` |
 | **Tambah Pesanan** | Create order form fill & submit, navigate from list | `orders-functional.spec.ts` |
 | **Edit Pesanan** | Payment section, edit form, save/cancel | `orders-functional.spec.ts` |
 | **Gambar Sketsa** | Sketch modal, canvas, templates, close | `orders-functional.spec.ts` |
@@ -93,8 +92,7 @@ npx playwright install chromium
 | **Tambah Portofolio** | Portfolio form, upload button, API create, grid | `settings-functional.spec.ts` |
 | **Authorization** | Staff blocked from dashboard/reports/users, allowed routes, sidebar | `authorization.spec.ts` |
 | **API Orders** | GET/POST/PUT/DELETE order, tracking, admin-work | `api/orders.api.spec.ts` |
-| **API Workers** | GET/POST/PUT/DELETE worker, wages, performance | `api/workers.api.spec.ts` |
-| **API Dashboard** | Summary, trend, notifications, reports | `api/dashboard.api.spec.ts` |
+| **API Dashboard** | Summary, trend, notifications | `api/dashboard.api.spec.ts` |
 
 ### Principles
 

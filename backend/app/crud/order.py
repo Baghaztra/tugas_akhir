@@ -189,8 +189,12 @@ def update_order(db: Session, order_id: int, order: OrderUpdate):
 
     # Apply non-financial fields directly
     for key, value in update_data.items():
-        if key not in ('totalPrice', 'paymentStatus'):
+        if key not in ('totalPrice', 'dpAmount', 'paymentStatus'):
             setattr(db_order, key, value)
+
+    # Apply dpAmount if provided
+    if 'dpAmount' in update_data:
+        db_order.dpAmount = update_data['dpAmount'] or 0
 
     # If paymentStatus explicitly provided (e.g. "Set Lunas"), respect it
     if 'paymentStatus' in update_data:
@@ -198,7 +202,7 @@ def update_order(db: Session, order_id: int, order: OrderUpdate):
         if 'totalPrice' in update_data:
             db_order.totalPrice = update_data['totalPrice'] or 0
     else:
-        # Derive financial state from current totalPrice + fixed dpAmount
+        # Derive financial state from current totalPrice + dpAmount
         tp = update_data.get('totalPrice', db_order.totalPrice) or 0
         dp = db_order.dpAmount or 0
         if dp < 0 or tp < 0:

@@ -115,8 +115,12 @@ class OrderBase(BaseModel):
     paymentStatus: Optional[PaymentStatus] = PaymentStatus.UNPAID
     notes: Optional[str] = None
 
+class OrderCreate(OrderBase):
+    customer_id: Optional[int] = None
+    items: List[OrderItemCreate]
+
     @model_validator(mode='after')
-    def _validate_and_derive_payment(self):
+    def _derive_payment_status(self):
         tp = self.totalPrice or 0
         dp = self.dpAmount or 0
         if tp < 0:
@@ -133,10 +137,6 @@ class OrderBase(BaseModel):
             self.paymentStatus = PaymentStatus.PARTIAL
         return self
 
-class OrderCreate(OrderBase):
-    customer_id: Optional[int] = None
-    items: List[OrderItemCreate]
-
 class OrderUpdate(BaseModel):
     customer_id: Optional[int] = None
     customerName: Optional[str] = None
@@ -144,6 +144,7 @@ class OrderUpdate(BaseModel):
     deadline: Optional[str] = None
     paymentStatus: Optional[PaymentStatus] = None
     totalPrice: Optional[float] = None
+    dpAmount: Optional[float] = None
     notes: Optional[str] = None
 
 class Order(OrderBase):

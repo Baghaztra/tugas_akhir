@@ -25,7 +25,7 @@ router = APIRouter(
 
 # ponytail: in-memory rate limit, reset on restart. upgrade to Redis if multi-process.
 _otp_last_sent: dict[str, float] = defaultdict(float)
-OTP_COOLDOWN_SECONDS = 60
+OTP_COOLDOWN_SECONDS = 300
 
 
 class LoginRequest(BaseModel):

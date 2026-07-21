@@ -32,18 +32,14 @@ test.describe('CRUD Karyawan', () => {
 
     await page.locator('button', { hasText: 'Tambah Karyawan' }).click()
 
-    const modal = page.locator('[class*="fixed"]').filter({ hasText: /Tambah|Karyawan/ }).or(page.locator('[role="dialog"]'))
-    await expect(modal.first()).toBeVisible()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Tambah Karyawan' })
+    await expect(modal).toBeVisible({ timeout: 5000 })
 
-    const nameInput = modal.first().locator('input[type="text"]').first()
+    const nameInput = modal.locator('input[placeholder="Masukkan nama..."]')
     await nameInput.fill(TEST_WORKER.name)
 
-    const roleInput = modal.first().locator('input[type="text"]').nth(1).or(modal.first().locator('select').first())
-    if (await roleInput.evaluate(el => el.tagName === 'SELECT')) {
-      await roleInput.selectOption(TEST_WORKER.role)
-    } else {
-      await roleInput.fill(TEST_WORKER.role)
-    }
+    const roleSelect = modal.locator('select').first()
+    await roleSelect.selectOption(TEST_WORKER.role)
 
     await modal.first().locator('button', { hasText: 'Simpan' }).click()
     await page.waitForLoadState('networkidle')

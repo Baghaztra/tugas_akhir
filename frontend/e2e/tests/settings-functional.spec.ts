@@ -14,44 +14,47 @@ test.describe('Ubah Password', () => {
     await page.waitForLoadState('networkidle')
 
     await expect(page.locator('text=Ubah Password')).toBeVisible()
-    await expect(page.locator('label', { hasText: 'Password Saat Ini' })).toBeVisible()
-    await expect(page.locator('label', { hasText: 'Password Baru' })).toBeVisible()
-    await expect(page.locator('label', { hasText: 'Konfirmasi Password Baru' })).toBeVisible()
-    await expect(page.locator('button', { hasText: 'Simpan Password' })).toBeVisible()
+    await page.locator('button', { hasText: 'Ubah Password' }).click()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Ubah Password' })
+    await expect(modal).toBeVisible()
+    await expect(modal.locator('label', { hasText: 'Password Saat Ini' })).toBeVisible()
+    await expect(modal.getByText('Password Baru', { exact: true })).toBeVisible()
+    await expect(modal.locator('label', { hasText: 'Konfirmasi Password Baru' })).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Simpan' })).toBeVisible()
   })
 
   test('password mismatch show error', async ({ page }) => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    const passwordSection = page.locator('text=Ubah Password').locator('..')
+    await page.locator('button', { hasText: 'Ubah Password' }).click()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Ubah Password' })
+    await expect(modal).toBeVisible()
 
-    await page.fill('input[type="password"] >> nth=0', '111111')
-    await page.fill('input[type="password"] >> nth=1', 'newpass123')
-    await page.fill('input[type="password"] >> nth=2', 'differentpass')
+    await modal.locator('input[type="password"]').nth(0).fill('111111')
+    await modal.locator('input[type="password"]').nth(1).fill('newpass123')
+    await modal.locator('input[type="password"]').nth(2).fill('differentpass')
 
-    await page.locator('button', { hasText: 'Simpan Password' }).click()
-
-    await page.waitForTimeout(1000)
-    const bodyText = await page.locator('body').innerText()
-    const hasError = bodyText.includes('tidak cocok') || bodyText.includes('Tidak cocok') || bodyText.includes('mismatch')
-    expect(hasError).toBeTruthy()
+    await modal.locator('form').evaluate(form => form.requestSubmit())
+    await expect(modal.locator('text=tidak cocok')).toBeVisible({ timeout: 5000 })
   })
 
   test('short password show error', async ({ page }) => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    await page.fill('input[type="password"] >> nth=0', '111111')
-    await page.fill('input[type="password"] >> nth=1', 'abc')
-    await page.fill('input[type="password"] >> nth=2', 'abc')
+    await page.locator('button', { hasText: 'Ubah Password' }).click()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Ubah Password' })
+    await expect(modal).toBeVisible()
 
-    await page.locator('button', { hasText: 'Simpan Password' }).click()
+    await modal.locator('input[type="password"]').nth(0).fill('111111')
+    await modal.locator('input[type="password"]').nth(1).fill('abc')
+    await modal.locator('input[type="password"]').nth(2).fill('abc')
 
-    await page.waitForTimeout(1000)
-    const bodyText = await page.locator('body').innerText()
-    const hasError = bodyText.includes('minimal 6') || bodyText.includes('karakter')
-    expect(hasError).toBeTruthy()
+    await modal.locator('form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    })
+    await expect(modal.getByText('minimal 6 karakter')).toBeVisible({ timeout: 5000 })
   })
 })
 
@@ -60,21 +63,34 @@ test.describe('Tambah Portofolio', () => {
     await loginAdminUI(page)
   })
 
-  test('settings page render portfolio upload section', async ({ page }) => {
+  test('settings page render portfolio section', async ({ page }) => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    await expect(page.locator('text=Tambah Foto Portofolio')).toBeVisible()
-    await expect(page.locator('label', { hasText: 'Judul' })).toBeVisible()
-    await expect(page.locator('label', { hasText: 'Kategori' })).toBeVisible()
-    await expect(page.locator('label', { hasText: 'Deskripsi' })).toBeVisible()
+    await expect(page.locator('text=Portofolio')).toBeVisible()
+  })
+
+  test('open portfolio modal and check form fields', async ({ page }) => {
+    await page.goto('/admin/settings')
+    await page.waitForLoadState('networkidle')
+
+    await page.locator('button', { hasText: 'Tambah' }).click()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Tambah Portofolio' })
+    await expect(modal).toBeVisible()
+    await expect(modal.locator('label', { hasText: 'Judul' })).toBeVisible()
+    await expect(modal.locator('label', { hasText: 'Kategori' })).toBeVisible()
+    await expect(modal.locator('label', { hasText: 'Deskripsi' })).toBeVisible()
   })
 
   test('portfolio upload button disabled without required fields', async ({ page }) => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    const uploadButton = page.locator('button', { hasText: 'Tambahkan' })
+    await page.locator('button', { hasText: 'Tambah' }).click()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Tambah Portofolio' })
+    await expect(modal).toBeVisible()
+
+    const uploadButton = modal.locator('button', { hasText: 'Tambahkan' })
     await expect(uploadButton).toBeVisible()
     await expect(uploadButton).toBeDisabled()
   })
@@ -83,20 +99,19 @@ test.describe('Tambah Portofolio', () => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    await page.fill('input[placeholder*="Kemeja Batik"]', TEST_PORTFOLIO.title)
-    await page.fill('input[placeholder*="Kemeja, Kebaya"]', TEST_PORTFOLIO.category)
+    await page.locator('button', { hasText: 'Tambah' }).click()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Tambah Portofolio' })
+    await expect(modal).toBeVisible()
 
-    const uploadButton = page.locator('button', { hasText: 'Tambahkan' })
+    await modal.locator('input[placeholder*="Kemeja Batik"]').fill(TEST_PORTFOLIO.title)
+    await modal.locator('input[placeholder*="Kemeja, Kebaya"]').fill(TEST_PORTFOLIO.category)
+
+    const uploadButton = modal.locator('button', { hasText: 'Tambahkan' })
     await expect(uploadButton).toBeEnabled()
   })
 
   test('create portfolio via API and verify in settings page', async ({ page, request }) => {
     await loginAdmin(request)
-
-    const formData = new FormData()
-    formData.append('title', TEST_PORTFOLIO.title)
-    formData.append('category', TEST_PORTFOLIO.category)
-    formData.append('description', TEST_PORTFOLIO.description)
 
     const res = await request.post(`${API_BASE}/portfolio/`, {
       multipart: {
@@ -111,7 +126,7 @@ test.describe('Tambah Portofolio', () => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    await expect(page.locator('text=Daftar Portofolio')).toBeVisible()
+    await expect(page.locator('text=Portofolio').first()).toBeVisible()
     await expect(page.locator(`text=${TEST_PORTFOLIO.title}`).first()).toBeVisible()
 
     await request.delete(`${API_BASE}/portfolio/${created.id}`)
@@ -121,9 +136,9 @@ test.describe('Tambah Portofolio', () => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    await expect(page.locator('text=Daftar Portofolio')).toBeVisible()
+    await expect(page.locator('text=Portofolio').first()).toBeVisible()
 
-    const reloadBtn = page.locator('button', { hasText: 'Muat ulang' })
+    const reloadBtn = page.locator('button').filter({ has: page.locator('[class*="arrow-path"]') })
     await expect(reloadBtn).toBeVisible()
   })
 })

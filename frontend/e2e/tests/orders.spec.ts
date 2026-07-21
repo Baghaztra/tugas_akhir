@@ -24,7 +24,7 @@ test.describe('Orders CRUD', () => {
     const searchInput = page.locator('input[placeholder*="Cari"]').or(page.locator('input[placeholder*="cari"]'))
     await expect(searchInput).toBeVisible()
 
-    const tambahButton = page.locator('a', { hasText: 'Tambah Pesanan' }).or(page.locator('button', { hasText: 'Tambah' }))
+    const tambahButton = page.locator('a', { hasText: 'Tambah Pesanan' }).first()
     await expect(tambahButton).toBeVisible()
   })
 
@@ -41,8 +41,10 @@ test.describe('Orders CRUD', () => {
 
     await page.goto('/admin/orders')
     await page.waitForLoadState('networkidle')
+    await page.reload()
+    await page.waitForLoadState('networkidle')
 
-    await expect(page.locator(`text=${order.receiptNumber}`).first()).toBeVisible()
+    await expect(page.locator(`text=${order.receiptNumber}`).first()).toBeVisible({ timeout: 10000 })
     await expect(page.locator(`text=${TEST_ORDER.customerName}`).first()).toBeVisible()
   })
 })

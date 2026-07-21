@@ -14,7 +14,7 @@ def send_otp_email(to_email: str, otp_code: str, user_name: str) -> bool:
     smtp_password = os.getenv("SMTP_PASSWORD")
     from_email = os.getenv("SMTP_FROM_EMAIL", smtp_user)
 
-    subject = "Kode OTP Reset Password — Rumah Jahit Yan"
+    subject = "Kode OTP Reset Password Rumah Jahit Yan"
     body_html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; padding: 20px;">
@@ -23,7 +23,7 @@ def send_otp_email(to_email: str, otp_code: str, user_name: str) -> bool:
         <p style="font-size: 24px; font-weight: bold; letter-spacing: 6px; background: #f3f4f6; padding: 12px; text-align: center; border-radius: 8px;">
             {otp_code}
         </p>
-        <p>Kode OTP ini berlaku selama <strong>10 menit</strong>.</p>
+        <p>Kode OTP ini berlaku selama <strong>5 menit</strong>.</p>
         <p>Jika Anda tidak meminta reset password, abaikan email ini.</p>
         <hr>
         <small>Rumah Jahit Yan — Sistem Manajemen Produksi</small>

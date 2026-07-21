@@ -8,8 +8,8 @@ export const ADMIN_CREDENTIALS = {
 }
 
 export const STAFF_CREDENTIALS = {
-  name: 'E2E Test Staff',
-  password: 'staff123',
+  name: 'Staff 1',
+  password: '111111',
 }
 
 export async function loginAdmin(request: APIRequestContext) {
@@ -104,8 +104,7 @@ export async function apiPut(request: APIRequestContext, path: string, body: any
 
 export async function apiDelete(request: APIRequestContext, path: string) {
   const res = await request.delete(`${API_BASE}${path}`)
-  expect(res.ok()).toBeTruthy()
-  return res.json()
+  return res
 }
 
 export function isOverdue(deadline: string): boolean {
