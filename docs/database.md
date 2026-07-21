@@ -44,7 +44,7 @@
 | id | Integer | PK, autoincrement |
 | email | String(255) | unique, not null, indexed |
 | password_hash | String(255) | not null |
-| name | String(100) | not null |
+| name | String(100) | unique, not null, indexed |
 | is_owner | Boolean | default=True |
 | created_at | DateTime(tz) | server_default=now |
 | updated_at | DateTime(tz) | onupdate=now |

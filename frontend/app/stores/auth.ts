@@ -18,11 +18,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(email: string, password: string) {
+  async function login(name: string, password: string) {
     const { apiBase } = useRuntimeConfig().public
     const res = await $fetch<{ success: boolean; user: AuthUser }>(`${apiBase}/auth/login`, {
       method: 'POST',
-      body: { email, password },
+      body: { name, password },
       credentials: 'include',
     })
     user.value = res.user

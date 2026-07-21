@@ -11,7 +11,7 @@
 
 ## Alur Login
 
-1. Frontend mengirim `POST /auth/login` dengan `{email, password}`
+1. Frontend mengirim `POST /auth/login` dengan `{name, password}`
 2. Backend verifikasi credential, generate JWT dengan `sub` (user ID) + `exp` claim
 3. JWT diset sebagai cookie `access_token`
 4. Frontend menyimpan user info di localStorage (`auth_user`)

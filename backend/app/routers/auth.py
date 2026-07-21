@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 class LoginRequest(BaseModel):
-    email: str
+    name: str
     password: str
 
 
@@ -43,11 +43,11 @@ def login(
     response: Response,
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.email == body.email).first()
+    user = db.query(User).filter(User.name == body.name).first()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email atau password salah",
+            detail="Nama atau password salah",
         )
 
     token = create_access_token(data={"sub": str(user.id)})

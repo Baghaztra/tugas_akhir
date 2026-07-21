@@ -14,11 +14,11 @@
 
         <form @submit.prevent="handleLogin" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama</label>
             <input
-              v-model="email" type="email" required
+              v-model="name" type="text" required
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
-              placeholder="contoh@email.com"
+              placeholder="Nama pengguna"
             />
           </div>
           <div>
@@ -57,7 +57,7 @@ useSeoMeta({ title: 'Login — Rumah Jahit Yan' })
 const router = useRouter()
 const auth = useAuthStore()
 
-const email = ref('')
+const name = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
@@ -66,7 +66,7 @@ async function handleLogin() {
   loading.value = true
   errorMsg.value = ''
   try {
-    const user = await auth.login(email.value, password.value)
+    const user = await auth.login(name.value, password.value)
     router.replace('/admin/dashboard')
   } catch (e: any) {
     errorMsg.value = e?.data?.detail ?? e?.message ?? 'Login gagal'
