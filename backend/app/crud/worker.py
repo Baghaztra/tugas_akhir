@@ -12,7 +12,7 @@ def get_worker(db: Session, worker_id: int):
 
 
 def get_workers(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Worker).offset(skip).limit(limit).all()
+    return db.query(Worker).filter(Worker.is_deleted == False).offset(skip).limit(limit).all()
 
 
 def create_worker(db: Session, worker: WorkerCreate):
@@ -40,8 +40,10 @@ def delete_worker(db: Session, worker_id: int):
     db_worker = get_worker(db, worker_id)
     if not db_worker:
         return None
-    db.delete(db_worker)
+    db_worker.is_deleted = True
+    db.add(db_worker)
     db.commit()
+    db.refresh(db_worker)
     return db_worker
 
 

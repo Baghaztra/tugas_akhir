@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, DateTime, Float
+from sqlalchemy import Column, Integer, String, Enum, DateTime, Float, Boolean
 from sqlalchemy.sql import func
 import enum
 from ..database import Base
@@ -22,3 +22,4 @@ class Worker(Base):
     role = Column(Enum(WorkerRole))
     status = Column(Enum(WorkerStatus), default=WorkerStatus.IDLE)
     date_joined = Column(DateTime(timezone=True), server_default=func.now())
+    is_deleted = Column(Boolean, default=False, nullable=False, server_default="0")

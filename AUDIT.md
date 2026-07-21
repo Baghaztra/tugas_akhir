@@ -10,10 +10,10 @@
 
 | Severitas | Total | ✅ Fixed | ❌ Open |
 |-----------|-------|----------|---------|
-| 🔴 HIGH | 9 | 8 | 1 |
+| 🔴 HIGH | 9 | 9 | 0 |
 | 🟡 MEDIUM | 6 | 6 | 0 |
 | 🟢 LOW | 8 | 6 | 2 |
-| **Total** | **23** | **20** | **3** |
+| **Total** | **23** | **21** | **2** |
 
 ---
 
@@ -98,16 +98,16 @@ Halaman `task-list/index.vue` dihapus. Flow employee tasks diganti melalui admin
 
 ---
 
-### H9. Hapus karyawan merusak data histori pesanan ❌ OPEN
+### H9. Hapus karyawan merusak data histori pesanan ✅ FIXED
 
 | Lokasi | Detail |
 |--------|--------|
-| `backend/app/crud/worker.py` | Delete hard-delete (row dihapus permanen) |
-| `backend/app/models/order.py:103` | `order_logs.worker_id` FK ke `workers.id` |
+| `backend/app/models/worker.py` | Tambah kolom `is_deleted` (Boolean, default False) |
+| `backend/app/crud/worker.py` | `delete_worker()` sekarang soft-delete (set `is_deleted=True`), `get_workers()` filter `is_deleted=False` |
+| `backend/app/routers/workers.py` | GET/PUT/DELETE check `is_deleted` — deleted worker = 404 |
+| `backend/migrations/versions/20260721_e3f4a5b6c7d8_soft_delete_workers.py` | Migration tambah kolom `is_deleted` |
 
-**Risiko:** Menghapus pekerja yang sudah punya riwayat di `order_logs` akan menyebabkan foreign key constraint error atau data histori hilang (worker_name null, referensi terputus). Data audit trail pesanan jadi tidak lengkap.
-
-**Idea:** Implementasi soft delete pada tabel `workers` — tambah kolom `is_deleted` (boolean, default false), hapus endpoint `DELETE` jadi update `is_deleted=true`. Query workers yang aktif filter `is_deleted=false`. Data histori tetap utuh karena FK tetap valid.
+**Fix:** Soft delete pada tabel `workers` — endpoint `DELETE` set `is_deleted=True` bukan hapus baris. Query workers aktif filter `is_deleted=False`. Data histori (`order_logs`) tetap utuh karena FK tetap valid.
 
 ---
 
@@ -229,10 +229,9 @@ Bisa dipakai spam OTP ke email sembarang.
 
 ---
 
-## Issues Masih Terbuka (3)
+## Issues Masih Terbuka (2)
 
 | # | Issue | Severitas | Action |
 |---|-------|-----------|--------|
-| H9 | Hapus karyawan merusak data histori | 🔴 HIGH | Implementasi soft delete (is_deleted) |
 | L7 | Inconsistent import style | 🟢 LOW | Normalisasi ke relative import |
 | L8 | No rate limiting forgot-password | 🟢 LOW | Tambah throttle |

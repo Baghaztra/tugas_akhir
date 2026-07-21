@@ -23,6 +23,7 @@ export interface Worker {
   role: WorkerRole;
   status?: WorkerStatus;
   date_joined: string; // ISO DateTime string
+  is_deleted?: boolean;
 }
 
 export interface DailyPerf {

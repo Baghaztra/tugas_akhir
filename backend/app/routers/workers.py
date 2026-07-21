@@ -30,24 +30,26 @@ def read_workers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db),
 @router.get("/{worker_id}", response_model=schema_worker.Worker)
 def read_worker(worker_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_worker = crud_worker.get_worker(db, worker_id=worker_id)
-    if db_worker is None:
+    if db_worker is None or db_worker.is_deleted:
         raise HTTPException(status_code=404, detail="Worker not found")
     return db_worker
 
 
 @router.put("/{worker_id}", response_model=schema_worker.Worker)
 def update_worker(worker_id: int, worker: schema_worker.WorkerUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    db_worker = crud_worker.update_worker(db, worker_id=worker_id, worker=worker)
-    if db_worker is None:
+    db_worker = crud_worker.get_worker(db, worker_id=worker_id)
+    if db_worker is None or db_worker.is_deleted:
         raise HTTPException(status_code=404, detail="Worker not found")
+    db_worker = crud_worker.update_worker(db, worker_id=worker_id, worker=worker)
     return db_worker
 
 
 @router.delete("/{worker_id}", response_model=schema_worker.Worker)
 def delete_worker(worker_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    db_worker = crud_worker.delete_worker(db, worker_id=worker_id)
-    if db_worker is None:
+    db_worker = crud_worker.get_worker(db, worker_id=worker_id)
+    if db_worker is None or db_worker.is_deleted:
         raise HTTPException(status_code=404, detail="Worker not found")
+    db_worker = crud_worker.delete_worker(db, worker_id=worker_id)
     return db_worker
 
 

@@ -30,6 +30,7 @@ class WorkerUpdate(BaseModel):
 class Worker(WorkerBase):
     id: int
     date_joined: datetime
+    is_deleted: bool = False
 
     class Config:
         from_attributes = True
