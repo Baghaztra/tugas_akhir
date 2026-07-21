@@ -7,8 +7,8 @@ test.describe('Login Functional', () => {
 
     await expect(page.locator('h1')).toContainText('Rumah Jahit Yan')
     await expect(page.locator('h2')).toContainText('Masuk')
-    await expect(page.locator('input[type="email"]')).toBeVisible()
-    await expect(page.locator('input[type="password"]')).toBeVisible()
+    await expect(page.locator('input[placeholder="Nama pengguna"]')).toBeVisible()
+    await expect(page.locator('input[placeholder="Password"]')).toBeVisible()
     await expect(page.locator('button[type="submit"]')).toBeVisible()
   })
 
@@ -16,8 +16,8 @@ test.describe('Login Functional', () => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
 
-    await page.fill('input[type="email"]', ADMIN_CREDENTIALS.email)
-    await page.fill('input[type="password"]', ADMIN_CREDENTIALS.password)
+    await page.fill('input[placeholder="Nama pengguna"]', ADMIN_CREDENTIALS.name)
+    await page.fill('input[placeholder="Password"]', ADMIN_CREDENTIALS.password)
     await page.locator('button[type="submit"]').click()
 
     await page.waitForURL('**/admin/dashboard', { timeout: 10000 })
@@ -28,8 +28,8 @@ test.describe('Login Functional', () => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
 
-    await page.fill('input[type="email"]', ADMIN_CREDENTIALS.email)
-    await page.fill('input[type="password"]', 'wrongpassword')
+    await page.fill('input[placeholder="Nama pengguna"]', ADMIN_CREDENTIALS.name)
+    await page.fill('input[placeholder="Password"]', 'wrongpassword')
     await page.locator('button[type="submit"]').click()
 
     await page.waitForTimeout(2000)
@@ -50,8 +50,8 @@ test.describe('Login Functional', () => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
 
-    await page.fill('input[type="email"]', ADMIN_CREDENTIALS.email)
-    await page.fill('input[type="password"]', ADMIN_CREDENTIALS.password)
+    await page.fill('input[placeholder="Nama pengguna"]', ADMIN_CREDENTIALS.name)
+    await page.fill('input[placeholder="Password"]', ADMIN_CREDENTIALS.password)
     await page.locator('button[type="submit"]').click()
     await page.waitForURL('**/admin/dashboard', { timeout: 10000 })
 

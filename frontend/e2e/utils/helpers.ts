@@ -3,14 +3,13 @@ import { APIRequestContext, Page, expect } from '@playwright/test'
 const API_BASE = 'http://localhost:8000'
 
 export const ADMIN_CREDENTIALS = {
-  email: 'owner@rumahjahit.id',
-  password: 'admin123',
+  name: 'Owner',
+  password: '111111',
 }
 
 export const STAFF_CREDENTIALS = {
-  email: 'staff.e2e@rumahjahit.id',
-  password: 'staff123',
   name: 'E2E Test Staff',
+  password: 'staff123',
 }
 
 export async function loginAdmin(request: APIRequestContext) {
@@ -25,15 +24,15 @@ export async function loginAdmin(request: APIRequestContext) {
 export async function loginAdminUI(page: Page) {
   await page.goto('/login')
   await page.waitForLoadState('networkidle')
-  await page.fill('input[type="email"]', ADMIN_CREDENTIALS.email)
-  await page.fill('input[type="password"]', ADMIN_CREDENTIALS.password)
+  await page.fill('input[placeholder="Nama pengguna"]', ADMIN_CREDENTIALS.name)
+  await page.fill('input[placeholder="Password"]', ADMIN_CREDENTIALS.password)
   await page.locator('button[type="submit"]').click()
   await page.waitForURL('**/admin/**', { timeout: 10000 })
 }
 
 export async function loginStaff(request: APIRequestContext) {
   const res = await request.post(`${API_BASE}/auth/login`, {
-    data: { email: STAFF_CREDENTIALS.email, password: STAFF_CREDENTIALS.password },
+    data: { name: STAFF_CREDENTIALS.name, password: STAFF_CREDENTIALS.password },
     headers: { 'Content-Type': 'application/json' },
   })
   expect(res.ok()).toBeTruthy()
@@ -43,8 +42,8 @@ export async function loginStaff(request: APIRequestContext) {
 export async function loginStaffUI(page: Page) {
   await page.goto('/login')
   await page.waitForLoadState('networkidle')
-  await page.fill('input[type="email"]', STAFF_CREDENTIALS.email)
-  await page.fill('input[type="password"]', STAFF_CREDENTIALS.password)
+  await page.fill('input[placeholder="Nama pengguna"]', STAFF_CREDENTIALS.name)
+  await page.fill('input[placeholder="Password"]', STAFF_CREDENTIALS.password)
   await page.locator('button[type="submit"]').click()
   await page.waitForURL('**/admin/**', { timeout: 10000 })
 }
@@ -54,12 +53,12 @@ export async function ensureStaffUser(request: APIRequestContext) {
   const res = await request.get(`${API_BASE}/users/`)
   expect(res.ok()).toBeTruthy()
   const users = await res.json()
-  const exists = users.some((u: any) => u.email === STAFF_CREDENTIALS.email)
+  const exists = users.some((u: any) => u.name === STAFF_CREDENTIALS.name)
   if (!exists) {
     const createRes = await request.post(`${API_BASE}/users/`, {
       data: {
         name: STAFF_CREDENTIALS.name,
-        email: STAFF_CREDENTIALS.email,
+        email: 'staff.e2e@rumahjahit.id',
         password: STAFF_CREDENTIALS.password,
         is_owner: false,
       },
@@ -73,7 +72,7 @@ export async function deleteStaffUser(request: APIRequestContext) {
   await loginAdmin(request)
   const res = await request.get(`${API_BASE}/users/`)
   const users = await res.json()
-  const staff = users.find((u: any) => u.email === STAFF_CREDENTIALS.email)
+  const staff = users.find((u: any) => u.name === STAFF_CREDENTIALS.name)
   if (staff) {
     await request.delete(`${API_BASE}/users/${staff.id}`)
   }

@@ -26,7 +26,7 @@ test.describe('Ubah Password', () => {
 
     const passwordSection = page.locator('text=Ubah Password').locator('..')
 
-    await page.fill('input[type="password"] >> nth=0', 'admin123')
+    await page.fill('input[type="password"] >> nth=0', '111111')
     await page.fill('input[type="password"] >> nth=1', 'newpass123')
     await page.fill('input[type="password"] >> nth=2', 'differentpass')
 
@@ -42,7 +42,7 @@ test.describe('Ubah Password', () => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
 
-    await page.fill('input[type="password"] >> nth=0', 'admin123')
+    await page.fill('input[type="password"] >> nth=0', '111111')
     await page.fill('input[type="password"] >> nth=1', 'abc')
     await page.fill('input[type="password"] >> nth=2', 'abc')
 
