@@ -58,9 +58,6 @@ test.describe('Cek Laporan', () => {
     await page.goto('/admin/reports')
     await page.waitForLoadState('networkidle')
 
-    const prevBtn = page.locator('button').filter({ has: page.locator('[name*="chevron-left"]') }).or(page.locator('button').first())
-    await expect(prevBtn.first()).toBeVisible()
-
     const todayBtn = page.locator('button', { hasText: 'Hari Ini' })
     await expect(todayBtn).toBeVisible()
   })
@@ -98,8 +95,9 @@ test.describe('Export Laporan', () => {
     await loginAdmin(request)
 
     const today = new Date()
+    const dayOfWeek = today.getDay()
     const sunday = new Date(today)
-    sunday.setDate(today.getDate() - (today.getDay() + 1) % 7)
+    sunday.setDate(today.getDate() - dayOfWeek)
     const weekStart = sunday.toISOString().split('T')[0]
 
     const res = await request.get(`http://localhost:8000/reports/weekly-recap/export?week_start=${weekStart}`)

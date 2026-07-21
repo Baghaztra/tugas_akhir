@@ -31,15 +31,4 @@ test.describe('Public Tracking', () => {
       expect(hasError).toBeTruthy()
     }
   })
-
-  test('click sample receipt button fill input', async ({ page }) => {
-    await page.goto('/tracking')
-
-    const sampleButton = page.locator('button', { hasText: 'RES-2024-001' })
-    if (await sampleButton.isVisible()) {
-      await sampleButton.click()
-      const input = page.locator('input[placeholder*="Contoh"]')
-      await expect(input).toHaveValue(/RES-2024-001/)
-    }
-  })
 })

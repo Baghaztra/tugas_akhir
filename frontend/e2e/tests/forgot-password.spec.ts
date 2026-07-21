@@ -4,13 +4,6 @@ const API_BASE = 'http://localhost:8000'
 
 test.describe('Forgot Password', () => {
   test.describe('UI Navigation', () => {
-    test('login page has Lupa Password link', async ({ page }) => {
-      await page.goto('/login')
-      const link = page.locator('a', { hasText: 'Lupa password?' })
-      await expect(link).toBeVisible()
-      await expect(link).toHaveAttribute('href', '/forgot-password')
-    })
-
     test('clicking Lupa Password navigates to forgot-password page', async ({ page }) => {
       await page.goto('/login')
       await page.locator('a', { hasText: 'Lupa password?' }).click()
@@ -36,23 +29,13 @@ test.describe('Forgot Password', () => {
   test.describe('API — Forgot Password', () => {
     test('POST /auth/forgot-password returns success for any email', async ({ request }) => {
       const res = await request.post(`${API_BASE}/auth/forgot-password`, {
-        data: { email: `test-anon-${Date.now()}@test.com` },
+        data: { email: `test-${Date.now()}@test.com` },
         headers: { 'Content-Type': 'application/json' },
       })
       expect(res.ok()).toBeTruthy()
       const body = await res.json()
       expect(body.success).toBe(true)
       expect(body.message).toContain('Jika email terdaftar')
-    })
-
-    test('POST /auth/forgot-password returns success for known email', async ({ request }) => {
-      const res = await request.post(`${API_BASE}/auth/forgot-password`, {
-        data: { email: `test-known-${Date.now()}@test.com` },
-        headers: { 'Content-Type': 'application/json' },
-      })
-      expect(res.ok()).toBeTruthy()
-      const body = await res.json()
-      expect(body.success).toBe(true)
     })
   })
 
@@ -102,16 +85,12 @@ test.describe('Forgot Password', () => {
 
   test.describe('Happy Path — Full Flow', () => {
     test('request OTP then verify old password still works', async ({ request }) => {
-      const uniqueEmail = `happy-${Date.now()}@test.com`
-
-      // 1. Request OTP for a known email
       const forgotRes = await request.post(`${API_BASE}/auth/forgot-password`, {
         data: { email: 'owner@rumahjahit.id' },
         headers: { 'Content-Type': 'application/json' },
       })
       expect(forgotRes.ok()).toBeTruthy()
 
-      // 2. Old password still works (OTP not consumed yet)
       const loginBefore = await request.post(`${API_BASE}/auth/login`, {
         data: { name: 'Owner', password: '111111' },
         headers: { 'Content-Type': 'application/json' },

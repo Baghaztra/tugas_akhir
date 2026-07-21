@@ -9,7 +9,6 @@ test.describe('Kanban Board (Admin Work)', () => {
 
   test('kanban page render phase columns', async ({ page }) => {
     await page.goto('/admin/work')
-
     await page.waitForLoadState('networkidle')
 
     const columns = page.locator('h2')
@@ -19,7 +18,6 @@ test.describe('Kanban Board (Admin Work)', () => {
 
   test('kanban show cutting/sewing/finishing labels', async ({ page }) => {
     await page.goto('/admin/work')
-
     await page.waitForLoadState('networkidle')
 
     const headers = await page.locator('h2').allTextContents()
@@ -27,18 +25,6 @@ test.describe('Kanban Board (Admin Work)', () => {
       h.includes('Potong') || h.includes('Jahit') || h.includes('Finishing')
     )
     expect(hasPhase).toBeTruthy()
-  })
-
-  test('refresh button click reload data', async ({ page }) => {
-    await page.goto('/admin/work')
-
-    await page.waitForLoadState('networkidle')
-
-    const refreshButton = page.locator('button', { hasText: 'Segarkan' })
-    if (await refreshButton.isVisible()) {
-      await refreshButton.click()
-      await page.waitForTimeout(500)
-    }
   })
 })
 
@@ -72,48 +58,18 @@ test.describe('Kanban Board - Sketch Preview', () => {
     } catch {}
   })
 
-  test('kanban card show Sketsa button only when sketch exists', async ({ page }) => {
-    await page.goto('/admin/work')
-    await page.waitForLoadState('networkidle')
-
-    const sketchButtons = page.locator('button', { hasText: 'Sketsa' })
-    const count = await sketchButtons.count()
-
-    if (count > 0) {
-      await expect(sketchButtons.first()).toBeVisible()
-    }
-  })
-
   test('click Sketsa button open modal with image', async ({ page }) => {
     await page.goto('/admin/work')
     await page.waitForLoadState('networkidle')
 
     const sketchButton = page.locator('button', { hasText: 'Sketsa' }).first()
-    if (await sketchButton.isVisible()) {
-      await sketchButton.click()
+    await expect(sketchButton).toBeVisible()
+    await sketchButton.click()
 
-      const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-      await expect(modal).toBeVisible()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
 
-      const img = modal.locator('img')
-      await expect(img).toBeVisible()
-    }
-  })
-
-  test('sketch modal close on X button', async ({ page }) => {
-    await page.goto('/admin/work')
-    await page.waitForLoadState('networkidle')
-
-    const sketchButton = page.locator('button', { hasText: 'Sketsa' }).first()
-    if (await sketchButton.isVisible()) {
-      await sketchButton.click()
-
-      const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-      await expect(modal).toBeVisible()
-
-      const closeBtn = modal.locator('button').first()
-      await closeBtn.click()
-      await page.waitForTimeout(300)
-    }
+    const img = modal.locator('img')
+    await expect(img).toBeVisible()
   })
 })

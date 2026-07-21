@@ -152,97 +152,53 @@ test.describe('Edit Pesanan', () => {
 })
 
 test.describe('Gambar Sketsa', () => {
-  let orderId: number
-
-  test.beforeEach(async ({ request, page }) => {
-    await loginAdmin(request)
-    await loginAdminUI(page)
-
-    const res = await request.post('http://localhost:8000/orders/', {
-      multipart: {
-        data: JSON.stringify({
-          ...TEST_ORDER,
-          items: [{
-            garmentTypeId: 1,
-            description: 'E2E Test Item with sketch',
-            quantity: 1,
-            measurements: {},
-            attributes: {},
-          }],
-        }),
-      },
-    })
-    const order = await res.json()
-    orderId = order.id
-  })
-
-  test.afterEach(async ({ request }) => {
-    try {
-      await apiDelete(request, `/orders/${orderId}`)
-    } catch {}
-  })
-
-  test('sketch modal accessible from kanban board', async ({ page }) => {
-    await page.goto('/admin/work')
-    await page.waitForLoadState('networkidle')
-
-    const sketchButton = page.locator('button', { hasText: 'Sketsa' }).first()
-    if (await sketchButton.isVisible()) {
-      await sketchButton.click()
-
-      const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-      await expect(modal).toBeVisible()
-    }
-  })
-
   test('sketch modal has canvas and toolbar', async ({ page }) => {
+    await loginAdminUI(page)
     await page.goto('/admin/orders/create')
     await page.waitForLoadState('networkidle')
 
     const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    if (await sketchButton.isVisible()) {
-      await sketchButton.click()
+    await expect(sketchButton).toBeVisible()
+    await sketchButton.click()
 
-      const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-      await expect(modal).toBeVisible()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
 
-      await expect(modal.locator('canvas')).toBeVisible()
-
-      await expect(modal.locator('button', { hasText: 'Simpan Sketsa' })).toBeVisible()
-      await expect(modal.locator('button', { hasText: 'Batal' })).toBeVisible()
-    }
+    await expect(modal.locator('canvas')).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Simpan Sketsa' })).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Batal' })).toBeVisible()
   })
 
   test('sketch modal has template buttons', async ({ page }) => {
+    await loginAdminUI(page)
     await page.goto('/admin/orders/create')
     await page.waitForLoadState('networkidle')
 
     const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    if (await sketchButton.isVisible()) {
-      await sketchButton.click()
+    await expect(sketchButton).toBeVisible()
+    await sketchButton.click()
 
-      const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-      await expect(modal).toBeVisible()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
 
-      await expect(modal.locator('button', { hasText: 'Kemeja' })).toBeVisible()
-    }
+    await expect(modal.locator('button', { hasText: 'Kemeja' })).toBeVisible()
   })
 
   test('sketch modal close on cancel', async ({ page }) => {
+    await loginAdminUI(page)
     await page.goto('/admin/orders/create')
     await page.waitForLoadState('networkidle')
 
     const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    if (await sketchButton.isVisible()) {
-      await sketchButton.click()
+    await expect(sketchButton).toBeVisible()
+    await sketchButton.click()
 
-      const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-      await expect(modal).toBeVisible()
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
 
-      await modal.locator('button', { hasText: 'Batal' }).click()
-      await page.waitForTimeout(500)
+    await modal.locator('button', { hasText: 'Batal' }).click()
+    await page.waitForTimeout(500)
 
-      await expect(modal).not.toBeVisible()
-    }
+    await expect(modal).not.toBeVisible()
   })
 })

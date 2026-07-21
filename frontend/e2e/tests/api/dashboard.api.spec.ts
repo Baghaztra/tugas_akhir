@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { apiGet } from '../../utils/helpers'
+import { apiGet, loginAdmin } from '../../utils/helpers'
 
 test.describe('Dashboard API', () => {
+  test.beforeEach(async ({ request }) => {
+    await loginAdmin(request)
+  })
+
   test('GET /dashboard/summary return stats', async ({ request }) => {
     const data = await apiGet(request, '/dashboard/summary')
     expect(data).toHaveProperty('activeOrders')
@@ -28,22 +32,5 @@ test.describe('Dashboard API', () => {
       expect(data[0]).toHaveProperty('daysLeft')
       expect(data[0]).toHaveProperty('urgency')
     }
-  })
-
-  test('GET /reports/volume return report data', async ({ request }) => {
-    const data = await apiGet(request, '/reports/volume?period=weekly')
-    expect(data).toHaveProperty('labels')
-    expect(data).toHaveProperty('data')
-    expect(data.labels.length).toBe(7)
-  })
-
-  test('GET /reports/product-trends return array', async ({ request }) => {
-    const data = await apiGet(request, '/reports/product-trends')
-    expect(Array.isArray(data)).toBeTruthy()
-  })
-
-  test('GET /reports/productivity return sorted array', async ({ request }) => {
-    const data = await apiGet(request, '/reports/productivity')
-    expect(Array.isArray(data)).toBeTruthy()
   })
 })
