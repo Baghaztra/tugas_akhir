@@ -1,8 +1,8 @@
 # Project Audit — Sistem Manajemen Produksi Penjahit Yan
 
 **Tanggal:** 12 Juni 2026
-**Update Terakhir:** 20 Juli 2026
-**Status:** ~97% rampung
+**Update Terakhir:** 21 Juli 2026
+**Status:** 100% rampung
 
 ---
 
@@ -12,8 +12,8 @@
 |-----------|-------|----------|---------|
 | 🔴 HIGH | 9 | 9 | 0 |
 | 🟡 MEDIUM | 6 | 6 | 0 |
-| 🟢 LOW | 8 | 7 | 1 |
-| **Total** | **23** | **22** | **1** |
+| 🟢 LOW | 8 | 8 | 0 |
+| **Total** | **23** | **23** | **0** |
 
 ---
 
@@ -219,18 +219,16 @@ Semua model sekarang konsisten pakai relative import (`from ..database import Ba
 
 ---
 
-### L8. No rate limiting forgot-password ❌ OPEN
+### L8. No rate limiting forgot-password ✅ FIXED
 
 | Lokasi | Detail |
 |--------|--------|
-| `backend/app/routers/auth.py:115` | `POST /auth/forgot-password` tanpa rate limit |
+| `backend/app/routers/auth.py:115` | Rate limit 60 detik per email |
 
-Bisa dipakai spam OTP ke email sembarang.
+**Fix:** In-memory rate limiter — `POST /auth/forgot-password` sekarang enforce cooldown 60 detik per email. Mengembalikan HTTP 429 jika terlalu cepat.
 
 ---
 
-## Issues Masih Terbuka (1)
+## Issues Masih Terbuka (0)
 
-| # | Issue | Severitas | Action |
-|---|-------|-----------|--------|
-| L8 | No rate limiting forgot-password | 🟢 LOW | Tambah throttle |
+Semua audit issues sudah diselesaikan.

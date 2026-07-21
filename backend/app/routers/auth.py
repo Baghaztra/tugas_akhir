@@ -1,4 +1,6 @@
 import random
+import time
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -20,6 +22,10 @@ router = APIRouter(
     prefix="/auth",
     tags=["auth"],
 )
+
+# ponytail: in-memory rate limit, reset on restart. upgrade to Redis if multi-process.
+_otp_last_sent: dict[str, float] = defaultdict(float)
+OTP_COOLDOWN_SECONDS = 60
 
 
 class LoginRequest(BaseModel):
@@ -117,6 +123,14 @@ def forgot_password(
     body: ForgotPasswordRequest,
     db: Session = Depends(get_db),
 ):
+    now = time.monotonic()
+    elapsed = now - _otp_last_sent[body.email]
+    if elapsed < OTP_COOLDOWN_SECONDS:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Tunggu {int(OTP_COOLDOWN_SECONDS - elapsed)} detik sebelum mengirim ulang",
+        )
+
     user = db.query(User).filter(User.email == body.email).first()
 
     if user:
@@ -137,6 +151,8 @@ def forgot_password(
         db.commit()
 
         send_otp_email(user.email, otp, user.name)
+
+    _otp_last_sent[body.email] = now
 
     return {
         "success": True,
