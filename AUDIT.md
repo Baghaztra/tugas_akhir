@@ -12,8 +12,8 @@
 |-----------|-------|----------|---------|
 | 🔴 HIGH | 9 | 9 | 0 |
 | 🟡 MEDIUM | 6 | 6 | 0 |
-| 🟢 LOW | 8 | 6 | 2 |
-| **Total** | **23** | **21** | **2** |
+| 🟢 LOW | 8 | 7 | 1 |
+| **Total** | **23** | **22** | **1** |
 
 ---
 
@@ -208,14 +208,14 @@ File `progress-*.md` sudah dihapus dari project root.
 
 ---
 
-### L7. Inconsistent import style ❌ OPEN
+### L7. Inconsistent import style ✅ FIXED
 
 | File | Detail |
 |------|--------|
-| `backend/app/models/user.py:2` | `from app.database import Base` (absolute) |
-| `backend/app/models/password_reset_token.py:2` | `from app.database import Base` (absolute) |
+| `backend/app/models/user.py:2` | `from ..database import Base` (relative) |
+| `backend/app/models/password_reset_token.py:2` | `from ..database import Base` (relative) |
 
-Semua model lain pake `from ..database import Base` (relative).
+Semua model sekarang konsisten pakai relative import (`from ..database import Base`).
 
 ---
 
@@ -229,9 +229,8 @@ Bisa dipakai spam OTP ke email sembarang.
 
 ---
 
-## Issues Masih Terbuka (2)
+## Issues Masih Terbuka (1)
 
 | # | Issue | Severitas | Action |
 |---|-------|-----------|--------|
-| L7 | Inconsistent import style | 🟢 LOW | Normalisasi ke relative import |
 | L8 | No rate limiting forgot-password | 🟢 LOW | Tambah throttle |

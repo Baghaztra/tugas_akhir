@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from collections import defaultdict
 from ..models.worker import Worker
 from ..models.order import OrderLog, Order, OrderItem, GarmentType, OrderStatus
-from ..schemas.worker import WorkerBase as WorkerCreate, WorkerUpdate
+from ..schemas.worker import WorkerBase, WorkerUpdate
 
 
 def get_worker(db: Session, worker_id: int):
@@ -15,7 +15,7 @@ def get_workers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Worker).filter(Worker.is_deleted == False).offset(skip).limit(limit).all()
 
 
-def create_worker(db: Session, worker: WorkerCreate):
+def create_worker(db: Session, worker: WorkerBase):
     db_worker = Worker(**worker.model_dump())
     db.add(db_worker)
     db.commit()
