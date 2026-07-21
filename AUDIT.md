@@ -10,10 +10,10 @@
 
 | Severitas | Total | ✅ Fixed | ❌ Open |
 |-----------|-------|----------|---------|
-| 🔴 HIGH | 9 | 7 | 2 |
+| 🔴 HIGH | 9 | 8 | 1 |
 | 🟡 MEDIUM | 6 | 6 | 0 |
 | 🟢 LOW | 8 | 6 | 2 |
-| **Total** | **23** | **19** | **4** |
+| **Total** | **23** | **20** | **3** |
 
 ---
 
@@ -88,14 +88,13 @@ Halaman `task-list/index.vue` dihapus. Flow employee tasks diganti melalui admin
 
 ---
 
-### H8. Papan kerja belum terurut ❌ OPEN
+### H8. Papan kerja belum terurut ✅ FIXED
 
 | Lokasi | Detail |
 |--------|--------|
-| `frontend/app/pages/admin/work/index.vue` | Task dalam kolom Kanban tidak punya sorting |
+| `frontend/app/pages/admin/work/index.vue` | Task dalam kolom Kanban sekarang di-sort berdasarkan urgency (red > yellow > green) |
 
-**Risiko:** Task muncul dalam urutan acak (default DB), admin sulit tentukan prioritas visual.
-**Action:** Tambah sorting logic urgency (red > yellow > green).
+**Fix:** Frontend `filteredData` computed sekarang sort setiap kolom (ready & in_progress) berdasarkan `urgency_label` (red=0, yellow=1, green=2). Backend sudah sort via `sort_by_priority()` sebelum grouping, frontend menambah explicit sort per kolom untuk guarantee urutan visual.
 
 ---
 
@@ -230,11 +229,10 @@ Bisa dipakai spam OTP ke email sembarang.
 
 ---
 
-## Issues Masih Terbuka (4)
+## Issues Masih Terbuka (3)
 
 | # | Issue | Severitas | Action |
 |---|-------|-----------|--------|
-| H8 | Papan kerja belum terurut | 🔴 HIGH | Tambah sorting logic urgency |
 | H9 | Hapus karyawan merusak data histori | 🔴 HIGH | Implementasi soft delete (is_deleted) |
 | L7 | Inconsistent import style | 🟢 LOW | Normalisasi ke relative import |
 | L8 | No rate limiting forgot-password | 🟢 LOW | Tambah throttle |

@@ -217,19 +217,23 @@ const apiBase = useRuntimeConfig().public.apiBase
 const sketchPreviewUrl = ref<string | null>(null)
 const searchQuery = ref('')
 
+const urgencyRank: Record<string, number> = { red: 0, yellow: 1, green: 2 }
+const sortByUrgency = <T extends { urgency_label: string }>(tasks: T[]) =>
+  [...tasks].sort((a, b) => (urgencyRank[a.urgency_label] ?? 9) - (urgencyRank[b.urgency_label] ?? 9))
+
 const filteredData = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return data.value
-  if (!data.value?.phases) return data.value
+  const src = data.value
+  if (!src?.phases) return src
 
   return {
-    phases: data.value.phases.map(phase => {
-      const ready = phase.ready.filter(t => t.customerName.toLowerCase().includes(q))
-      const in_progress = phase.in_progress.filter(t => t.customerName.toLowerCase().includes(q))
+    phases: src.phases.map(phase => {
+      const ready = phase.ready.filter(t => !q || t.customerName.toLowerCase().includes(q))
+      const in_progress = phase.in_progress.filter(t => !q || t.customerName.toLowerCase().includes(q))
       return {
         ...phase,
-        ready,
-        in_progress,
+        ready: sortByUrgency(ready),
+        in_progress: sortByUrgency(in_progress),
         ready_count: ready.length,
         in_progress_count: in_progress.length,
       }
