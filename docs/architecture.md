@@ -69,9 +69,6 @@ Router (endpoint) → CRUD (business logic) → Model (database) → Schema (val
 project/
 ├── docker-compose.yml
 ├── docs/                       # Dokumentasi (file ini)
-├── DOCUMENTATION.md            # (legacy, akan dihapus)
-├── E2E_TESTING.md              # Panduan E2E testing
-│
 ├── backend/                    # FastAPI Application
 │   ├── app/
 │   │   ├── main.py             # Entry point, register routers & middleware

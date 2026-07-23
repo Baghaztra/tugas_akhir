@@ -16,7 +16,7 @@ Aplikasi manajemen produksi untuk usaha konveksi/jahit. Nuxt 4 + FastAPI + MySQL
 | [ml.md](ml.md) | XGBoost ranking, fitur, inference | Kerja di fitur prioritas |
 | [testing.md](testing.md) | Playwright E2E & API testing | Menjalankan / menulis test |
 | [testing-e2e.md](testing-e2e.md) | Panduan lengkap E2E testing | Setup, struktur, contoh test |
-| [deployment.md](deployment.md) | Build & deploy production | Deploy ke server |
+| [deployment.md](deployment.md) | Deploy VPS, CI/CD, Vercel, Docker lokal | Deploy ke server & development |
 | [troubleshooting.md](troubleshooting.md) | Masalah umum & solusi | Debugging |
 
 ## Ringkasan Cepat

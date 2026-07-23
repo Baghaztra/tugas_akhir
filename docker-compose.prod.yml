@@ -18,7 +18,7 @@ services:
     container_name: phpmyadmin
     restart: always
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
     environment:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: root
@@ -26,13 +26,13 @@ services:
       - mysql
 
   backend:
-    build: ./backend
+    image: ghcr.io/baghaztra/backend:latest
     container_name: backend
     restart: always
     ports:
       - "8000:8000"
     env_file:
-      - backend/.env
+      - .env
     environment:
       SQLALCHEMY_DATABASE_URL: "mysql+mysqlconnector://root:root@mysql:3306/tugas_akhir_refactor"
     volumes:

@@ -1,0 +1,27 @@
+name: "Deploy Backend"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy_prod:
+    name: Build & Deploy Production
+    uses: ./.github/workflows/_deploy-template.yml
+    with:
+      service_name: backend
+      context_dir: ./backend
+      dockerfile_path: ./backend/Dockerfile
+      image_name: backend
+      image_tag: latest
+      project_dir: "~/penjahit-yan"
+      compose_file: "docker-compose.prod.yml"
+      health_check_url: "http://localhost:8000/"
+    secrets:
+      SSH_HOST: ${{ secrets.VPS_HOST }}
+      SSH_USER: ${{ secrets.VPS_USER }}
+      SSH_KEY: ${{ secrets.VPS_SSH_KEY }}

@@ -63,19 +63,27 @@ npm run dev
 
 ```
 project/
-├── docker-compose.yml        # MySQL + phpMyAdmin
-├── docs/                     # Dokumentasi teknis
-├── backend/                  # FastAPI + SQLAlchemy + XGBoost
-│   ├── app/                  # Source code (models, schemas, crud, routers)
-│   ├── migrations/           # Alembic migration
-│   ├── seeds/                # Database seeder
-│   ├── xgboost/              # Model ML (.pkl)
-│   ├── manage.py             # CLI management
+├── docker-compose.yml          # MySQL + phpMyAdmin + Backend (lokal)
+├── docker-compose.prod.yml     # MySQL + phpMyAdmin + Backend (produksi)
+├── .github/
+│   └── workflows/
+│       ├── _deploy-template.yml   # Reusable deploy template
+│       └── deploy-backend.yml     # CI/CD auto-deploy ke VPS
+├── docs/                       # Dokumentasi teknis
+├── backend/                    # FastAPI + SQLAlchemy + XGBoost
+│   ├── Dockerfile              # Container image
+│   ├── entrypoint.sh           # Wait DB + migrate + start
+│   ├── .env.example            # Template env vars
+│   ├── app/                    # Source code (models, schemas, crud, routers)
+│   ├── migrations/             # Alembic migration
+│   ├── seeds/                  # Database seeder
+│   ├── xgboost/                # Model ML (.pkl)
+│   ├── manage.py               # CLI management
 │   └── requirements.txt
-└── frontend/                 # Nuxt 4 + Vue 3 + Tailwind CSS
-    ├── app/                  # Source code (pages, components, composables, stores)
-    ├── e2e/                  # Playwright E2E tests
-    ├── shared/               # Shared types
+└── frontend/                   # Nuxt 4 + Vue 3 + Tailwind CSS
+    ├── app/                    # Source code (pages, components, composables, stores)
+    ├── e2e/                    # Playwright E2E tests
+    ├── shared/                 # Shared types
     ├── nuxt.config.ts
     └── package.json
 ```
