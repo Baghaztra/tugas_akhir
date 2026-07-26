@@ -99,4 +99,4 @@ project/
 2. **Automatic Retrain** Saat ini model bersifat static, dilatih dengan data awal lalu disimpan dalam file pickel untuk diload dalam backend. Data historis terbaru dari database bisa digunakan untuk retrain model agar model terus dilatih diharapkan main baik dalam mengurutkan pesanan.
 3. **Akun Pelanggan** Saat ini pelanggan melihat pesanan berdasarkan kode pesanannya. Jika pelanggan dapat login, pelanggan bisa melihat histori pesanan, hingga pembayaran via apliaksi.
 4. **Layanan Permak** Aplikasi saat ini belum menyediakan fitur untuk permak secara terpisah, dimana jika ada pelanggan yang ingin memberbaiki pakaian, mungkin hanya sebagian fitur, aplikasi belum menyediakan fiturnya.
-
+5. **PWA** Aplikasi berbasis mobile yang memungkinkan akses walaupun ada kendala jaringan, dna nantinya akan mensingkronisasikan data saat sudaha da jaringan.
