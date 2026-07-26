@@ -30,7 +30,7 @@ export const usePortfolioAdmin = () => {
     form.append("description", payload.description ?? "");
     if (payload.image) form.append("image", payload.image);
 
-    const res = await $fetch<PortfolioItemRead>(`${apiBase}/portfolio`, {
+    const res = await $fetch<PortfolioItemRead>(`${apiBase}/portfolio/`, {
       method: "POST",
       body: form,
       credentials: 'include',
@@ -75,7 +75,7 @@ export const useProfileAdmin = () => {
   const { apiBase } = useRuntimeConfig().public;
 
   const updateProfile = async (data: Partial<BusinessProfileUpdate>): Promise<BusinessProfileUpdate> => {
-    return $fetch<BusinessProfileRead>(`${apiBase}/profile`, {
+    return $fetch<BusinessProfileRead>(`${apiBase}/profile/`, {
       method: "PUT",
       body: data,
       credentials: 'include',

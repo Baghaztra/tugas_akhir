@@ -58,7 +58,7 @@
 
           <!-- Items -->
           <div v-for="item in order.items" :key="item.id" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-            <img v-if="item.sketch" :src="backend+item.sketch" alt="">
+            <img v-if="item.sketch" :src="item.sketch" alt="">
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-semibold text-gray-900">{{ item.garmentType?.name || 'Jenis Pakaian' }} <span class="text-gray-400 font-normal text-sm">x{{ item.quantity }}</span></p>

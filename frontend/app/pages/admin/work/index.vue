@@ -83,7 +83,7 @@
                   <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
                     <p class="text-sm text-gray-500">Diambil {{ task.deadline }}</p>
                     <div class="flex items-center gap-2">
-                      <button v-if="task.sketch" @click="sketchPreviewUrl = apiBase + task.sketch"
+                      <button v-if="task.sketch" @click="sketchPreviewUrl = task.sketch"
                         class="text-xs text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors">
                         <Icon name="heroicons:eye" class="w-3.5 h-3.5" /> Sketsa
                       </button>
@@ -127,7 +127,7 @@
                   <div class="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
                     <p class="text-sm text-gray-500">Diambil {{ task.deadline }}</p>
                     <div class="flex items-center gap-2">
-                      <button v-if="task.sketch" @click="sketchPreviewUrl = apiBase + task.sketch"
+                      <button v-if="task.sketch" @click="sketchPreviewUrl = task.sketch"
                         class="text-xs text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors">
                         <Icon name="heroicons:eye" class="w-3.5 h-3.5" /> Sketsa
                       </button>
