@@ -4,10 +4,10 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: K4p4L0Ap4k4ng
-      MYSQL_DATABASE: tugas_akhir_refactor
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "127.0.0.1:3306:3306"
     volumes:
@@ -21,7 +21,7 @@ services:
       - "127.0.0.1:8080:80"
     environment:
       PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: K4p4L0Ap4k4ng
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - mysql
 
@@ -34,7 +34,7 @@ services:
     env_file:
       - .env
     environment:
-      SQLALCHEMY_DATABASE_URL: "mysql+mysqlconnector://root:K4p4L0Ap4k4ng@mysql:3306/tugas_akhir_refactor"
+      SQLALCHEMY_DATABASE_URL: "mysql+mysqlconnector://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}"
     volumes:
       - /home/baghaztra/penjahit-yan/uploads:/app/uploads
       - /home/baghaztra/penjahit-yan/entrypoint.sh:/app/entrypoint.sh
