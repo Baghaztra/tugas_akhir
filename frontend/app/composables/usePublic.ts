@@ -6,7 +6,7 @@ export const useProfile = () => {
 
 export const usePortfolio = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error, refresh } = useFetch<PortfolioItemRead[]>(`${apiBase}/portfolio`, {
+  const { data, status, error, refresh } = useFetch<PortfolioItemRead[]>(`${apiBase}/portfolio/`, {
     default: () => [] as PortfolioItemRead[],
   });
   return { portfolio: data, status, error, refresh };

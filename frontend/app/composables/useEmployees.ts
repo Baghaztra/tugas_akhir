@@ -5,7 +5,7 @@ import type {
 
 export const useEmployees = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error, refresh } = useFetch<AppWorker[]>(`${apiBase}/workers`, {
+  const { data, status, error, refresh } = useFetch<AppWorker[]>(`${apiBase}/workers/`, {
     credentials: 'include',
     default: () => [] as AppWorker[],
   });

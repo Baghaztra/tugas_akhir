@@ -1,6 +1,6 @@
 export const useUsers = () => {
   const { apiBase } = useRuntimeConfig().public
-  const { data, status, error, refresh } = useFetch<User[]>(`${apiBase}/users`, {
+  const { data, status, error, refresh } = useFetch<User[]>(`${apiBase}/users/`, {
     credentials: 'include',
     default: () => [] as User[],
   })
