@@ -1,6 +1,6 @@
 export const useGarmentTypes = () => {
   const { apiBase } = useRuntimeConfig().public;
-  const { data, status, error, refresh } = useFetch<GarmentType[]>(`${apiBase}/garment-types`, {
+  const { data, status, error, refresh } = useFetch<GarmentType[]>(`${apiBase}/garment-types/`, {
     credentials: 'include',
     default: () => [] as GarmentType[],
   });
