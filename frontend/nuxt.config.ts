@@ -12,9 +12,7 @@ export default defineNuxtConfig({
 
   // Hybrid Rendering: Mengatur strategi rendering per rute
   routeRules: {
-    // Landing page di-prerender (dijadikan statis saat build) untuk performa dan SEO maksimal
-    '/': { prerender: true },
-    
+    // Landing page SSR (data fresh dari database setiap request)
     // Halaman internal dijadikan SPA murni (client-side rendering) untuk mengurangi beban server
     '/login': { ssr: false },
     '/forgot-password': { ssr: false },
