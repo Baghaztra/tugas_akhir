@@ -172,7 +172,10 @@ const orderProgressBadge = (order: Order) => {
   return { variant: 'neutral' as const, label: 'Belum Dikerjakan' }
 }
 
-const isOverdue = (o: Order) => new Date(o.deadline) < new Date()
+const isOverdue = (o: Order) => {
+  if ((o.items ?? []).every(i => i.status === 'done')) return false
+  return new Date(o.deadline) < new Date()
+}
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
 </script>

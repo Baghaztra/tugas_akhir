@@ -3,12 +3,12 @@ import { APIRequestContext, Page, expect } from '@playwright/test'
 const API_BASE = 'http://localhost:8000'
 
 export const ADMIN_CREDENTIALS = {
-  name: 'Owner',
+  name: 'yan',
   password: '111111',
 }
 
 export const STAFF_CREDENTIALS = {
-  name: 'Staff 1',
+  name: 'Staff',
   password: '111111',
 }
 

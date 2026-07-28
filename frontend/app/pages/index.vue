@@ -108,7 +108,8 @@
     </section>
 
     <!-- Portfolio Section -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <section v-if="portfolioStatus === 'pending' || portfolioError || (portfolio && portfolio.length > 0)"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
       <div class="flex items-end justify-between mb-8">
         <div>
           <h2 class="text-3xl font-bold text-primary-700 mb-1">Portofolio</h2>

@@ -206,3 +206,72 @@ test.describe('Gambar Sketsa', () => {
     await expect(modal).not.toBeVisible()
   })
 })
+
+test.describe('Sketsa di Detail Pesanan', () => {
+  let orderId: number
+
+  test.beforeEach(async ({ request, page }) => {
+    await loginAdmin(request)
+    await loginAdminUI(page)
+
+    // 1x1 white PNG
+    const pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+    const sketchBuffer = Buffer.from(pngBase64, 'base64')
+
+    const orderData = {
+      ...TEST_ORDER,
+      items: [{ ...TEST_ORDER.items[0] }],
+    }
+
+    const res = await request.post('http://localhost:8000/orders/', {
+      multipart: {
+        data: JSON.stringify(orderData),
+        sketch_files: {
+          name: 'sketch_item_0.png',
+          mimeType: 'image/png',
+          buffer: sketchBuffer,
+        },
+      },
+    })
+    expect(res.ok()).toBeTruthy()
+    const order = await res.json()
+    orderId = order.id
+  })
+
+  test.afterEach(async ({ request }) => {
+    try { await apiDelete(request, `/orders/${orderId}`) } catch {}
+  })
+
+  test('item with sketch show Lihat Sketsa button', async ({ page }) => {
+    await page.goto(`/admin/orders/${orderId}`)
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.locator('button', { hasText: 'Lihat Sketsa' }).first()).toBeVisible()
+  })
+
+  test('click Lihat Sketsa open sketch preview modal', async ({ page }) => {
+    await page.goto(`/admin/orders/${orderId}`)
+    await page.waitForLoadState('networkidle')
+
+    await page.locator('button', { hasText: 'Lihat Sketsa' }).first().click()
+
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
+    await expect(modal.locator('img')).toBeVisible()
+  })
+
+  test('sketch preview modal close on X button', async ({ page }) => {
+    await page.goto(`/admin/orders/${orderId}`)
+    await page.waitForLoadState('networkidle')
+
+    await page.locator('button', { hasText: 'Lihat Sketsa' }).first().click()
+
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
+
+    await modal.locator('button').filter({ has: page.locator('[class*="x-mark"]') }).click()
+    await page.waitForTimeout(500)
+
+    await expect(modal).not.toBeVisible()
+  })
+})

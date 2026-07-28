@@ -38,6 +38,13 @@ export const TEST_PORTFOLIO = {
   description: 'Portofolio E2E test - please ignore',
 }
 
+export const TEST_PORTFOLIO_IG = {
+  title: 'E2E Test IG Portfolio',
+  category: 'Kebaya',
+  description: 'Portofolio dari Instagram E2E test',
+  instagram_url: 'https://www.instagram.com/p/CxamplePost123/',
+}
+
 export const TEST_USER = {
   name: 'E2E Test User',
   email: 'e2e.testuser@rumahjahit.id',

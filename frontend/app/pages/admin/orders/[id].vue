@@ -58,7 +58,13 @@
 
           <!-- Items -->
           <div v-for="item in order.items" :key="item.id" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-            <img v-if="item.sketch" :src="item.sketch" alt="">
+            <div v-if="item.sketch" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <img :src="item.sketch" alt="Sketsa" class="w-16 h-16 object-cover rounded-lg border border-gray-200" />
+              <button @click="sketchPreviewUrl = item.sketch"
+                class="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline">
+                Lihat Sketsa
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-semibold text-gray-900">{{ item.garmentType?.name || 'Jenis Pakaian' }} <span class="text-gray-400 font-normal text-sm">x{{ item.quantity }}</span></p>
@@ -166,6 +172,13 @@
       </div>
     </template>
   </div>
+
+  <!-- Sketch Preview Modal -->
+  <ui-app-modal :show="!!sketchPreviewUrl" title="Sketsa Item" size="xl" @close="sketchPreviewUrl = null">
+    <div class="p-4">
+      <img v-if="sketchPreviewUrl" :src="sketchPreviewUrl" alt="Sketsa" class="w-full h-auto rounded-xl" loading="lazy" />
+    </div>
+  </ui-app-modal>
 </template>
 
 <script setup lang="ts">
@@ -177,6 +190,8 @@ const { order, status, refresh } = useOrderDetail(orderId)
 const { updateOrder, loading: paymentSaving, error: paymentError } = useUpdateOrder()
 
 useSeoMeta({ title: `Detail Pesanan ${orderId} — Penjahit Yan` })
+
+const sketchPreviewUrl = ref<string | null>(null)
 
 const backend = useRuntimeConfig().public.apiBase
 

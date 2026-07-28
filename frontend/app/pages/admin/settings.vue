@@ -166,7 +166,7 @@
     </ui-app-modal>
 
     <!-- Modal: Tambah Portofolio -->
-    <ui-app-modal :show="showPortfolioModal" title="Tambah Portofolio" size="sm" @close="showPortfolioModal = false">
+    <ui-app-modal :show="showPortfolioModal" title="Tambah Portofolio" size="sm" prevent-close-on-click-outside @close="showPortfolioModal = false">
       <div class="p-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <div>
@@ -188,21 +188,58 @@
           </div>
         </div>
 
-        <div
-          class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-primary-300 hover:bg-primary-50/30 transition-colors cursor-pointer"
-          @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
-          <Icon name="heroicons:cloud-arrow-up" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p class="text-sm font-medium text-gray-600 mb-1">Klik atau seret foto ke sini</p>
-          <p class="text-xs text-gray-400">PNG, JPG, WEBP hingga 5MB</p>
-          <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
+        <!-- Tab switcher -->
+        <div class="flex gap-1 bg-gray-100 rounded-xl p-1 mb-4">
+          <button @click="imageMode = 'instagram'"
+            :class="[imageMode === 'instagram' ? 'bg-white shadow text-gray-900' : 'text-gray-500']"
+            class="flex-1 text-sm py-2 rounded-lg transition-all font-medium">
+            Link Instagram
+          </button>
+          <button @click="imageMode = 'file'"
+            :class="[imageMode === 'file' ? 'bg-white shadow text-gray-900' : 'text-gray-500']"
+            class="flex-1 text-sm py-2 rounded-lg transition-all font-medium">
+            Upload Gambar
+          </button>
         </div>
 
-        <div v-if="uploadPreview" class="mt-3 relative inline-block">
-          <img :src="uploadPreview" class="h-24 w-auto rounded-xl object-cover border border-gray-100" />
-          <button @click="clearUpload"
-            class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-            ×
-          </button>
+        <!-- Tab: Instagram -->
+        <div v-if="imageMode === 'instagram'" class="space-y-3">
+          <div class="flex gap-2">
+            <input v-model="igUrl" placeholder="https://www.instagram.com/p/..."
+              class="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+            <ui-app-button size="sm" variant="outline" :loading="igPreviewLoading" :disabled="!igUrl.trim()"
+              @click="fetchIgPreview">
+              Preview
+            </ui-app-button>
+          </div>
+          <div v-if="igPreviewUrl" class="relative inline-block">
+            <img :src="igPreviewUrl" class="h-32 w-auto rounded-xl object-cover border border-gray-100" />
+            <button @click="clearIgPreview"
+              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+              ×
+            </button>
+          </div>
+          <p v-if="igPreviewError" class="text-xs text-red-400">{{ igPreviewError }}</p>
+        </div>
+
+        <!-- Tab: Upload File -->
+        <div v-else>
+          <div
+            class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-primary-300 hover:bg-primary-50/30 transition-colors cursor-pointer"
+            @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
+            <Icon name="heroicons:cloud-arrow-up" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p class="text-sm font-medium text-gray-600 mb-1">Klik atau seret foto ke sini</p>
+            <p class="text-xs text-gray-400">PNG, JPG, WEBP hingga 5MB</p>
+            <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
+          </div>
+
+          <div v-if="uploadPreview" class="mt-3 relative inline-block">
+            <img :src="uploadPreview" class="h-24 w-auto rounded-xl object-cover border border-gray-100" />
+            <button @click="clearUpload"
+              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+              ×
+            </button>
+          </div>
         </div>
 
         <div class="flex gap-2 justify-end pt-4">
@@ -321,7 +358,13 @@ const saveSettings = async () => {
 // ─── Portfolio Modal ────────────────────────────────────────────────────────
 const showPortfolioModal = ref(false)
 const { portfolio, status: portfolioStatus, refresh: refreshPortfolio } = usePortfolio()
-const { createItem, deleteItem } = usePortfolioAdmin()
+const { createItem, deleteItem, previewInstagram } = usePortfolioAdmin()
+
+const imageMode = ref<'instagram' | 'file'>('instagram')
+const igUrl = ref('')
+const igPreviewUrl = ref<string | null>(null)
+const igPreviewLoading = ref(false)
+const igPreviewError = ref('')
 
 const fileInput = ref<HTMLInputElement>()
 const uploading = ref(false)
@@ -331,8 +374,29 @@ const uploadFile = ref<File | null>(null)
 const uploadForm = reactive({ title: '', category: '', description: '' })
 
 const canUpload = computed(() =>
-  uploadForm.title.trim() && uploadForm.category.trim()
+  uploadForm.title.trim() && uploadForm.category.trim() &&
+  (imageMode.value === 'instagram' ? !!igPreviewUrl.value : true)
 )
+
+const fetchIgPreview = async () => {
+  igPreviewLoading.value = true
+  igPreviewError.value = ''
+  igPreviewUrl.value = null
+  try {
+    const res = await previewInstagram(igUrl.value)
+    igPreviewUrl.value = res.thumbnail_url
+  } catch {
+    igPreviewError.value = 'Gagal mengambil gambar dari URL tersebut'
+  } finally {
+    igPreviewLoading.value = false
+  }
+}
+
+const clearIgPreview = () => {
+  igUrl.value = ''
+  igPreviewUrl.value = null
+  igPreviewError.value = ''
+}
 
 const triggerFileInput = () => fileInput.value?.click()
 
@@ -367,12 +431,16 @@ const uploadPortfolio = async () => {
       title: uploadForm.title,
       category: uploadForm.category,
       description: uploadForm.description,
-      image: uploadFile.value ?? undefined,
+      ...(imageMode.value === 'instagram'
+        ? { thumbnail_url: igPreviewUrl.value! }
+        : { image: uploadFile.value ?? undefined }),
     })
     uploadForm.title = ''
     uploadForm.category = ''
     uploadForm.description = ''
     clearUpload()
+    clearIgPreview()
+    imageMode.value = 'instagram'
     showPortfolioModal.value = false
     await refreshPortfolio()
     showToast('Portofolio berhasil ditambahkan!', 'success')

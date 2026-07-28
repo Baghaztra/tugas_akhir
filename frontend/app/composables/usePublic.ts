@@ -17,18 +17,31 @@ export const usePortfolio = () => {
 export const usePortfolioAdmin = () => {
   const { apiBase } = useRuntimeConfig().public;
 
-  /** Buat item portofolio baru dengan gambar (multipart/form-data). */
+  /** Preview gambar dari Instagram post (tanpa simpan ke DB). */
+  const previewInstagram = async (instagramUrl: string): Promise<{ thumbnail_url: string }> => {
+    const form = new FormData();
+    form.append("instagram_url", instagramUrl);
+    return $fetch<{ thumbnail_url: string }>(`${apiBase}/portfolio/preview`, {
+      method: "POST",
+      body: form,
+      credentials: 'include',
+    });
+  };
+
+  /** Buat item portofolio baru (opsional: gambar atau thumbnail_url Instagram). */
   const createItem = async (payload: {
     title: string;
     category: string;
     description?: string;
     image?: File;
-  }): Promise<PortfolioItemCreate> => {
+    thumbnail_url?: string;
+  }): Promise<PortfolioItemRead> => {
     const form = new FormData();
     form.append("title", payload.title);
     form.append("category", payload.category);
     form.append("description", payload.description ?? "");
-    if (payload.image) form.append("image", payload.image);
+    if (payload.thumbnail_url) form.append("thumbnail_url", payload.thumbnail_url);
+    else if (payload.image) form.append("image", payload.image);
 
     const res = await $fetch<PortfolioItemRead>(`${apiBase}/portfolio/`, {
       method: "POST",
@@ -66,7 +79,7 @@ export const usePortfolioAdmin = () => {
     await $fetch(`${apiBase}/portfolio/${id}`, { method: "DELETE", credentials: 'include' });
   };
 
-  return { createItem, updateImage, updateItem, deleteItem };
+  return { previewInstagram, createItem, updateImage, updateItem, deleteItem };
 };
 
 // ─── Admin composable (Profil bisnis) ─────────────────────────────────────────
