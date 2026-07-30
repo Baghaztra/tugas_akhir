@@ -92,7 +92,7 @@ test.describe('Forgot Password', () => {
       expect(forgotRes.ok()).toBeTruthy()
 
       const loginBefore = await request.post(`${API_BASE}/auth/login`, {
-        data: { name: 'Owner', password: '111111' },
+        data: { name: 'Yan', password: '111111' },
         headers: { 'Content-Type': 'application/json' },
       })
       expect(loginBefore.ok()).toBeTruthy()
