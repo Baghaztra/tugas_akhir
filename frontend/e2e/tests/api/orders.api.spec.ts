@@ -7,9 +7,12 @@ test.describe('Orders API', () => {
     await loginAdmin(request)
   })
 
-  test('GET /orders/ return array', async ({ request }) => {
+  test('GET /orders/ return paginated orders', async ({ request }) => {
     const data = await apiGet(request, '/orders/')
-    expect(Array.isArray(data)).toBeTruthy()
+    expect(data.items).toBeDefined()
+    expect(Array.isArray(data.items)).toBeTruthy()
+    expect(data.total).toBeDefined()
+    expect(typeof data.total).toBe('number')
   })
 
   test('POST /orders/ create order', async ({ request }) => {
