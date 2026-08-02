@@ -66,8 +66,9 @@ const mode = (newMode: 'draw' | 'select' | 'erase') => {
 
 const templates = [
   { id: 'kemeja', label: 'Kemeja', url: '/templates/kemeja.svg' },
-  { id: 'celana', label: 'Celana', url: '/templates/celana.svg' },
   { id: 'gamis', label: 'Gamis', url: '/templates/gamis.svg' },
+  { id: 'blouse', label: 'Blouse', url: '/templates/blouse.svg' },
+  { id: 'rok', label: 'Rok', url: '/templates/rok.svg' },
 ]
 
 watch(() => props.open, async (val) => {

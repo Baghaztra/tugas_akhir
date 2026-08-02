@@ -56,6 +56,13 @@ export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
     const group = fabric.util.groupSVGElements(validObjects, options);
 
     group.set({ selectable: false, evented: false });
+
+    const maxW = fabricCanvas.value.getWidth() - 40;
+    const maxH = fabricCanvas.value.getHeight() - 40;
+    const scaleX = maxW / (group.width || 1);
+    const scaleY = maxH / (group.height || 1);
+    group.scale(Math.min(scaleX, scaleY, 1));
+
     fabricCanvas.value.add(group);
 
     fabricCanvas.value.centerObject(group);
