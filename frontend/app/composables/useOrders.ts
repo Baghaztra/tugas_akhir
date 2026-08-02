@@ -1,21 +1,34 @@
-export const useOrders = (queryParams?: { search?: Ref<string>; status?: Ref<string> }) => {
+export const useOrders = (queryParams?: {
+  search?: Ref<string>
+  status?: Ref<string>
+  paymentStatus?: Ref<string>
+  page?: Ref<number>
+  pageSize?: Ref<number>
+}) => {
   const { apiBase } = useRuntimeConfig().public;
 
-  // Clean up empty params to avoid sending `?search=&status=`
   const query = computed(() => {
     const q: Record<string, any> = {};
     if (queryParams?.search?.value) q.search = queryParams.search.value;
     if (queryParams?.status?.value) q.status = queryParams.status.value;
+    if (queryParams?.paymentStatus?.value) q.payment_status = queryParams.paymentStatus.value;
+    if (queryParams?.page?.value && queryParams?.pageSize?.value) {
+      q.skip = (queryParams.page.value - 1) * queryParams.pageSize.value;
+      q.limit = queryParams.pageSize.value;
+    }
     return q;
   });
 
-  const { data, status, error, refresh } = useFetch<Order[]>(`${apiBase}/orders/`, {
+  const { data, status, error, refresh } = useFetch<{ items: Order[]; total: number }>(`${apiBase}/orders/`, {
     query,
     credentials: 'include',
-    default: () => [] as Order[],
+    default: () => ({ items: [] as Order[], total: 0 }),
   });
 
-  return { orders: data, status, error, refresh };
+  const orders = computed(() => data.value?.items ?? []);
+  const total = computed(() => data.value?.total ?? 0);
+
+  return { orders, total, status, error, refresh };
 };
 
 // ─── Tracking publik by receipt number ────────────────────────────────────────

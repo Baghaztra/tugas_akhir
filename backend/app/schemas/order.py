@@ -159,6 +159,10 @@ class Order(OrderBase):
     class Config:
         from_attributes = True
 
+class PaginatedOrders(BaseModel):
+    items: List[Order]
+    total: int
+
 class CustomerHistoryItem(BaseModel):
     customerName: str
     customerPhone: Optional[str] = None

@@ -99,6 +99,13 @@
       </div>
     </div>
 
+    <ui-app-paginator
+      :total="total"
+      :page-size="pageSize"
+      :current-page="page"
+      @update:current-page="page = $event"
+    />
+
     <ui-app-confirm-modal
       :show="showConfirm"
       title="Konfirmasi Pembayaran"
@@ -121,8 +128,13 @@ definePageMeta({ layout: 'admin' })
 
 const search = ref('')
 const filterPayment = ref('')
+const page = ref(1)
+const pageSize = ref(10)
 
-const { orders, status, refresh } = useOrders({ search })
+// Reset page when search or filter changes
+watch([search, filterPayment], () => { page.value = 1 })
+
+const { orders, total, status, refresh } = useOrders({ search, paymentStatus: filterPayment, page, pageSize })
 const { updateOrder, loading: updating } = useUpdateOrder()
 
 const showConfirm = ref(false)
@@ -130,13 +142,7 @@ const confirmingOrderId = ref<number | null>(null)
 const confirmingOrderName = ref('')
 const showGarmentTypes = ref(false)
 
-const filteredOrders = computed(() => {
-  let result = orders.value ?? []
-  if (filterPayment.value) {
-    result = result.filter(o => o.paymentStatus === filterPayment.value)
-  }
-  return result
-})
+const filteredOrders = computed(() => orders.value ?? [])
 
 const paymentBadge = (p: string) => ({
   paid: { variant: 'success' as const, label: 'Lunas' },

@@ -13,6 +13,7 @@ from ..schemas.order import (
     OrderTracking,
     OrderCreateFormData,
     CustomerHistoryItem,
+    PaginatedOrders,
 )
 from ..database import get_db
 from ..models.order import Order as OrderModel, OrderStatus, OrderItem
@@ -71,11 +72,12 @@ async def create_order(
 
 
 
-@router.get("/", response_model=List[Order])
+@router.get("/", response_model=PaginatedOrders)
 def read_orders(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = Query(None),
+    payment_status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -83,7 +85,8 @@ def read_orders(
         db,
         skip=skip,
         limit=limit,
-        search=search
+        search=search,
+        payment_status=payment_status,
     )
 
 @router.get("/history", response_model=List[CustomerHistoryItem])

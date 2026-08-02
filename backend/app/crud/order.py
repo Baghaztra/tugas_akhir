@@ -61,7 +61,7 @@ def get_customer_history(db: Session, search: str, limit: int = 20):
     )
 
 
-def get_orders(db: Session, skip: int = 0, limit: int = 100, search: str = None):
+def get_orders(db: Session, skip: int = 0, limit: int = 100, search: str = None, payment_status: str = None):
     query = db.query(Order).options(
         joinedload(Order.items).joinedload(OrderItem.garmentType)
     )
@@ -72,13 +72,18 @@ def get_orders(db: Session, skip: int = 0, limit: int = 100, search: str = None)
             Order.receiptNumber.ilike(f"%{search}%")
         )
 
-    return (
+    if payment_status:
+        query = query.filter(Order.paymentStatus == payment_status)
+
+    total = query.count()
+    items = (
         query
         .order_by(Order.id.desc())
         .offset(skip)
         .limit(limit)
         .all()
     )
+    return {"items": items, "total": total}
 
 async def create_order(
     db: Session,

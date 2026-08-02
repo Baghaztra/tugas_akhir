@@ -62,7 +62,7 @@
                 <p class="text-gray-500">Tidak ada riwayat pekerjaan yang cocok.</p>
               </td>
             </tr>
-            <tr v-else v-for="item in doneItems" :key="`${item.order.id}-${item.id}`"
+            <tr v-else v-for="item in paginatedDoneItems" :key="`${item.order.id}-${item.id}`"
               class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4">
                 <div class="font-medium text-gray-900">{{ item.garmentType?.name }}</div>
@@ -89,6 +89,13 @@
         </table>
       </div>
     </div>
+
+    <ui-app-paginator
+      :total="doneItems.length"
+      :page-size="pageSize"
+      :current-page="page"
+      @update:current-page="page = $event"
+    />
   </div>
 </template>
 
@@ -97,7 +104,13 @@ definePageMeta({ layout: 'admin' })
 useSeoMeta({ title: 'Riwayat Pekerjaan — Penjahit Yan' })
 
 const searchQuery = ref('')
+const page = ref(1)
+const pageSize = ref(10)
+
 const { orders, status } = useOrders({ search: searchQuery })
+
+// Reset page when search changes
+watch(searchQuery, () => { page.value = 1 })
 
 const doneItems = computed(() => {
   if (!orders.value) return []
@@ -122,6 +135,11 @@ const doneItems = computed(() => {
 
   // Sort by order deadline descending
   return items.sort((a, b) => new Date(b.order.deadline).getTime() - new Date(a.order.deadline).getTime())
+})
+
+const paginatedDoneItems = computed(() => {
+  const start = (page.value - 1) * pageSize.value
+  return doneItems.value.slice(start, start + pageSize.value)
 })
 
 const formatDate = (d: string) => {
