@@ -52,6 +52,8 @@ def delete_user(db: Session, user_id: int):
     db_user = get_user(db, user_id)
     if not db_user:
         return None
+    from ..models.password_reset_token import PasswordResetToken
+    db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user_id).delete()
     db.delete(db_user)
     db.commit()
     return db_user
