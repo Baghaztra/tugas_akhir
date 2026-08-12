@@ -173,13 +173,29 @@ test.describe('Gambar Sketsa', () => {
     await expect(modal.locator('button', { hasText: 'Batal' })).toBeVisible()
   })
 
+  test('sketch modal has camera and gallery buttons', async ({ page }) => {
+    await loginAdminUI(page)
+    await page.goto('/admin/orders/create')
+    await page.waitForLoadState('networkidle')
+
+    const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
+    await sketchButton.click()
+
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
+
+    await expect(modal.locator('button', { hasText: 'Kamera' })).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Galeri' })).toBeVisible()
+    await expect(modal.locator('input[type="file"][accept="image/*"][capture="environment"]')).toBeAttached()
+    await expect(modal.locator('input[type="file"][accept="image/*"]:not([capture])')).toBeAttached()
+  })
+
   test('sketch modal has template buttons', async ({ page }) => {
     await loginAdminUI(page)
     await page.goto('/admin/orders/create')
     await page.waitForLoadState('networkidle')
 
     const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    await expect(sketchButton).toBeVisible()
     await sketchButton.click()
 
     const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
@@ -194,7 +210,6 @@ test.describe('Gambar Sketsa', () => {
     await page.waitForLoadState('networkidle')
 
     const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    await expect(sketchButton).toBeVisible()
     await sketchButton.click()
 
     const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
@@ -206,23 +221,7 @@ test.describe('Gambar Sketsa', () => {
     await expect(modal).not.toBeVisible()
   })
 
-  test('sketch modal has Gambar and Kamera/Galeri tabs', async ({ page }) => {
-    await loginAdminUI(page)
-    await page.goto('/admin/orders/create')
-    await page.waitForLoadState('networkidle')
-
-    const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    await expect(sketchButton).toBeVisible()
-    await sketchButton.click()
-
-    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-    await expect(modal).toBeVisible()
-
-    await expect(modal.locator('button', { hasText: 'Gambar' })).toBeVisible()
-    await expect(modal.locator('button', { hasText: 'Kamera / Galeri' })).toBeVisible()
-  })
-
-  test('sketch modal shows camera and gallery buttons when Kamera/Galeri tab clicked', async ({ page }) => {
+  test('sketch modal has move tool in toolbar', async ({ page }) => {
     await loginAdminUI(page)
     await page.goto('/admin/orders/create')
     await page.waitForLoadState('networkidle')
@@ -233,27 +232,8 @@ test.describe('Gambar Sketsa', () => {
     const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
     await expect(modal).toBeVisible()
 
-    await modal.locator('button', { hasText: 'Kamera / Galeri' }).click()
-
-    await expect(modal.locator('button', { hasText: 'Ambil Foto' })).toBeVisible()
-    await expect(modal.locator('button', { hasText: 'Pilih dari Galeri' })).toBeVisible()
-    await expect(modal.locator('input[type="file"][accept="image/*"][capture="environment"]')).toBeAttached()
-    await expect(modal.locator('input[type="file"][accept="image/*"]:not([capture])')).toBeAttached()
-  })
-
-  test('sketch modal Gambar tab is selected by default', async ({ page }) => {
-    await loginAdminUI(page)
-    await page.goto('/admin/orders/create')
-    await page.waitForLoadState('networkidle')
-
-    const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
-    await sketchButton.click()
-
-    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
-    await expect(modal).toBeVisible()
-
-    await expect(modal.locator('canvas').first()).toBeVisible()
-    await expect(modal.locator('button', { hasText: 'Kemeja' })).toBeVisible()
+    // move tool has title="Geser"
+    await expect(modal.locator('button[title="Geser"]')).toBeVisible()
   })
 })
 

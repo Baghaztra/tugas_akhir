@@ -21,7 +21,7 @@ export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
     ) +
     '") 16 16, crosshair';
 
-  const init = async (templateUrl?: string) => {
+  const init = async (width = 600, height = 500) => {
     const fabric = await import("fabric");
 
     if (!canvasEl.value) return;
@@ -33,29 +33,25 @@ export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
 
     fabricCanvas.value = new fabric.Canvas(canvasEl.value, {
       isDrawingMode: true,
-      width: 600,
-      height: 500,
-      backgroundColor: "#fff"
+      width,
+      height,
+      backgroundColor: "#fff",
+      selection: false,
     });
 
     fabricCanvas.value.freeDrawingBrush = new fabric.PencilBrush(fabricCanvas.value);
-
     fabricCanvas.value.freeDrawingBrush.width = 2;
     fabricCanvas.value.freeDrawingBrush.color = "#222";
-
-    if (templateUrl) await loadTemplate(templateUrl);
   };
 
   const loadTemplate = async (url: string) => {
     const fabric = await import("fabric");
 
     const { objects, options } = await fabric.loadSVGFromURL(url);
-
     const validObjects = objects.filter((o): o is NonNullable<typeof o> => o !== null);
-
     const group = fabric.util.groupSVGElements(validObjects, options);
 
-    group.set({ selectable: false, evented: false });
+    group.set({ selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false, hasBorders: false });
 
     const maxW = fabricCanvas.value.getWidth() - 40;
     const maxH = fabricCanvas.value.getHeight() - 40;
@@ -64,10 +60,28 @@ export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
     group.scale(Math.min(scaleX, scaleY, 1));
 
     fabricCanvas.value.add(group);
-
     fabricCanvas.value.centerObject(group);
-
     fabricCanvas.value.sendToBack(group);
+    fabricCanvas.value.renderAll();
+  };
+
+  // ponytail: load photo as non-selectable background, draw on top
+  const loadImage = async (dataUrl: string) => {
+    const fabric = await import("fabric");
+
+    const img = await fabric.FabricImage.fromURL(dataUrl, { crossOrigin: "anonymous" });
+
+    const maxW = fabricCanvas.value.getWidth() - 20;
+    const maxH = fabricCanvas.value.getHeight() - 20;
+    const scaleX = maxW / (img.width || 1);
+    const scaleY = maxH / (img.height || 1);
+    img.scale(Math.min(scaleX, scaleY, 1));
+
+    img.set({ selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false, hasBorders: false });
+
+    fabricCanvas.value.add(img);
+    fabricCanvas.value.centerObject(img);
+    fabricCanvas.value.sendToBack(img);
     fabricCanvas.value.renderAll();
   };
 
@@ -75,21 +89,34 @@ export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
     if (!fabricCanvas.value) return;
 
     const brush = fabricCanvas.value.freeDrawingBrush;
-    const canvasEl = fabricCanvas.value.upperCanvasEl;
+    const el = fabricCanvas.value.upperCanvasEl;
 
-    fabricCanvas.value.isDrawingMode = mode !== "select";
-
-    if (mode === "erase") {
-      brush.width = 16;
-      brush.color = "#fff";
-      canvasEl.style.cursor = eraserCursor;
-    } else if (mode === "draw") {
-      brush.width = 2;
-      brush.color = "#222";
-      brush.globalCompositeOperation = "source-over";
-      canvasEl.style.cursor = pencilCursor;
+    if (mode === "select") {
+      fabricCanvas.value.isDrawingMode = false;
+      fabricCanvas.value.selection = true;
+      fabricCanvas.value.getObjects().forEach((o: any) => {
+        if (o.lockMovementX) return; // skip background image/template
+        o.set({ selectable: true, evented: true });
+      });
+      el.style.cursor = "move";
     } else {
-      canvasEl.style.cursor = "default";
+      fabricCanvas.value.selection = false;
+      fabricCanvas.value.getObjects().forEach((o: any) => {
+        o.set({ selectable: false, evented: false });
+      });
+
+      if (mode === "erase") {
+        fabricCanvas.value.isDrawingMode = true;
+        brush.width = 16;
+        brush.color = "#fff";
+        el.style.cursor = eraserCursor;
+      } else {
+        fabricCanvas.value.isDrawingMode = true;
+        brush.width = 2;
+        brush.color = "#222";
+        brush.globalCompositeOperation = "source-over";
+        el.style.cursor = pencilCursor;
+      }
     }
   };
 
@@ -106,7 +133,11 @@ export function useSketchCanvas(canvasEl: Ref<HTMLCanvasElement | null>) {
 
   const exportPNG = (): string => fabricCanvas.value?.toDataURL({ format: "png" }) ?? "";
 
+  const setDimensions = (width: number, height: number) => {
+    fabricCanvas.value?.setDimensions({ width, height });
+  };
+
   onUnmounted(() => fabricCanvas.value?.dispose());
 
-  return { init, loadTemplate, setMode, undo, clear, exportPNG };
+  return { init, loadTemplate, loadImage, setMode, undo, clear, exportPNG, setDimensions };
 }
