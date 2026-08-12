@@ -54,17 +54,26 @@
 
         <!-- CAMERA / GALLERY MODE -->
         <template v-else>
-          <!-- ponytail: native file input, no lib needed; capture opens camera on mobile -->
+          <!-- ponytail: native inputs, no lib; capture forces camera on mobile -->
           <div class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center space-y-3">
             <Icon name="heroicons:camera" class="w-10 h-10 mx-auto text-gray-300" />
             <p class="text-xs text-gray-500">Ambil foto sketsa dari kamera atau pilih dari galeri</p>
-            <input ref="fileInputEl" type="file" accept="image/*" capture="environment"
+            <input ref="cameraInputEl" type="file" accept="image/*" capture="environment"
               @change="onFilePicked" class="hidden" />
-            <button type="button" @click="fileInputEl?.click()"
-              class="text-xs px-4 py-2 rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-colors">
-              <Icon name="heroicons:photo" class="w-3.5 h-3.5 inline mr-1" />
-              Pilih Foto
-            </button>
+            <input ref="galleryInputEl" type="file" accept="image/*"
+              @change="onFilePicked" class="hidden" />
+            <div class="flex gap-2 justify-center">
+              <button type="button" @click="cameraInputEl?.click()"
+                class="text-xs px-4 py-2 rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-colors">
+                <Icon name="heroicons:camera" class="w-3.5 h-3.5 inline mr-1" />
+                Ambil Foto
+              </button>
+              <button type="button" @click="galleryInputEl?.click()"
+                class="text-xs px-4 py-2 rounded-xl border border-primary-300 text-primary-700 hover:bg-primary-50 transition-colors">
+                <Icon name="heroicons:photo" class="w-3.5 h-3.5 inline mr-1" />
+                Pilih dari Galeri
+              </button>
+            </div>
           </div>
           <!-- Preview -->
           <div v-if="cameraPreview" class="relative w-40">
@@ -97,7 +106,8 @@ const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: []; save: [dataUrl: string] }>()
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
-const fileInputEl = ref<HTMLInputElement | null>(null)
+const cameraInputEl = ref<HTMLInputElement | null>(null)
+const galleryInputEl = ref<HTMLInputElement | null>(null)
 const { init, loadTemplate, setMode, undo, clear, exportPNG } = useSketchCanvas(canvasEl)
 
 const active = ref<'draw' | 'select' | 'erase'>('draw')
@@ -130,12 +140,33 @@ const applyTemplate = async (url: string) => {
   await loadTemplate(url)
 }
 
-const onFilePicked = (e: Event) => {
+// ponytail: canvas API for compression, no lib; max 1920px, JPEG 0.75
+const compressImage = (file: File): Promise<string> => new Promise((resolve) => {
+  const img = new Image()
+  const url = URL.createObjectURL(file)
+  img.onload = () => {
+    URL.revokeObjectURL(url)
+    const MAX = 1920
+    let w = img.width
+    let h = img.height
+    if (w > MAX || h > MAX) {
+      const ratio = Math.min(MAX / w, MAX / h)
+      w = Math.round(w * ratio)
+      h = Math.round(h * ratio)
+    }
+    const c = document.createElement('canvas')
+    c.width = w
+    c.height = h
+    c.getContext('2d')!.drawImage(img, 0, 0, w, h)
+    resolve(c.toDataURL('image/jpeg', 0.75))
+  }
+  img.src = url
+})
+
+const onFilePicked = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => { cameraPreview.value = reader.result as string }
-  reader.readAsDataURL(file)
+  cameraPreview.value = await compressImage(file)
 }
 
 const save = () => {

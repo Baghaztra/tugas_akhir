@@ -222,7 +222,7 @@ test.describe('Gambar Sketsa', () => {
     await expect(modal.locator('button', { hasText: 'Kamera / Galeri' })).toBeVisible()
   })
 
-  test('sketch modal shows file input when Kamera/Galeri tab clicked', async ({ page }) => {
+  test('sketch modal shows camera and gallery buttons when Kamera/Galeri tab clicked', async ({ page }) => {
     await loginAdminUI(page)
     await page.goto('/admin/orders/create')
     await page.waitForLoadState('networkidle')
@@ -235,8 +235,10 @@ test.describe('Gambar Sketsa', () => {
 
     await modal.locator('button', { hasText: 'Kamera / Galeri' }).click()
 
-    await expect(modal.locator('input[type="file"][accept="image/*"]')).toBeAttached()
-    await expect(modal.locator('button', { hasText: 'Pilih Foto' })).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Ambil Foto' })).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Pilih dari Galeri' })).toBeVisible()
+    await expect(modal.locator('input[type="file"][accept="image/*"][capture="environment"]')).toBeAttached()
+    await expect(modal.locator('input[type="file"][accept="image/*"]:not([capture])')).toBeAttached()
   })
 
   test('sketch modal Gambar tab is selected by default', async ({ page }) => {
