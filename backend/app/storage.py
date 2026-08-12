@@ -22,6 +22,11 @@ def save_file(file: UploadFile, folder: str = "portfolio") -> str:
     with open(dest_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    try:
+        os.chmod(dest_path, 0o644)
+    except OSError:
+        pass  # ponytail: Windows no-op, Linux chmod gagal = admin fix manual
+
     baseUrl = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
     return f"{baseUrl}/uploads/{folder}/{filename}"
 
@@ -40,6 +45,11 @@ async def save_file_async(file: UploadFile, folder: str = "portfolio") -> str:
         dest_path = dest_dir / filename
 
         shutil.move(tmp_path, dest_path)
+
+        try:
+            os.chmod(dest_path, 0o644)
+        except OSError:
+            pass  # ponytail: Windows no-op, Linux chmod gagal = admin fix manual
 
         baseUrl = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
         return f"{baseUrl}/uploads/{folder}/{filename}"
