@@ -205,6 +205,54 @@ test.describe('Gambar Sketsa', () => {
 
     await expect(modal).not.toBeVisible()
   })
+
+  test('sketch modal has Gambar and Kamera/Galeri tabs', async ({ page }) => {
+    await loginAdminUI(page)
+    await page.goto('/admin/orders/create')
+    await page.waitForLoadState('networkidle')
+
+    const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
+    await expect(sketchButton).toBeVisible()
+    await sketchButton.click()
+
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
+
+    await expect(modal.locator('button', { hasText: 'Gambar' })).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Kamera / Galeri' })).toBeVisible()
+  })
+
+  test('sketch modal shows file input when Kamera/Galeri tab clicked', async ({ page }) => {
+    await loginAdminUI(page)
+    await page.goto('/admin/orders/create')
+    await page.waitForLoadState('networkidle')
+
+    const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
+    await sketchButton.click()
+
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
+
+    await modal.locator('button', { hasText: 'Kamera / Galeri' }).click()
+
+    await expect(modal.locator('input[type="file"][accept="image/*"]')).toBeAttached()
+    await expect(modal.locator('button', { hasText: 'Pilih Foto' })).toBeVisible()
+  })
+
+  test('sketch modal Gambar tab is selected by default', async ({ page }) => {
+    await loginAdminUI(page)
+    await page.goto('/admin/orders/create')
+    await page.waitForLoadState('networkidle')
+
+    const sketchButton = page.locator('button', { hasText: 'Tambah Sketsa' }).first()
+    await sketchButton.click()
+
+    const modal = page.locator('[class*="fixed"]').filter({ hasText: 'Sketsa Item' })
+    await expect(modal).toBeVisible()
+
+    await expect(modal.locator('canvas').first()).toBeVisible()
+    await expect(modal.locator('button', { hasText: 'Kemeja' })).toBeVisible()
+  })
 })
 
 test.describe('Sketsa di Detail Pesanan', () => {
